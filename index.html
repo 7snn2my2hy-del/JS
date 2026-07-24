@@ -541,9 +541,9 @@
 
   /* ---- Startseite & Bereichsumschaltung ---- */
   .mod-container[hidden] { display: none !important; }
-  .mod-bar { display: flex; align-items: center; gap: 10px; max-width: 620px; margin: 0 auto;
-             padding: calc(12px + env(safe-area-inset-top)) 18px 2px; }
-  .mod-bar .mod-title { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
+  /* In einem Bereich steht der Zurück-Pfeil links neben dem Titel – eine Zeile statt zwei. */
+  .mod-container .app-header { justify-content: flex-start; gap: 12px; }
+  .mod-container .app-header .screen-back { flex: 0 0 auto; }
 
 </style>
 </head>
@@ -562,12 +562,8 @@
 </div>
 
 <!-- ===== Bereiche (Inhalt kommt aus den Moduldateien) ===== -->
-<div class="mod-container" id="mod-reisen" hidden>
-  <div class="mod-bar"><button class="screen-back" onclick="closeModule()" aria-label="Zurück">‹</button><span class="mod-title">Reisen</span></div>
-</div>
-<div class="mod-container" id="mod-finanzen" hidden>
-  <div class="mod-bar"><button class="screen-back" onclick="closeModule()" aria-label="Zurück">‹</button><span class="mod-title">Finanzen</span></div>
-</div>
+<div class="mod-container" id="mod-reisen" hidden></div>
+<div class="mod-container" id="mod-finanzen" hidden></div>
 
 <!-- ===== Gemeinsame Einstellungen ===== -->
 <div class="screen" id="core-settings-screen">
@@ -970,7 +966,7 @@ let activeModule = null;
 function renderLauncher(){
   const el = $('module-tiles');
   if(!el) return;
-  el.innerHTML = MODULES.map(m => {
+  el.innerHTML = [...MODULES].sort((a,b)=>(a.order??99)-(b.order??99)).map(m => {
     let s = {};
     try { s = (m.summary && m.summary()) || {}; } catch(e) { s = {}; }
     return `<div class="bento-tile trip-tile" onclick="openModule('${m.id}')">
