@@ -2,7 +2,7 @@
    Eigenständiges Modul. Nutzt den gemeinsamen Unterbau aus index.html.
    Änderungen hier betreffen nur diesen Bereich. */
 
-document.getElementById('mod-reisen').insertAdjacentHTML('beforeend', "<div class=\"wrap\" id=\"home-wrap\">\n  \n\n  <div class=\"app-header\"><button class=\"screen-back\" aria-label=\"Zurück\" onclick=\"closeModule()\">‹</button><span>Jörg's Reisen</span></div>\n\n  <div class=\"section-label\">Wo ich schon war</div>\n  <div class=\"glass world-card\" id=\"world-card\"></div>\n\n  <div class=\"section-label\">Meine Reisen</div>\n  <div id=\"trip-tiles\"></div>\n  <button class=\"add-btn\" onclick=\"rpOpenModal('trip')\">＋ Reise hinzufügen</button>\n  <div id=\"done-section\"></div>\n\n<div class=\"section-label\">Fotografie</div>\n  <div class=\"settings-group\">\n    <button class=\"settings-row\" onclick=\"gearRowTap()\">\n      <span class=\"sr-icon\">📷</span>\n      <span class=\"sr-body\">\n        <span class=\"sr-title\">Ausrüstung</span>\n        <span class=\"sr-sub\" id=\"gear-row-sub\">Kameras · Objektive · Drohne · Zubehör</span>\n      </span>\n      <span class=\"sr-chevron\" id=\"gear-row-chevron\">›</span>\n    </button>\n    <div id=\"gear-cfg\" class=\"settings-detail\" style=\"display:none\">\n      <div class=\"gear-manage\" id=\"gear-list\"></div>\n    </div>\n  </div>\n</div>\n\n<!-- ============ LÄNDER-AUSWAHL (Vollbild, damit die Tastatur nichts verdeckt) ============ -->\n<div class=\"screen picker-screen\" id=\"picker-screen\">\n  <div class=\"picker-head\">\n    <div class=\"screen-topbar\">\n      <button class=\"screen-back\" onclick=\"closePicker()\">‹</button>\n      <div class=\"screen-title\">\n        <h2>Wo warst du schon?</h2>\n        <p id=\"picker-count\">&nbsp;</p>\n      </div>\n    </div>\n    <input class=\"picker-search\" id=\"picker-search\" type=\"search\" placeholder=\"Land suchen …\" autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"off\" spellcheck=\"false\" oninput=\"filterPicker(this.value)\">\n  </div>\n  <div class=\"picker-list\" id=\"picker-list\"></div>\n</div>\n\n<!-- ============ REISE-DETAIL SCREEN ============ -->\n<div class=\"screen\" id=\"trip-screen\">\n  <div class=\"screen-topbar\">\n    <button class=\"screen-back\" onclick=\"closeTripScreen()\">‹</button>\n    <div class=\"screen-title\">\n      <h2 id=\"ts-name\">Reise</h2>\n      <p id=\"ts-dest\">&nbsp;</p>\n    </div>\n    <button class=\"icon-btn ts-import\" onclick=\"openImport()\" aria-label=\"Reiseplan importieren\">＋</button>\n  </div>\n  <div class=\"tab-bar\" id=\"tab-bar\"></div>\n  <div id=\"tab-content\"></div>\n</div>\n\n<!-- ============ AKTIVITÄTS-DETAIL SCREEN ============ -->\n<!-- ============ REISEPLAN-IMPORT ============ -->\n<div class=\"screen\" id=\"import-screen\">\n  <div class=\"screen-topbar\">\n    <button class=\"screen-back\" onclick=\"closeImport()\">‹</button>\n    <div class=\"screen-title\">\n      <h2>Reiseplan importieren</h2>\n      <p id=\"import-sub\">&nbsp;</p>\n    </div>\n  </div>\n  <div id=\"import-body\"></div>\n</div>\n\n<!-- ============ EINSTELLUNGEN (exakt wie Finanzen) ============ -->\n\n\n<!-- Lock-Screen -->\n\n\n<!-- Formular-Modal -->\n<div class=\"overlay\" id=\"form-overlay\" onclick=\"if(event.target===this)rpCloseModal()\">\n  <div class=\"modal\">\n    <div class=\"grabber\"></div>\n    <h2 id=\"form-title\">Eintrag</h2>\n    <div class=\"field-stack\" id=\"form-fields\"></div>\n    <div class=\"modal-actions\">\n      <button class=\"btn btn-secondary\" onclick=\"rpCloseModal()\">Abbrechen</button>\n      <button class=\"btn btn-primary\" onclick=\"saveModal()\">Speichern</button>\n    </div>\n  </div>\n</div>\n\n<!-- Dialog -->\n\n\n<!-- Kategorie-Wahl beim Neu-Anlegen -->\n<div class=\"overlay\" id=\"add-overlay\" onclick=\"if(event.target===this)closeAddPicker()\">\n  <div class=\"modal\" style=\"max-width:420px\">\n    <div class=\"grabber\"></div>\n    <h2>Neu anlegen</h2>\n    <div class=\"add-choices\" id=\"add-choices\"></div>\n    <div class=\"modal-actions\"><button class=\"btn btn-secondary\" onclick=\"closeAddPicker()\">Abbrechen</button></div>\n  </div>\n</div>\n\n<!-- Fotografie: versteckter Datei-Input + Vollbild-Viewer -->\n<input type=\"file\" id=\"foto-file-input\" accept=\"image/*\" multiple style=\"display:none\" onchange=\"handleFotoFiles(this.files)\">\n<div class=\"overlay img-viewer\" id=\"img-viewer\" onclick=\"closeImgViewer()\"><img id=\"img-viewer-img\" src=\"\" alt=\"\"></div>\n\n<!-- Equipment-Auswahl (pro Foto-Ort aus der globalen Liste) -->\n<div class=\"overlay\" id=\"gear-overlay\" onclick=\"if(event.target===this)closeGearPicker()\">\n  <div class=\"modal\" style=\"max-width:480px\">\n    <div class=\"grabber\" onclick=\"closeGearPicker()\"></div>\n    <h2>Ausrüstung wählen</h2>\n    <div class=\"gear-choices\" id=\"gear-choices\"></div>\n    <div class=\"modal-actions\"><button class=\"btn btn-primary\" onclick=\"closeGearPicker()\">Fertig</button></div>\n  </div>\n</div>\n\n<div class=\"toast\" id=\"toast\"><span class=\"toast-label\" id=\"toast-label\"></span></div>");
+document.getElementById('mod-reisen').insertAdjacentHTML('beforeend', "<div class=\"wrap\" id=\"home-wrap\">\n  \n\n  <div class=\"app-header\"><button class=\"screen-back\" aria-label=\"Zurück\" onclick=\"closeModule()\">‹</button><span>Jörg's Reisen</span></div>\n\n    <div class=\"glass world-card\" id=\"world-card\"></div>\n\n  <div class=\"section-label\">Meine Reisen</div>\n  <div id=\"trip-tiles\"></div>\n  <button class=\"add-btn\" onclick=\"rpOpenModal('trip')\">＋ Reise hinzufügen</button>\n  <div id=\"done-section\"></div>\n\n<div class=\"section-label\">Fotografie</div>\n  <div class=\"settings-group\">\n    <button class=\"settings-row\" onclick=\"gearRowTap()\">\n      <span class=\"sr-icon\">📷</span>\n      <span class=\"sr-body\">\n        <span class=\"sr-title\">Ausrüstung</span>\n        <span class=\"sr-sub\" id=\"gear-row-sub\">Kameras · Objektive · Drohne · Zubehör</span>\n      </span>\n      <span class=\"sr-chevron\" id=\"gear-row-chevron\">›</span>\n    </button>\n    <div id=\"gear-cfg\" class=\"settings-detail\" style=\"display:none\">\n      <div class=\"gear-manage\" id=\"gear-list\"></div>\n    </div>\n  </div>\n</div>\n\n<!-- ============ LÄNDER-AUSWAHL (Vollbild, damit die Tastatur nichts verdeckt) ============ -->\n<div class=\"screen picker-screen\" id=\"picker-screen\">\n  <div class=\"picker-head\">\n    <div class=\"screen-topbar\">\n      <button class=\"screen-back\" onclick=\"closePicker()\">‹</button>\n      <div class=\"screen-title\">\n        <h2>Wo warst du schon?</h2>\n        <p id=\"picker-count\">&nbsp;</p>\n      </div>\n    </div>\n    <input class=\"picker-search\" id=\"picker-search\" type=\"search\" placeholder=\"Land suchen …\" autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"off\" spellcheck=\"false\" oninput=\"filterPicker(this.value)\">\n  </div>\n  <div class=\"picker-list\" id=\"picker-list\"></div>\n</div>\n\n<!-- ============ REISE-DETAIL SCREEN ============ -->\n<div class=\"screen\" id=\"trip-screen\">\n  <div class=\"screen-topbar\">\n    <button class=\"screen-back\" onclick=\"closeTripScreen()\">‹</button>\n    <div class=\"screen-title\">\n      <h2 id=\"ts-name\">Reise</h2>\n      <p id=\"ts-dest\">&nbsp;</p>\n    </div>\n    <button class=\"icon-btn ts-import\" onclick=\"openImport()\" aria-label=\"Reiseplan importieren\">＋</button>\n  </div>\n  <div class=\"tab-bar\" id=\"tab-bar\"></div>\n  <div id=\"tab-content\"></div>\n</div>\n\n<!-- ============ AKTIVITÄTS-DETAIL SCREEN ============ -->\n<!-- ============ REISEPLAN-IMPORT ============ -->\n<div class=\"screen\" id=\"import-screen\">\n  <div class=\"screen-topbar\">\n    <button class=\"screen-back\" onclick=\"closeImport()\">‹</button>\n    <div class=\"screen-title\">\n      <h2>Reiseplan importieren</h2>\n      <p id=\"import-sub\">&nbsp;</p>\n    </div>\n  </div>\n  <div id=\"import-body\"></div>\n</div>\n\n<!-- ============ EINSTELLUNGEN (exakt wie Finanzen) ============ -->\n\n\n<!-- Lock-Screen -->\n\n\n<!-- Formular-Modal -->\n<div class=\"overlay\" id=\"form-overlay\" onclick=\"if(event.target===this)rpCloseModal()\">\n  <div class=\"modal\">\n    <div class=\"grabber\"></div>\n    <h2 id=\"form-title\">Eintrag</h2>\n    <div class=\"field-stack\" id=\"form-fields\"></div>\n    <div class=\"modal-actions\">\n      <button class=\"btn btn-secondary\" onclick=\"rpCloseModal()\">Abbrechen</button>\n      <button class=\"btn btn-primary\" onclick=\"saveModal()\">Speichern</button>\n    </div>\n  </div>\n</div>\n\n<!-- Dialog -->\n\n\n<!-- Kategorie-Wahl beim Neu-Anlegen -->\n<div class=\"overlay\" id=\"add-overlay\" onclick=\"if(event.target===this)closeAddPicker()\">\n  <div class=\"modal\" style=\"max-width:420px\">\n    <div class=\"grabber\"></div>\n    <h2>Neu anlegen</h2>\n    <div class=\"add-choices\" id=\"add-choices\"></div>\n    <div class=\"modal-actions\"><button class=\"btn btn-secondary\" onclick=\"closeAddPicker()\">Abbrechen</button></div>\n  </div>\n</div>\n\n<!-- Fotografie: versteckter Datei-Input + Vollbild-Viewer -->\n<input type=\"file\" id=\"foto-file-input\" accept=\"image/*\" multiple style=\"display:none\" onchange=\"handleFotoFiles(this.files)\">\n<div class=\"overlay img-viewer\" id=\"img-viewer\" onclick=\"closeImgViewer()\"><img id=\"img-viewer-img\" src=\"\" alt=\"\"></div>\n\n<!-- Equipment-Auswahl (pro Foto-Ort aus der globalen Liste) -->\n<div class=\"overlay\" id=\"gear-overlay\" onclick=\"if(event.target===this)closeGearPicker()\">\n  <div class=\"modal\" style=\"max-width:480px\">\n    <div class=\"grabber\" onclick=\"closeGearPicker()\"></div>\n    <h2>Ausrüstung wählen</h2>\n    <div class=\"gear-choices\" id=\"gear-choices\"></div>\n    <div class=\"modal-actions\"><button class=\"btn btn-primary\" onclick=\"closeGearPicker()\">Fertig</button></div>\n  </div>\n</div>\n\n<div class=\"toast\" id=\"toast\"><span class=\"toast-label\" id=\"toast-label\"></span></div>");
 
 
 /* ===== STORAGE ===== */
@@ -164,9 +164,9 @@ function persist(type){ store.set(DATA[type][1], JSON.stringify(arr(type))); }
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
 /* ===== DATUM ===== */
-function fmtDate(iso){ if(!iso) return ''; const d=new Date(iso+'T00:00:00'); return isNaN(d)?iso:d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}); }
-function daysUntil(iso){ if(!iso) return null; const d=new Date(iso+'T00:00:00'); const n=new Date(); n.setHours(0,0,0,0); return Math.round((d-n)/86400000); }
-function todayISO(){ return new Date().toISOString().slice(0,10); }
+
+
+
 function tripYear(t){ return (t.start || t.end || '').slice(0,4); }
 /* Reisedauer in Tagen, inklusive An- und Abreisetag */
 function tripDuration(t){
@@ -375,7 +375,7 @@ function parseImport(){
     if(st) m.start=st; if(en) m.end=en;
     if(Object.keys(m).length){
       importTripMeta=m;
-      const parts=[m.country, (m.start||m.end)?`${fmtDate(m.start)||'?'} – ${fmtDate(m.end)||'?'}`:''].filter(Boolean);
+      const parts=[m.country, (m.start||m.end)?`${displayDate(m.start)||'?'} – ${displayDate(m.end)||'?'}`:''].filter(Boolean);
       importItems.push({ type:'__meta', label:m.name||currentTrip().name, sub:'Reisedaten aktualisieren · '+(parts.join(' · ')||'—'), data:m, on:true });
     }
   }
@@ -416,7 +416,7 @@ function parseImport(){
         const xd = x.date||x.checkin||x.arrival||x.pickupDate||'';
         return !datum || !xd || xd===datum;
       });
-      const sub = [titel, datum?fmtDate(datum):'', obj.time?obj.time+' Uhr':''].filter(Boolean).join(' · ');
+      const sub = [titel, datum?displayDate(datum):'', obj.time?obj.time+' Uhr':''].filter(Boolean).join(' · ');
       importItems.push({ type, label, sub, data:obj, on:!doppelt, doppelt });
     }
   }
@@ -503,7 +503,7 @@ function tripTileHTML(t, done){
   let big, unit, label, cls;
   if (done) {
     big = tripYear(t) || '—'; unit = ''; cls = 'muted';
-    label = tripDuration(t) || ((t.start||t.end) ? `${fmtDate(t.start)||'?'} – ${fmtDate(t.end)||'?'}` : '');
+    label = tripDuration(t) || ((t.start||t.end) ? `${displayDate(t.start)||'?'} – ${displayDate(t.end)||'?'}` : '');
   } else {
     const cd = countdownParts(t);
     big = cd.big; unit = cd.unit; label = cd.label; cls = cd.cls;
@@ -663,7 +663,7 @@ function renderOverviewTab(t){
     else { big='Unterwegs'; sub=(t.end&&todayISO()>t.end)?'Reise abgeschlossen':'Reise läuft'; }
   }
   const map = t.country ? tripMapSVG(t.country) : '';
-  const range = (t.start || t.end) ? `${fmtDate(t.start)||'?'} – ${fmtDate(t.end)||'?'}` : '';
+  const range = (t.start || t.end) ? `${displayDate(t.start)||'?'} – ${displayDate(t.end)||'?'}` : '';
   const dur = tripDuration(t);
   // Eine Karte: Countdown + Weltkarte oben, Zeitraum darunter, dann die Zahlen
   const hero = `<div class="glass ov-card">
@@ -830,7 +830,7 @@ function renderRouteRow(item, last){
       <div class="rt-body">
         <div class="rt-name">${esc(o.company||'Mietwagen')}${o.vehicle?' · '+esc(o.vehicle):''}</div>
         <div class="rt-meta">
-          ${(o.pickupDate||o.dropoffDate)?`<span>${fmtDate(o.pickupDate)||'?'} – ${fmtDate(o.dropoffDate)||'?'}</span>`:''}
+          ${(o.pickupDate||o.dropoffDate)?`<span>${displayDate(o.pickupDate)||'?'} – ${displayDate(o.dropoffDate)||'?'}</span>`:''}
           ${days?`<span class="rt-nights" style="background:rgba(48,209,88,0.15);color:var(--green)">${days} ${days===1?'Tag':'Tage'}</span>`:''}
         </div>
         ${routeTxt?`<div class="rt-sub">${esc(routeTxt)}</div>`:''}
@@ -849,7 +849,7 @@ function renderRouteRow(item, last){
       <div class="rt-body">
         <div class="rt-name">${esc(o.name)}</div>
         <div class="rt-meta">
-          ${(o.checkin||o.checkout)?`<span>${fmtDate(o.checkin)||'?'} – ${fmtDate(o.checkout)||'?'}</span>`:''}
+          ${(o.checkin||o.checkout)?`<span>${displayDate(o.checkin)||'?'} – ${displayDate(o.checkout)||'?'}</span>`:''}
           ${n?`<span class="rt-nights amber">${n} ${n===1?'Nacht':'Nächte'}</span>`:''}
         </div>
         ${(ort||o.board)?`<div class="rt-sub">${esc([ort,o.board].filter(Boolean).join(' · '))}</div>`:''}
@@ -865,7 +865,7 @@ function renderRouteRow(item, last){
       <div class="rt-line">${marker}</div>
       <div class="rt-body">
         <div class="rt-name">${esc(o.name)}</div>
-        ${(o.date||o.time)?`<div class="rt-meta"><span>${fmtDate(o.date)||'?'}${o.time?' · '+esc(o.time)+' Uhr':''}</span></div>`:''}
+        ${(o.date||o.time)?`<div class="rt-meta"><span>${displayDate(o.date)||'?'}${o.time?' · '+esc(o.time)+' Uhr':''}</span></div>`:''}
         ${o.notes?`<div class="rt-notes">${esc(o.notes)}</div>`:''}
       </div>
     </div>`);
@@ -878,7 +878,7 @@ function renderRouteRow(item, last){
     <div class="rt-body">
       <div class="rt-name">${esc(o.name)}</div>
       <div class="rt-meta">
-        ${(o.arrival||o.departure)?`<span>${fmtDate(o.arrival)||'?'} – ${fmtDate(o.departure)||'?'}</span>`:''}
+        ${(o.arrival||o.departure)?`<span>${displayDate(o.arrival)||'?'} – ${displayDate(o.departure)||'?'}</span>`:''}
         ${n?`<span class="rt-nights">${n} ${n===1?'Nacht':'Nächte'}</span>`:''}
       </div>
       ${o.notes?`<div class="rt-notes">${esc(o.notes)}</div>`:''}
