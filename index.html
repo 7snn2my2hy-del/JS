@@ -9,7 +9,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
-<title>Meine Apps</title>
+<title>Jörg Scheiderer</title>
 <style>
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -544,7 +544,6 @@
   .mod-bar { display: flex; align-items: center; gap: 10px; max-width: 620px; margin: 0 auto;
              padding: calc(12px + env(safe-area-inset-top)) 18px 2px; }
   .mod-bar .mod-title { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
-  #launcher .lc-note { margin: 24px 4px 0; font-size: 0.76rem; color: var(--muted-2); line-height: 1.5; }
 
 </style>
 </head>
@@ -554,13 +553,12 @@
 
 <!-- ===== Startseite ===== -->
 <div class="wrap" id="launcher">
-  <div class="home-top">
-    <div class="home-title"><h1>Meine Apps</h1></div>
-    <button class="icon-btn" onclick="openCoreSettings()" aria-label="Einstellungen">⚙</button>
+  <div class="app-header">
+    <span>Jörg Scheiderer</span>
+    <button class="gear-btn" onclick="openCoreSettings()" aria-label="Einstellungen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </div>
   <div class="section-label">Bereiche</div>
   <div class="bento" id="module-tiles"></div>
-  <p class="lc-note">Design, Dialoge, Datumsfelder, Sicherung und Sperre liegen einmal zentral – jeder Bereich nutzt sie mit.</p>
 </div>
 
 <!-- ===== Bereiche (Inhalt kommt aus den Moduldateien) ===== -->
@@ -975,15 +973,12 @@ function renderLauncher(){
   el.innerHTML = MODULES.map(m => {
     let s = {};
     try { s = (m.summary && m.summary()) || {}; } catch(e) { s = {}; }
-    const art = s.art ? `<div class="tt-map">${s.art}</div>` : '';
     return `<div class="bento-tile trip-tile" onclick="openModule('${m.id}')">
-      ${art}
       <div class="tt-name">${esc(m.name)}</div>
-      <div class="tt-dest">${esc(s.sub || m.tagline || '')}</div>
-      <div class="tt-foot">
-        <div class="tt-count"><span class="tt-num">${esc(String(s.value ?? ''))}</span>${s.unit ? `<span class="tt-unit">${esc(s.unit)}</span>` : ''}</div>
-        <div class="tt-note">${esc(s.note || '')}</div>
-      </div>
+      <div class="tt-country">${esc(s.sub || m.tagline || '\u00A0')}</div>
+      ${s.art ? `<div class="tt-map">${s.art}</div>` : ''}
+      <div class="tt-cd"><span class="tt-cd-val">${esc(String(s.value ?? ''))}</span>${s.unit ? `<span class="tt-cd-unit">${esc(s.unit)}</span>` : ''}</div>
+      <div class="tt-cd-label">${esc(s.note || '')}</div>
     </div>`;
   }).join('');
 }
