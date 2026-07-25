@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607241702">
+<link rel="manifest" href="manifest.json?v=2507261200">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -210,6 +210,14 @@
   .pill-orange { background: rgba(255,159,10,0.16);  color: #ffbb52; }
   .pill-petrol { background: rgba(0,179,184,0.16);   color: #4fd7db; }
   .pill-muted  { background: rgba(255,255,255,0.08); color: var(--muted); }
+  .pill-red    { background: rgba(255,69,58,0.16);   color: #ff7a70; }
+
+  /* Hinweis-Karte (z.B. Handlungsbedarf) – steht allen Bereichen zur Verfügung */
+  .alert-card { padding: 14px 18px; border-radius: var(--r-entry); background: rgba(255,159,10,0.08); border: 1px solid rgba(255,159,10,0.22); }
+  .alert-title { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--orange); font-weight: 700; margin-bottom: 7px; }
+  .alert-item { display: flex; gap: 8px; font-size: 0.82rem; line-height: 1.5; color: var(--text); }
+  .alert-item + .alert-item { margin-top: 4px; }
+  .alert-item::before { content: "\26A0\FE0F"; flex-shrink: 0; }
 
   .add-btn { width: 100%; margin-top: 14px; padding: 12px; font: inherit; font-size: 0.82rem; font-weight: 500; color: var(--muted); cursor: pointer; border-radius: var(--r-pill); border: 1px solid var(--stroke); background: transparent; transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.3s var(--spring); }
   .add-btn:hover { background: var(--glass); border-color: var(--stroke-hi); color: var(--accent); }
@@ -564,6 +572,7 @@
 <!-- ===== Bereiche (Inhalt kommt aus den Moduldateien) ===== -->
 <div class="mod-container" id="mod-reisen" hidden></div>
 <div class="mod-container" id="mod-finanzen" hidden></div>
+<div class="mod-container" id="mod-impfpass" hidden></div>
 
 <!-- ===== Gemeinsame Einstellungen ===== -->
 <div class="screen" id="core-settings-screen">
@@ -616,6 +625,14 @@
       </span>
       <span class="sr-chevron">›</span>
     </button>
+    <button class="settings-row" id="prf-btn" onclick="togglePrfMode()">
+      <span class="sr-icon">🔑</span>
+      <span class="sr-body">
+        <span class="sr-title">Schlüssel der Sicherung</span>
+        <span class="sr-sub" id="prf-status">Passwort ist im Gerät gespeichert</span>
+      </span>
+      <span class="sr-chevron">›</span>
+    </button>
   </div>
 
   
@@ -644,15 +661,32 @@
 <div class="overlay" id="legacy-overlay">
   <div class="modal">
     <div class="grabber"></div>
-    <h3 class="form-title">Aus alter Sicherung übernehmen</h3>
+    <h2>Aus alter Sicherung übernehmen</h2>
     <p class="backup-hint" style="margin:0 6px 10px">Trage das Repository der alten App ein. Die Sicherung wird gelesen, entschlüsselt und dem passenden Bereich zugeordnet – deine alte Sicherung bleibt unverändert liegen.</p>
     <div class="field"><label>Repository der alten App</label><input id="lg-repo" placeholder="benutzername/reisen" autocomplete="off" autocapitalize="none" spellcheck="false"></div>
     <div class="field"><label>GitHub-Token</label><input id="lg-token" type="password" autocomplete="off"></div>
     <div class="field"><label>Passwort der Sicherung</label><input id="lg-pass" type="password" autocomplete="off"></div>
     <p class="backup-hint" id="lg-status" style="margin:2px 6px 0"></p>
-    <div class="form-actions">
+    <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeLegacyImport()">Abbrechen</button>
       <button class="btn btn-primary" onclick="runLegacyImport()">Übernehmen</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="recovery-overlay">
+  <div class="modal">
+    <div class="grabber"></div>
+    <h2>Notfall-Passwort sichern</h2>
+    <p class="backup-hint" style="margin:0 6px 14px">Ab jetzt entsperrt Face ID deine Sicherung – du musst nichts mehr eintippen. Dieses Passwort brauchst du nur, wenn der Passkey einmal verloren geht, etwa auf einem neuen Gerät ohne iCloud-Schlüsselbund. Leg es in deinen Passwortmanager.</p>
+    <div class="field"><label>Notfall-Passwort</label><input type="text" id="rec-pass" readonly autocomplete="off" spellcheck="false"></div>
+    <div class="field f-toggle" style="margin-top:14px">
+      <input type="checkbox" id="rec-ack" class="f-toggle-cb">
+      <label class="f-toggle-lab" for="rec-ack">Ich habe es sicher hinterlegt</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="recoveryResolve(false)">Abbrechen</button>
+      <button class="btn btn-primary" onclick="recoveryResolve(true)">Umstellen</button>
     </div>
   </div>
 </div>
@@ -660,9 +694,9 @@
 <div class="overlay" id="pass-overlay">
   <div class="modal">
     <div class="grabber"></div>
-    <h3 class="form-title">Passwort der Sicherung</h3>
+    <h2>Passwort der Sicherung</h2>
     <div class="field"><label>Passwort</label><input type="password" id="pass-input" autocomplete="off"></div>
-    <div class="form-actions">
+    <div class="modal-actions">
       <button class="btn btn-secondary" onclick="passResolve(false)">Abbrechen</button>
       <button class="btn btn-primary" onclick="passResolve(true)">Übernehmen</button>
     </div>
@@ -680,10 +714,11 @@
     </div>
   </div>
 </div>
+<div class="toast" id="toast"><span class="toast-label" id="toast-label"></span></div>
 <div id="lock-screen" style="display:none">
   <div class="lock-inner">
     <div class="lock-icon">🔒</div>
-    <div class="lock-title">Reisen</div>
+    <div class="lock-title">Jörg Scheiderer</div>
     <button class="btn btn-primary lock-btn" onclick="attemptUnlock()">Mit Face ID entsperren</button>
     <div class="lock-hint" id="lock-hint"></div>
   </div>
@@ -806,6 +841,102 @@ async function encryptBackup(text,pass){ const salt=crypto.getRandomValues(new U
 
 async function decryptBackup(env,pass){ const key=await _deriveKey(pass,_unb64(env.salt)); const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:_unb64(env.iv)},key,_unb64(env.data)); return _td.decode(pt); }
 
+/* ================= SICHERUNGSSCHLUESSEL =================
+   Zwei Wege zum selben Datenschluessel K:
+     - Face ID  (WebAuthn-PRF, Alltag, keine Eingabe)
+     - Notfall-Passwort (nur wenn der Passkey verloren geht)
+   K liegt niemals im Speicher des Geraets, nur in doppelt verpackter Form. */
+
+const PRF_SALT = _te.encode('alles-sicherung-v1');
+let _prfRaw = null;   // PRF-Ergebnis der laufenden Sitzung, nur im Arbeitsspeicher
+
+function _cachePrf(assertion){
+  try {
+    const ext = assertion.getClientExtensionResults ? assertion.getClientExtensionResults() : null;
+    const first = ext && ext.prf && ext.prf.results && ext.prf.results.first;
+    _prfRaw = first ? new Uint8Array(first) : null;
+  } catch(e){ _prfRaw = null; }
+  return _prfRaw;
+}
+/* Fragt Face ID gezielt nach dem Schluesselmaterial. */
+async function _prfMaterial({ silent = false } = {}){
+  if(_prfRaw) return _prfRaw;
+  if(!(appLock && appLock.credId)) return null;
+  try {
+    const res = await navigator.credentials.get({ publicKey:{
+      challenge: crypto.getRandomValues(new Uint8Array(32)),
+      allowCredentials: [{ type:'public-key', id:_unb64(appLock.credId) }],
+      userVerification: 'required', timeout: 60000,
+      extensions: { prf:{ eval:{ first: PRF_SALT } } }
+    }});
+    return _cachePrf(res);
+  } catch(e){ if(!silent) throw e; return null; }
+}
+async function _prfKey(){
+  const raw = await _prfMaterial();
+  return raw ? crypto.subtle.importKey('raw', raw, {name:'AES-GCM'}, false, ['encrypt','decrypt']) : null;
+}
+function prfMode(){ return !!(cloudCfg && cloudCfg.wraps && cloudCfg.wraps.prf); }
+
+/* Verpacken und Auspacken des Datenschluessels */
+async function _wrap(rawKey, key){
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, rawKey);
+  return { iv:_b64(iv), data:_b64(ct) };
+}
+async function _unwrap(w, key){
+  const raw = await crypto.subtle.decrypt({name:'AES-GCM', iv:_unb64(w.iv)}, key, _unb64(w.data));
+  return new Uint8Array(raw);
+}
+async function _wrapWithPass(rawKey, pass){
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const w = await _wrap(rawKey, await _deriveKey(pass, salt));
+  return { kdf:'PBKDF2-SHA256-310000', salt:_b64(salt), iv:w.iv, data:w.data };
+}
+
+/* Datenschluessel der laufenden Sitzung beschaffen (Face ID, sonst Notfall-Passwort). */
+async function _dataKeyRaw(){
+  if(!prfMode()) return null;
+  const pk = await _prfKey();
+  if(pk){ try { return await _unwrap(cloudCfg.wraps.prf, pk); } catch(e){} }
+  if(cloudCfg.wraps.pass){
+    const pass = await askPassphrase();
+    if(pass === null) throw new Error('Abgebrochen');
+    return _unwrap(cloudCfg.wraps.pass, await _deriveKey(pass, _unb64(cloudCfg.wraps.pass.salt)));
+  }
+  throw new Error('Kein Schluessel verfuegbar');
+}
+
+/* Umschlag 2: Nutzdaten mit K, K getrennt verpackt im selben Dokument. */
+async function encryptBackupV2(text, rawKey){
+  const key = await crypto.subtle.importKey('raw', rawKey, {name:'AES-GCM'}, false, ['encrypt']);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, _te.encode(text));
+  return { app:'alles', enc:2, alg:'AES-256-GCM', wraps: cloudCfg.wraps, iv:_b64(iv), data:_b64(ct) };
+}
+/* Liest beide Umschlag-Formate. Alte Sicherungen (enc:1) bleiben lesbar. */
+async function decryptEnvelope(env, { pass } = {}){
+  if(env.enc === 2){
+    let raw = null;
+    if(env.wraps && env.wraps.prf){
+      const pk = await _prfMaterial({ silent:true }).then(m => m ? crypto.subtle.importKey('raw', m, {name:'AES-GCM'}, false, ['decrypt']) : null).catch(() => null);
+      if(pk){ try { raw = await _unwrap(env.wraps.prf, pk); } catch(e){} }
+    }
+    if(!raw && env.wraps && env.wraps.pass){
+      const p = pass !== undefined && pass !== null ? pass : await askPassphrase();
+      if(p === null) throw new Error('Abgebrochen');
+      raw = await _unwrap(env.wraps.pass, await _deriveKey(p, _unb64(env.wraps.pass.salt)));
+    }
+    if(!raw) throw new Error('Kein Schluessel zum Entpacken gefunden');
+    const key = await crypto.subtle.importKey('raw', raw, {name:'AES-GCM'}, false, ['decrypt']);
+    const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:_unb64(env.iv)}, key, _unb64(env.data));
+    return _td.decode(pt);
+  }
+  const p = pass !== undefined && pass !== null ? pass : await askPassphrase();
+  if(p === null) throw new Error('Abgebrochen');
+  return decryptBackup(env, p);
+}
+
 function attachSwipeGeneric(wrap, onDelete, onEdit) {
   const slider = wrap.querySelector('.tile-slider');
   const bgEl   = wrap.querySelector('.tile-action-bg');
@@ -913,7 +1044,7 @@ async function toggleAppLock(){
   if(!appLockAvailable()) return;
   if(appLock&&appLock.enabled){ const ok=await showDialog('FaceID-Sperre wirklich deaktivieren?',{title:'App-Sperre',okText:'Deaktivieren'}); if(!ok) return; appLock=null; store.set(APPLOCK_KEY,JSON.stringify(null)); renderAppLockUI(); return; }
   try {
-    const cred=await navigator.credentials.create({ publicKey:{ challenge:crypto.getRandomValues(new Uint8Array(32)), rp:{name:'Reisen',id:location.hostname}, user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'reisen',displayName:'Reisen'}, pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}], authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required'}, timeout:60000, attestation:'none' }});
+    const cred=await navigator.credentials.create({ publicKey:{ challenge:crypto.getRandomValues(new Uint8Array(32)), rp:{name:'Jörg Scheiderer',id:location.hostname}, user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'joerg',displayName:'Jörg Scheiderer'}, pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}], authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required'}, timeout:60000, attestation:'none', extensions:{ prf:{} } }});
     appLock={ credId:_b64(cred.rawId), enabled:true }; store.set(APPLOCK_KEY,JSON.stringify(appLock)); renderAppLockUI();
     notify('FaceID-Sperre ist aktiv. Tipp: Richte auch das Cloud-Backup ein, damit deine Daten gesichert sind.','App-Sperre');
   } catch(e){ notify('Einrichtung abgebrochen oder nicht unterstützt.','App-Sperre'); }
@@ -921,7 +1052,12 @@ async function toggleAppLock(){
 
 async function attemptUnlock(){
   if(!(appLock&&appLock.enabled)) return;
-  try { await navigator.credentials.get({ publicKey:{ challenge:crypto.getRandomValues(new Uint8Array(32)), allowCredentials:[{type:'public-key',id:_unb64(appLock.credId)}], userVerification:'required', timeout:60000 }}); _unlocked=true; const ls=$('lock-screen'); if(ls) ls.style.display='none'; }
+  try {
+    const res = await navigator.credentials.get({ publicKey:{ challenge:crypto.getRandomValues(new Uint8Array(32)), allowCredentials:[{type:'public-key',id:_unb64(appLock.credId)}], userVerification:'required', timeout:60000, extensions:{ prf:{ eval:{ first: PRF_SALT } } } }});
+    _unlocked=true;
+    _cachePrf(res);                       // Sicherungsschluessel gleich mitnehmen – spart eine zweite Abfrage
+    const ls=$('lock-screen'); if(ls) ls.style.display='none';
+  }
   catch(e){ const h=$('lock-hint'); if(h) h.textContent='Nicht erkannt – bitte erneut versuchen.'; }
 }
 
@@ -1064,6 +1200,7 @@ function openCoreSettings(){
   if(!sc) return;
   loadCloudCfgUI();
   renderAppLockUI();
+  renderPrfRow();
   sc.classList.add('open');
   sc.scrollTop = 0;
   setTimeout(() => { if(sc.classList.contains('open')) sc.classList.add('settled'); }, 460);
@@ -1083,7 +1220,10 @@ const CLOUD_CFG_KEY = 'cloud_backup_v1';
 let cloudCfg = safeParse(store.get(CLOUD_CFG_KEY), null);
 let _cloudTimer = null;
 
-function cloudReady(){ return !!(cloudCfg && cloudCfg.repo && cloudCfg.token && cloudCfg.pass); }
+function cloudReady(){ return !!(cloudCfg && cloudCfg.repo && cloudCfg.token && (cloudCfg.pass || prfMode())); }
+/* Zum Wiederherstellen genuegen Repository und Token: Die Verpackungen des
+   Schluessels liegen in der Sicherung selbst – so klappt es auch auf einem neuen Geraet. */
+function cloudCanRead(){ return !!(cloudCfg && cloudCfg.repo && cloudCfg.token); }
 function _ghUrl(file){ return `https://api.github.com/repos/${cloudCfg.repo}/contents/${file || CLOUD_FILE}`; }
 function _ghHeaders(){ return { 'Authorization': 'Bearer ' + cloudCfg.token, 'Accept': 'application/vnd.github+json' }; }
 async function _ghGetFile(file){
@@ -1094,12 +1234,14 @@ async function _ghGetFile(file){
 }
 
 function saveCloudCfg(){
+  const eingabe = $('cb-pass').value;
   cloudCfg = {
     repo: $('cb-repo').value.trim(),
     token: $('cb-token').value.trim(),
-    pass: $('cb-pass').value,
+    pass: (cloudCfg && cloudCfg.wraps) ? '' : eingabe,   // im Face-ID-Betrieb wird kein Passwort abgelegt
     auto: $('cb-auto').checked,
-    lastOk: (cloudCfg && cloudCfg.lastOk) || null
+    lastOk: (cloudCfg && cloudCfg.lastOk) || null,
+    wraps: (cloudCfg && cloudCfg.wraps) || null
   };
   store.set(CLOUD_CFG_KEY, JSON.stringify(cloudCfg));
   renderCloudRow();
@@ -1121,6 +1263,83 @@ function toggleCloudCfg(){
   if(ch) ch.textContent = open ? '›' : '⌄';
 }
 function cloudRowTap(){ toggleCloudCfg(); loadCloudCfgUI(); }
+/* ---------------- Umstellung auf den Face-ID-Schluessel ----------------
+   Erzeugt einen zufaelligen Datenschluessel und verpackt ihn zweifach:
+   mit dem Passkey (Alltag) und mit dem Notfall-Passwort (Wiederherstellung). */
+function recoveryResolve(ok){
+  const ov = $('recovery-overlay');
+  if(ov) ov.classList.remove('open');
+  const r = window._recResolve; window._recResolve = null;
+  if(r) r(ok && $('rec-ack').checked);
+}
+function askRecovery(pass){
+  return new Promise(resolve => {
+    const ov = $('recovery-overlay');
+    if(!ov){ resolve(false); return; }
+    $('rec-pass').value = pass;
+    $('rec-ack').checked = false;
+    ov.classList.add('open');
+    window._recResolve = resolve;
+  });
+}
+/* Notfall-Passwort: gut lesbar, ausreichend Entropie (rund 77 Bit). */
+function neuesNotfallPasswort(){
+  const zeichen = 'abcdefghijkmnopqrstuvwxyz23456789';
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  let out = '';
+  for(let i=0;i<16;i++){ out += zeichen[b[i] % zeichen.length]; if(i%4===3 && i<15) out += '-'; }
+  return out;
+}
+
+async function togglePrfMode(){
+  if(prfMode()){
+    const ok = await showDialog('Die Sicherung wird dann wieder mit einem gespeicherten Passwort verschlüsselt statt mit Face ID.',
+                                { title:'Zurück zum Passwort?', okText:'Umstellen' });
+    if(!ok) return;
+    const pass = await askPassphrase();
+    if(pass === null) return;
+    cloudCfg.pass = pass; cloudCfg.wraps = null;
+    store.set(CLOUD_CFG_KEY, JSON.stringify(cloudCfg));
+    renderPrfRow();
+    await cloudBackupNow(true);
+    return;
+  }
+
+  if(!appLockAvailable()){ notify('Face ID steht auf diesem Gerät nicht zur Verfügung.'); return; }
+  if(!(appLock && appLock.credId)){ notify('Bitte zuerst die FaceID-Sperre einschalten – der Schlüssel hängt an diesem Passkey.', 'Face ID nötig'); return; }
+  if(!(cloudCfg && cloudCfg.repo && cloudCfg.token)){ notify('Bitte zuerst Repository und Token eintragen.'); return; }
+
+  let material;
+  try { material = await _prfMaterial(); }
+  catch(e){ notify('Face ID wurde abgebrochen.'); return; }
+  if(!material){
+    notify('Dieser Passkey liefert kein Schlüsselmaterial. Schalte die FaceID-Sperre einmal aus und wieder ein – der neue Passkey kann es.', 'Einmal neu einrichten');
+    return;
+  }
+
+  // Bestehendes Passwort weiterverwenden, sonst ein neues erzeugen
+  const notfall = (cloudCfg.pass && cloudCfg.pass.length >= 8) ? cloudCfg.pass : neuesNotfallPasswort();
+  if(!await askRecovery(notfall)) return;
+
+  try {
+    const k = crypto.getRandomValues(new Uint8Array(32));
+    const prfKey = await crypto.subtle.importKey('raw', material, {name:'AES-GCM'}, false, ['encrypt','decrypt']);
+    cloudCfg.wraps = { prf: await _wrap(k, prfKey), pass: await _wrapWithPass(k, notfall) };
+    cloudCfg.pass = '';                       // ab hier liegt kein Passwort mehr im Gerät
+    store.set(CLOUD_CFG_KEY, JSON.stringify(cloudCfg));
+    renderPrfRow(); loadCloudCfgUI();
+    await cloudBackupNow(true);               // Sicherung sofort im neuen Format ablegen
+    notify('Umgestellt. Die Sicherung hängt jetzt an Face ID.', 'Fertig');
+  } catch(e){ notify('Umstellung fehlgeschlagen: ' + e.message); }
+}
+
+function renderPrfRow(){
+  const el = $('prf-status');
+  if(el) el.textContent = prfMode()
+    ? 'An Face ID gebunden – kein Passwort im Gerät'
+    : 'Passwort ist im Gerät gespeichert';
+}
+
 function renderCloudRow(){
   const sub = $('cloud-row-sub');
   if(sub) sub.textContent = cloudReady()
@@ -1185,7 +1404,9 @@ async function cloudBackupNow(manual){
   if(!cloudReady()){ notify('Bitte zuerst Repository, Token und Passwort eintragen.'); return; }
   try {
     const text = JSON.stringify(await buildCombinedPayload());
-    const env  = await encryptBackup(text, cloudCfg.pass);
+    const env  = prfMode()
+      ? await encryptBackupV2(text, await _dataKeyRaw())
+      : await encryptBackup(text, cloudCfg.pass);
     const body = btoa(unescape(encodeURIComponent(JSON.stringify(env, null, 2))));
     if (manual && body.length > 20 * 1024 * 1024)
       notify('Hinweis: Die Sicherung ist sehr groß (' + (body.length/1048576).toFixed(0) + ' MB) – meist durch Referenzfotos.');
@@ -1207,7 +1428,7 @@ function scheduleCloudBackup(){
   _cloudTimer = setTimeout(() => cloudBackupNow(false), 30000);
 }
 async function cloudRestore(){
-  if(!cloudReady()){ notify('Bitte zuerst Repository, Token und Passwort eintragen.'); return; }
+  if(!cloudCanRead()){ notify('Bitte zuerst Repository und Token eintragen.'); return; }
   const ok = await showDialog('Die Sicherung aus der Cloud ersetzt die Daten aller Bereiche.',
                               { title: 'Wiederherstellen?', okText: 'Wiederherstellen' });
   if(!ok) return;
@@ -1215,8 +1436,15 @@ async function cloudRestore(){
     const roh = await _ghReadText(cloudCfg.repo, cloudCfg.token, CLOUD_FILE);
     if(!roh){ notify('Keine Sicherung im Repository gefunden.'); return; }
     const env = JSON.parse(roh);
-    const text = env && env.enc ? await decryptBackup(env, cloudCfg.pass) : JSON.stringify(env);
-    if(await applyCombined(text)) notify('Wiederhergestellt.');
+    const text = env && env.enc ? await decryptEnvelope(env, { pass: cloudCfg.pass || undefined }) : JSON.stringify(env);
+    if(await applyCombined(text)){
+      if(env && env.enc === 2 && env.wraps && !prfMode()){
+        cloudCfg.wraps = env.wraps;                 // Schlüssel-Verpackungen für dieses Gerät übernehmen
+        store.set(CLOUD_CFG_KEY, JSON.stringify(cloudCfg));
+        renderPrfRow();
+      }
+      notify('Wiederhergestellt.');
+    }
   } catch(e){ notify('Wiederherstellen fehlgeschlagen: ' + e.message); }
 }
 
@@ -1236,7 +1464,7 @@ function importFromFile(){
       if(env && env.enc){
         const pass = await askPassphrase();
         if(pass === null) return;
-        text = await decryptBackup(env, pass);
+        text = await decryptEnvelope(env, { pass });
       }
       if(await applyCombined(text)) notify('Daten übernommen.');
     } catch(e){ notify('Import fehlgeschlagen: ' + e.message); }
@@ -1307,20 +1535,110 @@ async function runLegacyImport(){
   } catch(e){ st.textContent = 'Fehlgeschlagen: ' + e.message; }
 }
 
+/* ---------------- Kurzmeldung (Toast) ----------------
+   Liegt im Kern, damit jeder Bereich dieselbe Meldung nutzt. */
+let _toastTimer;
+function showToast(label){
+  const t=$('toast'); if(!t) return;
+  $('toast-label').textContent=label;
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+/* Hüllt einen beliebigen Eintrag in die Swipe-Mechanik:
+   nach links wischen -> Bearbeiten + Löschen. Ein Ort für alle Bereiche. */
+function swipeInnerHTML(inner){
+  return `<div class="tile-slider">
+      ${inner}
+      <div class="tile-action-bg">
+        <div class="swipe-edit">${ICON_EDIT}<span>Bearb.</span></div>
+        <div class="swipe-del">${ICON_DEL}<span>L\u00f6sch.</span></div>
+      </div>
+    </div>`;
+}
+function swipeWrap(type, id, inner){
+  return `<div class="tile-wrap entry-wrap" data-id="${id}" data-type="${type}">${swipeInnerHTML(inner)}</div>`;
+}
+
+/* ---------------- Zur\u00fcck-Geste ----------------
+   Vom linken Displayrand nach rechts wischen = eine Ebene zur\u00fcck.
+   Gilt f\u00fcr alle Bereiche: oberster offener Screen -> Bereich -> Startseite. */
+const _SCREEN_SEL = '.screen, .detail-sheet, .settings-screen';
+let _screenSeq = 0;
+function initScreenTracking(){
+  const obs = new MutationObserver(ms => {
+    for(const m of ms){
+      const el = m.target;
+      if(el.classList.contains('open')){ if(!el._openSeq) el._openSeq = ++_screenSeq; }
+      else el._openSeq = 0;
+    }
+  });
+  document.querySelectorAll(_SCREEN_SEL).forEach(el => {
+    obs.observe(el, { attributes:true, attributeFilter:['class'] });
+    if(el.classList.contains('open')) el._openSeq = ++_screenSeq;
+  });
+}
+function topOpenScreen(){
+  let best = null;
+  document.querySelectorAll(_SCREEN_SEL).forEach(el => {
+    if(!el.classList.contains('open')) return;
+    if(!best || (el._openSeq||0) >= (best._openSeq||0)) best = el;
+  });
+  return best;
+}
+/* Eine Ebene zur\u00fcck – nutzt bewusst den vorhandenen Zur\u00fcck-Knopf des Screens,
+   damit die jeweilige Aufr\u00e4um-Logik des Bereichs mitl\u00e4uft. */
+function goBack(){
+  if(appLock && appLock.enabled && !_unlocked) return;      // gesperrt
+  if(document.querySelector('.overlay.open')) return;       // Formulare bleiben unber\u00fchrt
+  const sc = topOpenScreen();
+  if(sc){
+    const btn = sc.querySelector('.screen-back, .settings-back');
+    if(btn){ btn.click(); return; }
+    sc.classList.remove('settled'); void sc.offsetHeight; sc.classList.remove('open');
+    return;
+  }
+  if(activeModule) closeModule();
+}
+(function initBackSwipe(){
+  const EDGE = 26, DIST = 70;
+  let sx=0, sy=0, tracking=false;
+  document.addEventListener('touchstart', e => {
+    if(e.touches.length !== 1){ tracking=false; return; }
+    const t = e.touches[0];
+    // Nur vom linken Rand, nicht wenn eine Zeile aufgeschoben ist oder ein Formular offen steht.
+    tracking = t.clientX <= EDGE && !_openSwipe && !document.querySelector('.overlay.open');
+    sx = t.clientX; sy = t.clientY;
+  }, { passive:true });
+  document.addEventListener('touchmove', e => {
+    if(!tracking) return;
+    const t = e.touches[0];
+    const dx = t.clientX - sx, dy = t.clientY - sy;
+    if(Math.abs(dy) > 40 && Math.abs(dy) > Math.abs(dx)){ tracking = false; return; }
+    if(dx > DIST && dx > Math.abs(dy) * 1.5){ tracking = false; goBack(); }
+  }, { passive:true });
+  document.addEventListener('touchend', () => { tracking = false; }, { passive:true });
+  document.addEventListener('touchcancel', () => { tracking = false; }, { passive:true });
+})();
+
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607241702"></script>
-<script src="mod-reisen.js?v=2607241702"></script>
-<script src="mod-finanzen.js?v=2607241702"></script>
+<script src="data-laender.js?v=2507261200"></script>
+<script src="mod-reisen.js?v=2507261200"></script>
+<script src="mod-finanzen.js?v=2507261200"></script>
+<script src="mod-impfpass.js?v=2507261200"></script>
 
 <!-- ===== Start ===== -->
 <script>
 refreshCloudKeys();
 initAppLock();
 renderCloudRow();
+renderPrfRow();
 renderLauncher();
 MODULES.forEach(m => { if (m.init) { try { m.init(); } catch(e){} } });
+initScreenTracking();
 document.getElementById('core-settings-screen').addEventListener('transitionend', function(e){
   if (e.target === this && e.propertyName === 'transform' && this.classList.contains('open')) this.classList.add('settled');
 });
