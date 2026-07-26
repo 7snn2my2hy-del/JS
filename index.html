@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607261630">
+<link rel="manifest" href="manifest.json?v=2607261800">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -441,6 +441,17 @@
   .screen.dragging, .mod-container.dragging { transition: none !important; will-change: transform; }
   .screen.dragging { box-shadow: -18px 0 46px rgba(0,0,0,0.55); }
   .screen.gliding, .mod-container.gliding { transition: transform 0.32s var(--ease-ios) !important; }
+  /* Waehrend die Zurueck-Geste den ganzen Bildschirm bewegt, muesste iOS jedes einzelne
+     Glas-Element (davon gibt es je Ansicht viele) laufend neu weichzeichnen – das ist die
+     Hauptursache fuer das Ruckeln. Fuer die kurze Dauer der Animation reicht ein einfacher,
+     halbtransparenter Hintergrund ohne Blur; danach kommt der echte Weichzeichner sofort
+     wieder. Kaum sichtbar, aber spuerbar fluessiger. */
+  .dragging .glass, .dragging.glass, .dragging .tab-btn,
+  .gliding .glass,   .gliding.glass,   .gliding .tab-btn {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    background: rgba(28, 28, 32, 0.92) !important;
+  }
   .back-scrim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 398; display: none; }
   .back-scrim.on { display: block; }
   .back-under { will-change: transform; }
@@ -1828,10 +1839,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607261630"></script>
-<script src="mod-reisen.js?v=2607261630"></script>
-<script src="mod-finanzen.js?v=2607261630"></script>
-<script src="mod-impfpass.js?v=2607261630"></script>
+<script src="data-laender.js?v=2607261800"></script>
+<script src="mod-reisen.js?v=2607261800"></script>
+<script src="mod-finanzen.js?v=2607261800"></script>
+<script src="mod-impfpass.js?v=2607261800"></script>
 
 <!-- ===== Start ===== -->
 <script>
