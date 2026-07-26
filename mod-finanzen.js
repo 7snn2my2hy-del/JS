@@ -2236,7 +2236,6 @@ function showWealthInfo() {
 
 let _cloudBusy = false;
 
-function finOpenSettings(){ openCoreSettings(); }
 
 // --- Krypto: Passphrase → AES-256-GCM ---
 
@@ -2353,14 +2352,18 @@ function populateFilters() {
   });
 }
 
-if (!store.persistent) $('notice').style.display = 'block';
-if (income > 0) $('income-input').value = income.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2});
-populateFilters();
-applyAutoGrow();
-renderAll();
-applyCollapsedStates();
-renderHistRangeCtls();
-['deposit-amount','urlaub-cost'].forEach(id => bindMoneyInput($(id)));
+/* Aufbau des Bereichs – wird vom Kern über init() angestossen,
+   damit alle Bereiche gleich starten. */
+function finInit(){
+  if (!store.persistent && $('notice')) $('notice').style.display = 'block';
+  if (income > 0) $('income-input').value = income.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2});
+  populateFilters();
+  applyAutoGrow();
+  renderAll();
+  applyCollapsedStates();
+  renderHistRangeCtls();
+  ['deposit-amount','urlaub-cost'].forEach(id => bindMoneyInput($(id)));
+}
 
 // Service Worker registrieren (Offline-Fähigkeit); scheitert leise wenn nicht unterstützt (z.B. file://)
 
@@ -2373,6 +2376,7 @@ registerModule({
   buildPayload: () => finBuildBackupPayload(),
   applyBackup: (t) => finApplyBackup(t),
   detect: p => !!(p && p.sections),
+  init: () => { try { finInit(); } catch(e){} },
   onOpen: () => { try { renderAll(); } catch(e){} },
   summary: () => {
     try {

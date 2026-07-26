@@ -2,10 +2,10 @@
 // Netz zuerst (immer die aktuellste Fassung, wenn online), Cache als Rückfall (offline nutzbar).
 // Bei einem Update nur die Versionsnummer erhöhen.
 
-const CACHE = 'alles-2507261720';
-const ASSETS = ['./', './index.html', './data-laender.js?v=2507261720', './mod-reisen.js?v=2507261720',
-                './mod-finanzen.js?v=2507261720', './mod-impfpass.js?v=2507261720',
-                './manifest.json?v=2507261720', './icon.png'];
+const CACHE = 'alles-2507262340';
+const ASSETS = ['./', './index.html', './data-laender.js?v=2507262340', './mod-reisen.js?v=2507262340',
+                './mod-finanzen.js?v=2507262340', './mod-impfpass.js?v=2507262340',
+                './manifest.json?v=2507262340', './icon.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));

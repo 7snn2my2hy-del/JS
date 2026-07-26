@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2507261720">
+<link rel="manifest" href="manifest.json?v=2507262340">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -630,8 +630,8 @@
         <label>GitHub-Token (fine-grained, nur Contents)</label>
         <input type="password" id="cb-token" placeholder="z.B. github_pat_…" autocomplete="off">
       </div>
-      <div class="field">
-        <label>Passphrase (verschlüsselt vor dem Hochladen)</label>
+      <div class="field" id="cb-pass-field">
+        <label>Passwort der Sicherung</label>
         <input type="password" id="cb-pass" placeholder="z.B. namibia-2027!" autocomplete="off">
       </div>
       <div class="field f-toggle">
@@ -642,7 +642,7 @@
         <button class="backup-btn" onclick="saveCloudCfg(); cloudBackupNow(true)">☁ Jetzt sichern</button>
         <button class="backup-btn" onclick="saveCloudCfg(); cloudRestore()">↓ Aus Cloud laden</button>
       </div>
-      <p class="backup-hint" id="cloud-status" style="margin:0 6px">Sichern und Wiederherstellen läuft über GitHub. Anleitung: siehe CLOUD-BACKUP-ANLEITUNG.md im Repo.</p>
+      <p class="backup-hint" id="cloud-status" style="margin:0 6px"></p>
     </div>
   </div>
 
@@ -664,9 +664,15 @@
       </span>
       <span class="sr-chevron">›</span>
     </button>
+    <button class="settings-row" id="recheck-btn" onclick="checkRecovery()" style="display:none">
+      <span class="sr-icon">✓</span>
+      <span class="sr-body">
+        <span class="sr-title">Notfall-Passwort prüfen</span>
+        <span class="sr-sub">Testet, ob dein notiertes Passwort die Sicherung wirklich öffnet</span>
+      </span>
+      <span class="sr-chevron">›</span>
+    </button>
   </div>
-
-  
 </div>
 </div>
 
@@ -690,8 +696,8 @@
 <div class="overlay" id="pass-overlay">
   <div class="modal">
     <div class="grabber"></div>
-    <h2>Passwort der Sicherung</h2>
-    <div class="field"><label>Passwort</label><input type="password" id="pass-input" autocomplete="off"></div>
+    <h2 id="pass-title">Passwort der Sicherung</h2>
+    <div class="field"><label id="pass-label">Passwort</label><input type="password" id="pass-input" autocomplete="off"></div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="passResolve(false)">Abbrechen</button>
       <button class="btn btn-primary" onclick="passResolve(true)">Übernehmen</button>
@@ -1041,8 +1047,11 @@ let _unlocked=false;
 
 function appLockAvailable(){ return !!(window.PublicKeyCredential&&navigator.credentials&&location.protocol==='https:'); }
 
+let _appLockInit = false;
 function initAppLock(){
   renderAppLockUI();
+  if(_appLockInit) return;          // nur einmal starten, egal wie oft aufgerufen
+  _appLockInit = true;
   if(appLock&&appLock.enabled&&appLockAvailable()){ engageLock(); setTimeout(()=>{ if(!_unlocked) attemptUnlock(); },350); }
   document.addEventListener('visibilitychange',()=>{ if(!(appLock&&appLock.enabled)) return; if(document.hidden){ _bgSince=Date.now(); } else { if(_bgSince&&(Date.now()-_bgSince)>=APPLOCK_GRACE_MS){ engageLock(); setTimeout(()=>{ if(!_unlocked) attemptUnlock(); },350); } _bgSince=null; } });
 }
@@ -1057,18 +1066,26 @@ async function toggleAppLock(){
   } catch(e){ notify('Einrichtung abgebrochen oder nicht unterstützt.','App-Sperre'); }
 }
 
+let _unlockPending = null;
 async function attemptUnlock(){
   if(!(appLock&&appLock.enabled)) return;
-  try {
-    const res = await navigator.credentials.get({ publicKey:{ challenge:crypto.getRandomValues(new Uint8Array(32)), allowCredentials:[{type:'public-key',id:_unb64(appLock.credId)}], userVerification:'required', timeout:60000, extensions:{ prf:{ eval:{ first: PRF_SALT } } } }});
-    _unlocked=true;
-    _cachePrf(res);                       // Sicherungsschluessel gleich mitnehmen – spart eine zweite Abfrage
-    const ls=$('lock-screen'); if(ls) ls.style.display='none';
-  }
-  catch(e){ const h=$('lock-hint'); if(h) h.textContent='Nicht erkannt – bitte erneut versuchen.'; }
+  if(_unlocked) return;
+  // Mehrere Aufrufe teilen sich denselben Vorgang – sonst erscheint Face ID doppelt.
+  if(_unlockPending) return _unlockPending;
+  _unlockPending = (async () => {
+    try {
+      const res = await navigator.credentials.get({ publicKey:{ challenge:crypto.getRandomValues(new Uint8Array(32)), allowCredentials:[{type:'public-key',id:_unb64(appLock.credId)}], userVerification:'required', timeout:60000, extensions:{ prf:{ eval:{ first: PRF_SALT } } } }});
+      _unlocked=true;
+      _cachePrf(res);                     // Sicherungsschluessel gleich mitnehmen
+      const ls=$('lock-screen'); if(ls) ls.style.display='none';
+    }
+    catch(e){ const h=$('lock-hint'); if(h) h.textContent='Nicht erkannt – bitte erneut versuchen.'; }
+    finally { _unlockPending = null; }
+  })();
+  return _unlockPending;
 }
 
-function engageLock(){ if(!(appLock&&appLock.enabled)) return; _unlocked=false; _prfRaw=null; _prfPending=null; const ls=$('lock-screen'); if(ls){ ls.style.display='flex'; const h=$('lock-hint'); if(h) h.textContent=''; } }
+function engageLock(){ if(!(appLock&&appLock.enabled)) return; _unlocked=false; _prfRaw=null; _prfPending=null; _unlockPending=null; const ls=$('lock-screen'); if(ls){ ls.style.display='flex'; const h=$('lock-hint'); if(h) h.textContent=''; } }
 
 function renderAppLockUI(){
   const btn=$('applock-btn'),st=$('applock-status'),title=$('applock-title'); if(!btn) return;
@@ -1341,10 +1358,30 @@ async function togglePrfMode(){
 }
 
 function renderPrfRow(){
+  const an = prfMode();
   const el = $('prf-status');
-  if(el) el.textContent = prfMode()
+  if(el) el.textContent = an
     ? 'An Face ID gebunden – kein Passwort im Gerät'
     : 'Passwort ist im Gerät gespeichert';
+  // Im Face-ID-Betrieb hat das Passwortfeld keine Wirkung mehr - also weg damit.
+  const feld = $('cb-pass-field'), pruef = $('recheck-btn');
+  if(feld)  feld.style.display  = an ? 'none' : '';
+  if(pruef) pruef.style.display = an ? '' : 'none';
+  renderCloudStatus();
+}
+
+/* Prueft, ob das notierte Notfall-Passwort den Schluessel tatsaechlich oeffnet.
+   Aendert nichts - dient nur der Gewissheit. */
+async function checkRecovery(){
+  if(!(cloudCfg && cloudCfg.wraps && cloudCfg.wraps.pass)){ notify('Es ist kein Notfall-Passwort hinterlegt.'); return; }
+  const pass = await askPassphrase();
+  if(pass === null) return;
+  try {
+    await _unwrap(cloudCfg.wraps.pass, await _deriveKey(pass, _unb64(cloudCfg.wraps.pass.salt)));
+    notify('Passt. Mit diesem Passwort kommst du auch ohne Passkey an deine Sicherung.', 'Geprüft');
+  } catch(e){
+    notify('Damit lässt sich die Sicherung nicht öffnen. Prüfe deine Notiz – solange der Passkey funktioniert, kannst du in den Einstellungen neu umstellen und ein frisches Notfall-Passwort vergeben.', 'Passt nicht');
+  }
 }
 
 function renderCloudRow(){
@@ -1353,9 +1390,13 @@ function renderCloudRow(){
     ? (cloudCfg.lastOk ? 'Zuletzt gesichert: ' + new Date(cloudCfg.lastOk).toLocaleString('de-DE') : 'Eingerichtet')
     : 'Noch nicht eingerichtet';
 }
+/* Der Zeitstempel steht in der Zeile darueber - hier nur, womit verschluesselt wird. */
 function renderCloudStatus(){
   const el = $('cloud-status');
-  if(el && cloudCfg && cloudCfg.lastOk) el.textContent = 'Zuletzt gesichert: ' + new Date(cloudCfg.lastOk).toLocaleString('de-DE');
+  if(!el) return;
+  el.textContent = prfMode()
+    ? 'Wird mit deinem Face-ID-Schlüssel verschlüsselt, bevor sie GitHub erreicht.'
+    : 'Wird mit deinem Passwort verschlüsselt, bevor sie GitHub erreicht.';
 }
 
 /* Liest eine Datei aus einem Repository – auch wenn sie größer als 1 MB ist.
@@ -1461,7 +1502,11 @@ async function cloudRestore(){
 }
 
 /* Kleine Passwort-Abfrage im Stil der App-Dialoge. */
+/* Je nach Betrieb ist es das Passwort der Sicherung oder das Notfall-Passwort. */
 function askPassphrase(){
+  const t = $('pass-title'), l = $('pass-label');
+  if(t) t.textContent = prfMode() ? 'Notfall-Passwort' : 'Passwort der Sicherung';
+  if(l) l.textContent = prfMode() ? 'Notfall-Passwort' : 'Passwort';
   return new Promise(resolve => {
     const ov = $('pass-overlay');
     if(!ov){ resolve(null); return; }
@@ -1530,24 +1575,6 @@ function topOpenScreen(){
   });
   return best;
 }
-/* Eine Ebene zur\u00fcck – nutzt bewusst den vorhandenen Zur\u00fcck-Knopf des Screens,
-   damit die jeweilige Aufr\u00e4um-Logik des Bereichs mitl\u00e4uft. */
-function goBack(){
-  if(appLock && appLock.enabled && !_unlocked) return;      // gesperrt
-  if(document.querySelector('.overlay.open')) return;       // Formulare bleiben unber\u00fchrt
-  const sc = topOpenScreen();
-  if(sc){
-    const btn = sc.querySelector('.screen-back, .settings-back');
-    if(btn){ btn.click(); return; }
-    sc.classList.remove('settled'); void sc.offsetHeight; sc.classList.remove('open');
-    return;
-  }
-  if(activeModule) closeModule();
-}
-/* ---------------- Interaktive Zurück-Geste ----------------
-   Im linken Drittel aufsetzen und nach rechts ziehen: Die oberste Ebene folgt
-   dem Finger, die darunterliegende schiebt sich aus dem Parallax-Versatz heraus.
-   Beim Loslassen entscheidet der zurückgelegte Weg oder die Geschwindigkeit. */
 (function initBackGesture(){
   const ZONE    = 1 / 3;     // Startbereich: linkes Drittel
   const COMMIT  = 0.35;      // ab diesem Anteil der Breite wird geschlossen
@@ -1697,10 +1724,10 @@ function goBack(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2507261720"></script>
-<script src="mod-reisen.js?v=2507261720"></script>
-<script src="mod-finanzen.js?v=2507261720"></script>
-<script src="mod-impfpass.js?v=2507261720"></script>
+<script src="data-laender.js?v=2507262340"></script>
+<script src="mod-reisen.js?v=2507262340"></script>
+<script src="mod-finanzen.js?v=2507262340"></script>
+<script src="mod-impfpass.js?v=2507262340"></script>
 
 <!-- ===== Start ===== -->
 <script>
