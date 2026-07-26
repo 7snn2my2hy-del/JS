@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607261330">
+<link rel="manifest" href="manifest.json?v=2607261430">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -1730,6 +1730,10 @@ function topOpenScreen(){
     if(e.touches.length !== 1) return;
     if(appLock && appLock.enabled && !_unlocked) return;
     if(document.querySelector('.overlay.open')) return;
+    // _openSwipe kann auf ein Element zeigen, das durch ein neues Rendering
+    // laengst aus dem DOM entfernt wurde (Liste neu aufgebaut, waehrend eine
+    // Zeile noch offen war) – das wuerde die Geste sonst dauerhaft blockieren.
+    if(_openSwipe && !document.body.contains(_openSwipe)) _openSwipe = null;
     if(_openSwipe) return;
     const t = e.touches[0];
     if(t.clientX > window.innerWidth * ZONE) return;
@@ -1829,10 +1833,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607261330"></script>
-<script src="mod-reisen.js?v=2607261330"></script>
-<script src="mod-finanzen.js?v=2607261330"></script>
-<script src="mod-impfpass.js?v=2607261330"></script>
+<script src="data-laender.js?v=2607261430"></script>
+<script src="mod-reisen.js?v=2607261430"></script>
+<script src="mod-finanzen.js?v=2607261430"></script>
+<script src="mod-impfpass.js?v=2607261430"></script>
 
 <!-- ===== Start ===== -->
 <script>
