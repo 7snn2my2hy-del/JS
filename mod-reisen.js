@@ -576,11 +576,11 @@ function renderTripCards(){
   wireSwipe(doneEl);
 }
 
-/* ===== SWIPE (1:1 aus der Finanzen-App übernommen) ===== */
-
-document.addEventListener('touchstart', (ev) => {
-  if (_openSwipe && !_openSwipe.contains(ev.target)) closeOpenSwipe();
-}, { passive: true, capture: true });
+/* ===== SWIPE ===== */
+/* Das "Tippen woanders schliesst die offene Zeile" erledigt der Kern bereits
+   pro Zeile (attachSwipeGeneric). Ein eigener, globaler Handler hier war
+   redundant und schloss die Zeile bei JEDEM Touch irgendwo im Dokument –
+   auch beim Start der Zurueck-Geste, was diese durcheinanderbrachte. */
 
 /* Reise inkl. aller zugehörigen Daten und Bilder löschen (über Swipe) */
 async function deleteTripById(id){

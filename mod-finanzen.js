@@ -414,10 +414,9 @@ function renderSection(sec) {
 }
 
 // Swipe-Logik liegt im Kern (attachSwipeGeneric): tile-slider verschiebt sich nach links.
-
-document.addEventListener('touchstart', (ev) => {
-  if (_openSwipe && !_openSwipe.contains(ev.target)) closeOpenSwipe();
-}, { passive: true, capture: true });
+// "Tippen woanders schliesst die Zeile" erledigt der Kern bereits pro Zeile –
+// ein eigener globaler Handler hier störte die Zurück-Geste (schloss die Zeile
+// bei jedem Touch irgendwo im Dokument, auch beim Start der Geste).
 
 function attachSwipe(wrap, sec, id) {
   attachSwipeGeneric(wrap, () => deleteEntry(sec, id), () => finOpenModal(sec, id));

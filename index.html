@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607261430">
+<link rel="manifest" href="manifest.json?v=2607261630">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -1056,27 +1056,22 @@ function attachSwipeGeneric(wrap, onDelete, onEdit) {
   // Wichtig: Beginnt eine Wischgeste zufaellig genau auf dem Button (naheliegend,
   // da er ja an der Stelle sichtbar ist), darf das NICHT als Tap gewertet werden –
   // sonst kapert das Schliessen der Zeile die Bearbeiten-/Loeschen-Aktion.
+  // Dafuer wird dieselbe, bereits bewaehrte Wisch-Erkennung der Zeile selbst
+  // genutzt (Variable "horizontal" oben) statt einer eigenen, separaten Schwelle –
+  // eine zweite, enger gefasste Schwelle hat echte, ruhige Taps faelschlich als
+  // Wischgeste gewertet und dadurch das Antippen selbst unzuverlaessig gemacht.
   const knopf = (el, fn) => {
     if(!el) return;
     let benutzt = false;
-    let tStartX = 0, tStartY = 0, tDrag = false;
-    el.addEventListener('touchstart', (e) => {
-      const t = e.touches[0];
-      tStartX = t.clientX; tStartY = t.clientY; tDrag = false;
-    }, { passive: true });
-    el.addEventListener('touchmove', (e) => {
-      const t = e.touches[0];
-      if (Math.abs(t.clientX - tStartX) > 10 || Math.abs(t.clientY - tStartY) > 10) tDrag = true;
-    }, { passive: true });
     const ausloesen = (e) => {
       e.stopPropagation();
       if(benutzt) return;
       benutzt = true; setTimeout(() => { benutzt = false; }, 400);
       closeOpenSwipe(); setTimeout(fn, 50);
     };
-    el.addEventListener('click', (e) => { if(tDrag) return; ausloesen(e); });
+    el.addEventListener('click', (e) => { if(horizontal) return; ausloesen(e); });
     el.addEventListener('touchend', (e) => {
-      if(tDrag) return; // Wischgeste – der Wrap entscheidet ueber offen/geschlossen
+      if(horizontal) return; // Zeile hat das selbst als Wischgeste erkannt
       if(e.cancelable) e.preventDefault();
       ausloesen(e);
     }, { passive: false });
@@ -1833,10 +1828,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607261430"></script>
-<script src="mod-reisen.js?v=2607261430"></script>
-<script src="mod-finanzen.js?v=2607261430"></script>
-<script src="mod-impfpass.js?v=2607261430"></script>
+<script src="data-laender.js?v=2607261630"></script>
+<script src="mod-reisen.js?v=2607261630"></script>
+<script src="mod-finanzen.js?v=2607261630"></script>
+<script src="mod-impfpass.js?v=2607261630"></script>
 
 <!-- ===== Start ===== -->
 <script>
