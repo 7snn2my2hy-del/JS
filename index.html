@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2507262340">
+<link rel="manifest" href="manifest.json?v=2507271620">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -236,6 +236,20 @@
   .pill-red    { background: rgba(255,69,58,0.16);   color: #ff7a70; }
 
   /* Hinweis-Karte (z.B. Handlungsbedarf) – steht allen Bereichen zur Verfügung */
+  /* Jahresuebersicht mit Fortschrittsbalken (z.B. Resturlaub) */
+  .ru-jahr { padding: 4px 2px; }
+  .ru-sep { height: 1px; background: var(--stroke); margin: 14px 0; }
+  .ru-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .ru-year { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; }
+  .ru-rest { font-size: 0.82rem; font-weight: 600; }
+  .ru-bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.08); overflow: hidden; margin: 9px 0 11px; }
+  .ru-bar span { display: block; height: 100%; border-radius: 3px; transition: width 0.5s var(--ease-ios); }
+  .ru-trips { display: flex; flex-direction: column; gap: 4px; }
+  .ru-trip { display: flex; justify-content: space-between; gap: 12px; font-size: 0.8rem; color: var(--muted); }
+  .ru-trip span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ru-trip span:last-child { flex-shrink: 0; }
+  .ru-leer { color: var(--muted-2); }
+
   .alert-card { padding: 14px 18px; border-radius: var(--r-entry); background: rgba(255,159,10,0.08); border: 1px solid rgba(255,159,10,0.22); }
   .alert-title { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--orange); font-weight: 700; margin-bottom: 7px; }
   .alert-item { display: flex; gap: 8px; font-size: 0.82rem; line-height: 1.5; color: var(--text); }
@@ -656,7 +670,7 @@
       </span>
       <span class="sr-chevron">›</span>
     </button>
-    <button class="settings-row" id="prf-btn" onclick="togglePrfMode()">
+    <button class="settings-row" id="prf-btn" onclick="togglePrfMode()" style="display:none">
       <span class="sr-icon">🔑</span>
       <span class="sr-body">
         <span class="sr-title">Schlüssel der Sicherung</span>
@@ -992,7 +1006,9 @@ function attachSwipeGeneric(wrap, onDelete, onEdit) {
       // Voreingenommen zum Scrollen: nur als horizontalen Swipe werten, wenn die
       // Bewegung deutlich horizontaler als vertikal ist – sonst scrollt die Liste normal.
       decided = true;
-      horizontal = Math.abs(mx) > Math.abs(my) * 1.3 && Math.abs(mx) > 8;
+      // Nach rechts ziehen bewegt eine geschlossene Zeile ohnehin nicht – das gehoert
+      // dann der Zurueck-Geste. Sonst verschluckt die Zeile jede Bewegung.
+      horizontal = Math.abs(mx) > Math.abs(my) * 1.3 && Math.abs(mx) > 8 && (openAtStart || mx < 0);
       if (horizontal) slider.classList.add('swiping');
     }
     if (!horizontal) { if (openAtStart) { settle(false); openAtStart = false; } return; }
@@ -1359,14 +1375,12 @@ async function togglePrfMode(){
 
 function renderPrfRow(){
   const an = prfMode();
-  const el = $('prf-status');
-  if(el) el.textContent = an
-    ? 'An Face ID gebunden – kein Passwort im Gerät'
-    : 'Passwort ist im Gerät gespeichert';
-  // Im Face-ID-Betrieb hat das Passwortfeld keine Wirkung mehr - also weg damit.
-  const feld = $('cb-pass-field'), pruef = $('recheck-btn');
+  // Ist der Schluessel an Face ID gebunden, ist nichts mehr einzurichten:
+  // dann verschwinden Umstell-Zeile und Passwortfeld, die Pruefzeile erscheint.
+  const feld = $('cb-pass-field'), pruef = $('recheck-btn'), um = $('prf-btn');
   if(feld)  feld.style.display  = an ? 'none' : '';
   if(pruef) pruef.style.display = an ? '' : 'none';
+  if(um)    um.style.display    = an ? 'none' : '';
   renderCloudStatus();
 }
 
@@ -1380,8 +1394,25 @@ async function checkRecovery(){
     await _unwrap(cloudCfg.wraps.pass, await _deriveKey(pass, _unb64(cloudCfg.wraps.pass.salt)));
     notify('Passt. Mit diesem Passwort kommst du auch ohne Passkey an deine Sicherung.', 'Geprüft');
   } catch(e){
-    notify('Damit lässt sich die Sicherung nicht öffnen. Prüfe deine Notiz – solange der Passkey funktioniert, kannst du in den Einstellungen neu umstellen und ein frisches Notfall-Passwort vergeben.', 'Passt nicht');
+    const neu = await showDialog('Damit lässt sich die Sicherung nicht öffnen. Solange Face ID funktioniert, kannst du jetzt ein frisches Notfall-Passwort vergeben.',
+                                 { title: 'Passt nicht', okText: 'Neues vergeben' });
+    if(neu) await renewRecovery();
   }
+}
+
+/* Vergibt ein neues Notfall-Passwort, ohne den Datenschluessel zu wechseln –
+   die vorhandene Sicherung bleibt damit gueltig. */
+async function renewRecovery(){
+  try {
+    const roh = await _dataKeyRaw();
+    if(!roh) throw new Error('Schlüssel nicht verfügbar');
+    const wort = neuesNotfallPasswort();
+    if(!await askRecovery(wort)) return;
+    cloudCfg.wraps.pass = await _wrapWithPass(roh, wort);
+    store.set(CLOUD_CFG_KEY, JSON.stringify(cloudCfg));
+    await cloudBackupNow(true);
+    notify('Neues Notfall-Passwort hinterlegt.', 'Fertig');
+  } catch(e){ notify('Hat nicht geklappt: ' + e.message); }
 }
 
 function renderCloudRow(){
@@ -1724,10 +1755,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2507262340"></script>
-<script src="mod-reisen.js?v=2507262340"></script>
-<script src="mod-finanzen.js?v=2507262340"></script>
-<script src="mod-impfpass.js?v=2507262340"></script>
+<script src="data-laender.js?v=2507271620"></script>
+<script src="mod-reisen.js?v=2507271620"></script>
+<script src="mod-finanzen.js?v=2507271620"></script>
+<script src="mod-impfpass.js?v=2507271620"></script>
 
 <!-- ===== Start ===== -->
 <script>
