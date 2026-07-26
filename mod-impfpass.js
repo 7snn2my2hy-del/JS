@@ -250,8 +250,43 @@ function impApplyBackup(text){
   }
 }
 
+/* Kachel-Grafik: Virus mit Spritze, als schlichte Linienzeichnung passend zum
+   Glas-Stil der uebrigen Kacheln. Eigene Konstruktion aus Kreisen/Linien –
+   die Vorlage aus dem Netz wird bewusst nicht nachgezeichnet. */
+function impTileArt(){
+  const R = 25, cx = 44, cy = 62;           // Virus-Koerper
+  let stacheln = '';
+  for (let i = 0; i < 12; i++){
+    const a = (i / 12) * Math.PI * 2;
+    const x1 = cx + Math.cos(a) * R,        y1 = cy + Math.sin(a) * R;
+    const x2 = cx + Math.cos(a) * (R + 9),  y2 = cy + Math.sin(a) * (R + 9);
+    stacheln += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`
+             +  `<circle cx="${x2.toFixed(1)}" cy="${y2.toFixed(1)}" r="3.1" fill="none"/>`;
+  }
+  return `<svg viewBox="0 0 120 120" fill="none" stroke="rgba(255,255,255,0.86)" stroke-width="2.1"
+       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <g opacity="0.95">
+      <circle cx="${cx}" cy="${cy}" r="${R}"/>
+      ${stacheln}
+      <circle cx="${cx - 8}" cy="${cy - 7}" r="4"/>
+      <circle cx="${cx + 8}" cy="${cy + 3}" r="5"/>
+      <circle cx="${cx - 3}" cy="${cy + 11}" r="3"/>
+    </g>
+    <g opacity="0.95">
+      <line x1="60" y1="46" x2="79" y2="27"/>
+      <path d="M76 24 L96 44 L88 52 L68 32 Z"/>
+      <line x1="92" y1="20" x2="100" y2="28"/>
+      <line x1="98" y1="14" x2="106" y2="22"/>
+      <line x1="92" y1="20" x2="106" y2="34"/>
+      <line x1="80" y1="30" x2="86" y2="24"/>
+      <line x1="85" y1="35" x2="91" y2="29"/>
+      <line x1="90" y1="40" x2="96" y2="34"/>
+    </g>
+  </svg>`;
+}
+
 registerModule({
-  id: 'impfpass', name: 'Impfpass', tagline: 'Impfungen & Auffrischungen', order: 3,
+  id: 'impfpass', name: 'Impfpass', tagline: 'Impfungen', order: 3,
   keys: IMP_KEYS,
   buildPayload: () => impBuildBackupPayload(),
   applyBackup: (t) => impApplyBackup(t),
@@ -260,11 +295,12 @@ registerModule({
   onOpen: () => { try { impRender(); } catch(e){} },
   summary: () => {
     try {
+      const art = impTileArt();
       const offen = impfungen.filter(impNeedsAction).length;
-      if (offen) return { sub: 'Impfungen & Auffrischungen', value: offen, unit: offen === 1 ? 'Hinweis' : 'Hinweise', note: 'Handlungsbedarf' };
+      if (offen) return { sub: 'Impfungen', value: offen, unit: offen === 1 ? 'Hinweis' : 'Hinweise', note: 'Handlungsbedarf', art };
       const bald = impfungen.filter(e => impStatus(e).key === 'soon').length;
-      if (bald) return { sub: 'Impfungen & Auffrischungen', value: bald, unit: bald === 1 ? 'Impfung' : 'Impfungen', note: 'bald fällig' };
-      return { sub: 'Impfungen & Auffrischungen', value: impfungen.length, unit: impfungen.length === 1 ? 'Impfung' : 'Impfungen', note: 'alle gültig' };
-    } catch(e) { return { sub: 'Impfungen & Auffrischungen' }; }
+      if (bald) return { sub: 'Impfungen', value: bald, unit: bald === 1 ? 'Impfung' : 'Impfungen', note: 'bald fällig', art };
+      return { sub: 'Impfungen', value: impfungen.length, unit: impfungen.length === 1 ? 'Impfung' : 'Impfungen', note: 'alle gültig', art };
+    } catch(e) { return { sub: 'Impfungen' }; }
   }
 });

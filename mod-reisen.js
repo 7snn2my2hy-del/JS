@@ -1406,7 +1406,8 @@ registerModule({
         .filter(x => !isNaN(x.d) && x.d >= heute).sort((a,b) => a.d - b.d)[0];
       if (kommend) {
         const tage = Math.round((kommend.d - heute) / 86400000);
-        return { sub: kommend.t.name || '', value: tage, unit: 'Tage', note: 'bis zur Abreise',
+        const ziel = kommend.t.name || '';
+        return { sub: ziel ? 'Next: ' + ziel : '', value: tage, unit: 'Tage', note: 'bis zur Abreise',
                  art: (kommend.t.country ? tripMapSVG(kommend.t.country) : '') };
       }
       return { sub: trips.length ? 'Keine kommende Reise' : 'Noch keine Reise',

@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607261800">
+<link rel="manifest" href="manifest.json?v=2607262030">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -216,8 +216,14 @@
   .trip-tile.done .tt-map path[fill="var(--accent)"] { fill: var(--muted); }
   .tt-name { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; z-index: 1; }
   .tt-country { font-size: 0.72rem; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; z-index: 1; }
-  .tt-map { position: absolute; right: 12px; top: 42px; bottom: 46px; width: 52%; opacity: 0.85; pointer-events: none; -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 45%, transparent 100%); mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 45%, transparent 100%); }
+  .tt-map { position: absolute; right: 6px; top: 34px; bottom: 38px; width: 62%; opacity: 0.9; pointer-events: none; -webkit-mask-image: radial-gradient(ellipse 58% 58% at 50% 50%, #000 68%, transparent 100%); mask-image: radial-gradient(ellipse 58% 58% at 50% 50%, #000 68%, transparent 100%); }
   .tt-map svg { width: 100%; height: 100%; display: block; }
+  /* Kachel ohne Kennzahl (z.B. Vermoegensverlauf): die Grafik nimmt die ganze
+     Flaeche unter dem Titel ein und laeuft bis an die Raender – ohne die
+     weiche Ellipsen-Maske, die bei einer Kurve nur die Enden abschneiden wuerde. */
+  .tt-artonly .tt-map { left: 0; right: 0; width: auto; top: 46px; bottom: 0; opacity: 1;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%); }
   .tt-cd { margin-top: auto; display: flex; align-items: baseline; gap: 5px; white-space: nowrap; position: relative; z-index: 1; }
   .tt-cd-val { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1; }
   .tt-cd-val.accent { color: var(--accent); }
@@ -439,7 +445,10 @@
   .screen.settled { transform: none; }
   /* Zurück-Geste: der Bildschirm folgt dem Finger, darunter wird die vorige Ebene sichtbar */
   .screen.dragging, .mod-container.dragging { transition: none !important; will-change: transform; }
-  .screen.dragging { box-shadow: -18px 0 46px rgba(0,0,0,0.55); }
+  /* Statt eines grossen weichen Schlagschattens (46px Radius, muesste iOS bei jedem
+     Bild neu zeichnen) eine schmale Kante – waehrend der Bewegung optisch kaum zu
+     unterscheiden, aber deutlich guenstiger. */
+  .screen.dragging, .mod-container.dragging { box-shadow: -1px 0 0 rgba(255,255,255,0.10), -10px 0 18px rgba(0,0,0,0.45); }
   .screen.gliding, .mod-container.gliding { transition: transform 0.32s var(--ease-ios) !important; }
   /* Waehrend die Zurueck-Geste den ganzen Bildschirm bewegt, muesste iOS jedes einzelne
      Glas-Element (davon gibt es je Ansicht viele) laufend neu weichzeichnen – das ist die
@@ -1261,12 +1270,12 @@ function renderLauncher(){
   el.innerHTML = [...MODULES].sort((a,b)=>(a.order??99)-(b.order??99)).map(m => {
     let s = {};
     try { s = (m.summary && m.summary()) || {}; } catch(e) { s = {}; }
-    return `<div class="bento-tile trip-tile" onclick="openModule('${m.id}')">
+    return `<div class="bento-tile trip-tile${s.hideValue ? ' tt-artonly' : ''}" onclick="openModule('${m.id}')">
       <div class="tt-name">${esc(m.name)}</div>
       <div class="tt-country">${esc(s.sub || m.tagline || '\u00A0')}</div>
       ${s.art ? `<div class="tt-map">${s.art}</div>` : ''}
-      <div class="tt-cd"><span class="tt-cd-val">${esc(String(s.value ?? ''))}</span>${s.unit ? `<span class="tt-cd-unit">${esc(s.unit)}</span>` : ''}</div>
-      <div class="tt-cd-label">${esc(s.note || '')}</div>
+      ${s.hideValue ? '' : `<div class="tt-cd"><span class="tt-cd-val">${esc(String(s.value ?? ''))}</span>${s.unit ? `<span class="tt-cd-unit">${esc(s.unit)}</span>` : ''}</div>
+      <div class="tt-cd-label">${esc(s.note || '')}</div>`}
     </div>`;
   }).join('') + `<div class="bento-tile trip-tile tile-ghost" aria-hidden="true"><span>+</span></div>`;
 }
@@ -1715,13 +1724,28 @@ function topOpenScreen(){
     return !!(t.closest && t.closest('input, textarea, select, .tab-bar, .dash-swipe, .picker-list, .img-viewer'));
   }
 
-  function setzen(px){
+  /* Das eigentliche Verschieben wird an den Bildaufbau gekoppelt: iOS liefert
+     touchmove teils mehrfach pro Bild, jedes sofortige Schreiben waere verschenkte
+     Arbeit. So wird pro Bild genau einmal gesetzt – das ist der spuerbarste
+     Unterschied bei der Fluessigkeit. translate3d erzwingt zudem eine eigene
+     GPU-Ebene, die iOS ruhiger bewegt als ein einfaches translateX. */
+  let _rafId = null, _pxWunsch = 0;
+  function setzenSofort(px){
     const anteil = Math.min(1, px / breite);
-    ziel.style.transform = `translateX(${px}px)`;
-    if(unten) unten.style.transform = `translateX(${(-PARALLAX * breite) * (1 - anteil)}px)`;
-    if(scrim) scrim.style.opacity = String(0.28 * (1 - anteil));
+    if(ziel) ziel.style.transform = `translate3d(${px}px,0,0)`;
+    if(unten) unten.style.transform = `translate3d(${((-PARALLAX * breite) * (1 - anteil)).toFixed(1)}px,0,0)`;
+    if(scrim) scrim.style.opacity = String((0.28 * (1 - anteil)).toFixed(3));
+  }
+  function setzen(px){
+    _pxWunsch = px;
+    if(_rafId !== null) return;
+    _rafId = requestAnimationFrame(() => { _rafId = null; setzenSofort(_pxWunsch); });
+  }
+  function rafStop(){
+    if(_rafId !== null){ cancelAnimationFrame(_rafId); _rafId = null; }
   }
   function aufraeumen(){
+    rafStop();
     if(ziel){ ziel.classList.remove('dragging', 'gliding'); ziel.style.transform = ''; ziel.style.zIndex = ''; }
     if(unten){ unten.classList.remove('back-under', 'gliding'); unten.style.transform = ''; }
     if(scrim){ scrim.classList.remove('on'); scrim.style.opacity = '0'; }
@@ -1796,13 +1820,15 @@ function topOpenScreen(){
     const schliessen = weit || schwung;
     const el = ziel, u = unten;
 
+    // Ausstehendes Einzelbild verwerfen, sonst koennte es die Endposition ueberschreiben
+    rafStop();
     el.classList.remove('dragging'); el.classList.add('gliding');
     if(u){ u.classList.add('gliding'); }
     if(scrim) scrim.style.transition = 'opacity 0.32s var(--ease-ios)';
 
     if(schliessen){
-      el.style.transform = `translateX(${breite}px)`;
-      if(u) u.style.transform = 'translateX(0)';
+      el.style.transform = `translate3d(${breite}px,0,0)`;
+      if(u) u.style.transform = 'translate3d(0,0,0)';
       if(scrim) scrim.style.opacity = '0';
       const fertig = () => {
         // Erst jetzt tatsächlich schließen – die Ebene steht bereits außerhalb des Bildes
@@ -1818,8 +1844,8 @@ function topOpenScreen(){
       };
       setTimeout(fertig, 330);
     } else {
-      el.style.transform = 'translateX(0)';
-      if(u) u.style.transform = `translateX(${-PARALLAX * breite}px)`;
+      el.style.transform = 'translate3d(0,0,0)';
+      if(u) u.style.transform = `translate3d(${-PARALLAX * breite}px,0,0)`;
       if(scrim) scrim.style.opacity = '0.28';
       const warModul = (art === 'modul');
       setTimeout(() => {
@@ -1839,10 +1865,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607261800"></script>
-<script src="mod-reisen.js?v=2607261800"></script>
-<script src="mod-finanzen.js?v=2607261800"></script>
-<script src="mod-impfpass.js?v=2607261800"></script>
+<script src="data-laender.js?v=2607262030"></script>
+<script src="mod-reisen.js?v=2607262030"></script>
+<script src="mod-finanzen.js?v=2607262030"></script>
+<script src="mod-impfpass.js?v=2607262030"></script>
 
 <!-- ===== Start ===== -->
 <script>
