@@ -1,11 +1,16 @@
 // Service Worker für die vereinte App
 // Netz zuerst (immer die aktuellste Fassung, wenn online), Cache als Rückfall (offline nutzbar).
-// Bei einem Update nur die Versionsnummer erhöhen.
+// Wichtig: Diese Datei bleibt fix und muss NICHT bei jedem Deploy angepasst werden.
+// Die Versionsnummer (Cache-Busting) steckt ausschließlich in den ?v=-Query-Strings der
+// <script>/<link>-Tags in index.html. Da hier bei jedem Request ohnehin zuerst das Netz
+// gefragt wird, landet die jeweils aktuelle Version automatisch unter ihrer eigenen URL im
+// Cache – unabhängig davon, welchen Stand ASSETS unten nennt. ASSETS dient nur dem
+// allerersten Offline-Vorrat direkt nach der Installation.
+// Nur anfassen, wenn sich die Cache-Logik selbst ändern soll (z.B. neue Datei ergänzen).
 
-const CACHE = 'alles-2507271620';
-const ASSETS = ['./', './index.html', './data-laender.js?v=2507271620', './mod-reisen.js?v=2507271620',
-                './mod-finanzen.js?v=2507271620', './mod-impfpass.js?v=2507271620',
-                './manifest.json?v=2507271620', './icon.png'];
+const CACHE = 'alles-v1';
+const ASSETS = ['./', './index.html', './data-laender.js', './mod-reisen.js',
+                './mod-finanzen.js', './mod-impfpass.js', './manifest.json', './icon.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));

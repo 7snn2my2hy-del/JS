@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2507271620">
+<link rel="manifest" href="manifest.json?v=2607260900">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -236,6 +236,18 @@
   .pill-red    { background: rgba(255,69,58,0.16);   color: #ff7a70; }
 
   /* Hinweis-Karte (z.B. Handlungsbedarf) – steht allen Bereichen zur Verfügung */
+  /* Legende an der Hero-Linie: Werteachse links, Zeitraum darunter */
+  .hero-plot { display: flex; align-items: stretch; gap: 8px; margin-top: 16px; }
+  .hero-axis { display: flex; flex-direction: column; justify-content: space-between; padding: 4px 0 1px; font-size: 0.58rem; color: var(--muted-2); font-variant-numeric: tabular-nums; text-align: right; flex-shrink: 0; }
+  .hero-plot svg { flex: 1; min-width: 0; height: 64px; display: block; }
+  .hero-range { font-size: 0.66rem; color: var(--muted-2); text-align: center; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .hero-range .hist-up { color: var(--green); }
+  .hero-range .hist-down { color: var(--danger); }
+
+  /* Kompakte Jahreszeile in einer Kachel (z.B. Resturlaub) */
+  .ru-mini + .ru-mini { margin-top: 8px; }
+  .ru-mini-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.68rem; color: var(--muted); margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+
   /* Jahresuebersicht mit Fortschrittsbalken (z.B. Resturlaub) */
   .ru-jahr { padding: 4px 2px; }
   .ru-sep { height: 1px; background: var(--stroke); margin: 14px 0; }
@@ -678,15 +690,9 @@
       </span>
       <span class="sr-chevron">›</span>
     </button>
-    <button class="settings-row" id="recheck-btn" onclick="checkRecovery()" style="display:none">
-      <span class="sr-icon">✓</span>
-      <span class="sr-body">
-        <span class="sr-title">Notfall-Passwort prüfen</span>
-        <span class="sr-sub">Testet, ob dein notiertes Passwort die Sicherung wirklich öffnet</span>
-      </span>
-      <span class="sr-chevron">›</span>
-    </button>
   </div>
+
+  <p class="backup-hint" id="build-stamp" style="text-align:center;margin:22px 6px 0"></p>
 </div>
 </div>
 
@@ -998,6 +1004,7 @@ function attachSwipeGeneric(wrap, onDelete, onEdit) {
 
   wrap.addEventListener('touchmove', (ev) => {
     if (!dragging) return;
+    if (window._backAktiv) { if (openAtStart) { settle(false); openAtStart = false; } dragging = false; return; }
     const t = ev.touches[0];
     const mx = t.clientX - startX;
     const my = t.clientY - startY;
@@ -1029,12 +1036,22 @@ function attachSwipeGeneric(wrap, onDelete, onEdit) {
     settle(openAtStart ? curX < -R / 2 : curX < -THRESHOLD);
   });
 
-  wrap.querySelector('.swipe-del').addEventListener('click', (e) => {
-    e.stopPropagation(); closeOpenSwipe(); setTimeout(onDelete, 50);
-  });
-  wrap.querySelector('.swipe-edit').addEventListener('click', (e) => {
-    e.stopPropagation(); closeOpenSwipe(); setTimeout(onEdit, 50);
-  });
+  // iOS liefert den Klick auf zusammengesetzte Elemente nicht immer aus –
+  // deshalb zusaetzlich direkt auf die Beruehrung reagieren, aber nur einmal.
+  const knopf = (el, fn) => {
+    if(!el) return;
+    let benutzt = false;
+    const ausloesen = (e) => {
+      e.stopPropagation();
+      if(benutzt) return;
+      benutzt = true; setTimeout(() => { benutzt = false; }, 400);
+      closeOpenSwipe(); setTimeout(fn, 50);
+    };
+    el.addEventListener('click', ausloesen);
+    el.addEventListener('touchend', (e) => { if(e.cancelable) e.preventDefault(); ausloesen(e); }, { passive: false });
+  };
+  knopf(wrap.querySelector('.swipe-del'), onDelete);
+  knopf(wrap.querySelector('.swipe-edit'), onEdit);
 }
 
 let _openSwipe = null;
@@ -1281,6 +1298,8 @@ function saveCloudCfg(){
     pass: (cloudCfg && cloudCfg.wraps) ? '' : eingabe,   // im Face-ID-Betrieb wird kein Passwort abgelegt
     auto: $('cb-auto').checked,
     lastOk: (cloudCfg && cloudCfg.lastOk) || null,
+    lastErr: (cloudCfg && cloudCfg.lastErr) || null,
+    sha: (cloudCfg && cloudCfg.sha) || null,
     wraps: (cloudCfg && cloudCfg.wraps) || null
   };
   store.set(CLOUD_CFG_KEY, JSON.stringify(cloudCfg));
@@ -1377,42 +1396,10 @@ function renderPrfRow(){
   const an = prfMode();
   // Ist der Schluessel an Face ID gebunden, ist nichts mehr einzurichten:
   // dann verschwinden Umstell-Zeile und Passwortfeld, die Pruefzeile erscheint.
-  const feld = $('cb-pass-field'), pruef = $('recheck-btn'), um = $('prf-btn');
-  if(feld)  feld.style.display  = an ? 'none' : '';
-  if(pruef) pruef.style.display = an ? '' : 'none';
-  if(um)    um.style.display    = an ? 'none' : '';
+  const feld = $('cb-pass-field'), um = $('prf-btn');
+  if(feld) feld.style.display = an ? 'none' : '';
+  if(um)   um.style.display   = an ? 'none' : '';
   renderCloudStatus();
-}
-
-/* Prueft, ob das notierte Notfall-Passwort den Schluessel tatsaechlich oeffnet.
-   Aendert nichts - dient nur der Gewissheit. */
-async function checkRecovery(){
-  if(!(cloudCfg && cloudCfg.wraps && cloudCfg.wraps.pass)){ notify('Es ist kein Notfall-Passwort hinterlegt.'); return; }
-  const pass = await askPassphrase();
-  if(pass === null) return;
-  try {
-    await _unwrap(cloudCfg.wraps.pass, await _deriveKey(pass, _unb64(cloudCfg.wraps.pass.salt)));
-    notify('Passt. Mit diesem Passwort kommst du auch ohne Passkey an deine Sicherung.', 'Geprüft');
-  } catch(e){
-    const neu = await showDialog('Damit lässt sich die Sicherung nicht öffnen. Solange Face ID funktioniert, kannst du jetzt ein frisches Notfall-Passwort vergeben.',
-                                 { title: 'Passt nicht', okText: 'Neues vergeben' });
-    if(neu) await renewRecovery();
-  }
-}
-
-/* Vergibt ein neues Notfall-Passwort, ohne den Datenschluessel zu wechseln –
-   die vorhandene Sicherung bleibt damit gueltig. */
-async function renewRecovery(){
-  try {
-    const roh = await _dataKeyRaw();
-    if(!roh) throw new Error('Schlüssel nicht verfügbar');
-    const wort = neuesNotfallPasswort();
-    if(!await askRecovery(wort)) return;
-    cloudCfg.wraps.pass = await _wrapWithPass(roh, wort);
-    store.set(CLOUD_CFG_KEY, JSON.stringify(cloudCfg));
-    await cloudBackupNow(true);
-    notify('Neues Notfall-Passwort hinterlegt.', 'Fertig');
-  } catch(e){ notify('Hat nicht geklappt: ' + e.message); }
 }
 
 function renderCloudRow(){
@@ -1425,6 +1412,7 @@ function renderCloudRow(){
 function renderCloudStatus(){
   const el = $('cloud-status');
   if(!el) return;
+  if(cloudCfg && cloudCfg.lastErr){ el.textContent = 'Letzter Versuch: ' + cloudCfg.lastErr; return; }
   el.textContent = prfMode()
     ? 'Wird mit deinem Face-ID-Schlüssel verschlüsselt, bevor sie GitHub erreicht.'
     : 'Wird mit deinem Passwort verschlüsselt, bevor sie GitHub erreicht.';
@@ -1479,8 +1467,24 @@ async function applyCombined(rawText){
   return false;
 }
 
+/* Uebersetzt technische Fehler in verstaendlichen Text. */
+function _netzFehlerText(e){
+  const m = String(e && e.message || e);
+  if(/Load failed|NetworkError|Failed to fetch|network/i.test(m)) return 'Keine Verbindung zu GitHub.';
+  if(/GitHub 401/.test(m)) return 'Token abgelehnt (401) – bitte in den Einstellungen prüfen.';
+  if(/GitHub 403/.test(m)) return 'GitHub hat die Anfrage abgelehnt (403) – meist ein Token ohne Schreibrecht oder zu viele Anfragen.';
+  if(/GitHub 404/.test(m)) return 'Repository nicht gefunden (404) – Schreibweise prüfen.';
+  if(/GitHub 409/.test(m)) return 'Die Sicherung wurde zwischenzeitlich woanders geändert.';
+  if(/GitHub 413|too large/i.test(m)) return 'Die Sicherung ist zu groß für GitHub.';
+  return m;
+}
+
+let _backupLaeuft = false, _backupVersuche = 0;
+
 async function cloudBackupNow(manual){
   if(!cloudReady()){ notify('Bitte zuerst Repository, Token und Passwort eintragen.'); return; }
+  if(_backupLaeuft) return;
+  _backupLaeuft = true;
   try {
     const text = JSON.stringify(await buildCombinedPayload());
     const env  = prfMode()
@@ -1489,17 +1493,42 @@ async function cloudBackupNow(manual){
     const body = btoa(unescape(encodeURIComponent(JSON.stringify(env, null, 2))));
     if (manual && body.length > 20 * 1024 * 1024)
       notify('Hinweis: Die Sicherung ist sehr groß (' + (body.length/1048576).toFixed(0) + ' MB) – meist durch Referenzfotos.');
-    const cur  = await _ghGetFile();
-    const res  = await fetch(_ghUrl(), {
+
+    // Bekannten sha zuerst verwenden; nur wenn GitHub widerspricht, frisch holen.
+    const schreiben = async (sha) => fetch(_ghUrl(), {
       method: 'PUT', headers: { ..._ghHeaders(), 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: 'Sicherung ' + new Date().toISOString(), content: body, sha: cur ? cur.sha : undefined })
+      body: JSON.stringify({ message: 'Sicherung ' + new Date().toISOString(), content: body, sha: sha || undefined })
     });
+    let res = await schreiben(cloudCfg.sha);
+    if(res.status === 409 || res.status === 422){
+      const cur = await _ghGetFile();
+      res = await schreiben(cur ? cur.sha : undefined);
+    }
     if(!res.ok) throw new Error('GitHub ' + res.status);
+
+    let neuerSha = null;
+    try { const j = await res.json(); neuerSha = j && j.content && j.content.sha; } catch(e){}
+    cloudCfg.sha = neuerSha || null;
     cloudCfg.lastOk = Date.now();
+    cloudCfg.lastErr = null;
     store.set(CLOUD_CFG_KEY, JSON.stringify(cloudCfg));
+    _backupVersuche = 0;
     renderCloudRow(); renderCloudStatus();
     if(manual) notify('Gesichert.');
-  } catch(e){ notify('Sicherung fehlgeschlagen: ' + e.message); }
+  } catch(e){
+    const txt = _netzFehlerText(e);
+    cloudCfg.lastErr = txt;
+    store.set(CLOUD_CFG_KEY, JSON.stringify(cloudCfg));
+    renderCloudRow(); renderCloudStatus();
+    if(manual){
+      notify('Sicherung fehlgeschlagen: ' + txt);
+    } else if(_backupVersuche < 3){
+      // Automatische Sicherung: nicht stoeren, sondern spaeter erneut versuchen.
+      _backupVersuche++;
+      clearTimeout(_cloudTimer);
+      _cloudTimer = setTimeout(() => { _backupLaeuft = false; cloudBackupNow(false); }, _backupVersuche * 60000);
+    }
+  } finally { _backupLaeuft = false; }
 }
 function scheduleCloudBackup(){
   if(!(cloudCfg && cloudCfg.auto && cloudReady())) return;
@@ -1571,8 +1600,8 @@ function swipeInnerHTML(inner){
   return `<div class="tile-slider">
       ${inner}
       <div class="tile-action-bg">
-        <div class="swipe-edit">${ICON_EDIT}<span>Bearb.</span></div>
-        <div class="swipe-del">${ICON_DEL}<span>L\u00f6sch.</span></div>
+        <button type="button" class="swipe-edit" aria-label="Bearbeiten">${ICON_EDIT}<span>Bearb.</span></button>
+        <button type="button" class="swipe-del" aria-label="L\u00f6schen">${ICON_DEL}<span>L\u00f6sch.</span></button>
       </div>
     </div>`;
 }
@@ -1662,8 +1691,11 @@ function topOpenScreen(){
     ziel = null; unten = null; art = ''; aktiv = false;
   }
 
+  const OPT_P = { passive: true, capture: true };   // Erfassungsphase: laeuft vor allen Modul-Handlern
+  const OPT_A = { passive: false, capture: true };  // nicht passiv, damit iOS das Scrollen nicht an sich zieht
+
   document.addEventListener('touchstart', e => {
-    aktiv = false; entschieden = false; horizontal = false;
+    aktiv = false; entschieden = false; horizontal = false; window._backAktiv = false;
     if(e.touches.length !== 1) return;
     if(appLock && appLock.enabled && !_unlocked) return;
     if(document.querySelector('.overlay.open')) return;
@@ -1680,7 +1712,7 @@ function topOpenScreen(){
     sx = t.clientX; sy = t.clientY; dx = 0;
     proben = [{ x: sx, t: Date.now() }]; tempo = 0;
     aktiv = true;
-  }, { passive: true });
+  }, OPT_P);
 
   document.addEventListener('touchmove', e => {
     if(!aktiv || !ziel) return;
@@ -1693,6 +1725,7 @@ function topOpenScreen(){
       // Deutlich horizontal und nach rechts – sonst soll normal gescrollt werden
       horizontal = mx > 0 && Math.abs(mx) > Math.abs(my) * 1.4;
       if(!horizontal){ aufraeumen(); return; }
+      window._backAktiv = true;      // Zeilen-Swipe soll jetzt stillhalten
       ziel.classList.add('dragging');
       ziel.style.zIndex = '400';
       if(unten){ unten.classList.add('back-under'); }
@@ -1709,8 +1742,11 @@ function topOpenScreen(){
     const p0 = proben[0];
     tempo = (jetzt - p0.t) >= 16 ? (t.clientX - p0.x) / (jetzt - p0.t) : 0;
     dx = Math.max(0, mx);
+    // Nicht passiv: verhindert, dass iOS die Bewegung als Seiten-Scrollen uebernimmt
+    // und die Geste mit einem touchcancel abbricht.
+    if(e.cancelable) e.preventDefault();
     setzen(dx);
-  }, { passive: true });
+  }, OPT_A);
 
   function beenden(){
     if(!aktiv || !ziel || !horizontal){ if(ziel && !horizontal) aufraeumen(); aktiv = false; return; }
@@ -1748,17 +1784,18 @@ function topOpenScreen(){
     }
     aktiv = false;
   }
-  document.addEventListener('touchend', beenden, { passive: true });
-  document.addEventListener('touchcancel', () => { if(ziel) aufraeumen(); aktiv = false; }, { passive: true });
+  document.addEventListener('touchend', () => { beenden(); window._backAktiv = false; }, OPT_P);
+  // Bricht iOS die Beruehrung ab, wird die Geste normal zu Ende gefuehrt statt verworfen.
+  document.addEventListener('touchcancel', () => { beenden(); window._backAktiv = false; }, OPT_P);
 })();
 
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2507271620"></script>
-<script src="mod-reisen.js?v=2507271620"></script>
-<script src="mod-finanzen.js?v=2507271620"></script>
-<script src="mod-impfpass.js?v=2507271620"></script>
+<script src="data-laender.js?v=2607260900"></script>
+<script src="mod-reisen.js?v=2607260900"></script>
+<script src="mod-finanzen.js?v=2607260900"></script>
+<script src="mod-impfpass.js?v=2607260900"></script>
 
 <!-- ===== Start ===== -->
 <script>
@@ -1768,6 +1805,12 @@ renderCloudRow();
 renderPrfRow();
 renderLauncher();
 MODULES.forEach(m => { if (m.init) { try { m.init(); } catch(e){} } });
+(function(){
+  // Zeigt in den Einstellungen, welcher Stand tatsaechlich laeuft.
+  const m = /manifest\.json\?v=(\d+)/.exec(document.documentElement.innerHTML);
+  const el = document.getElementById('build-stamp');
+  if(el && m) el.textContent = 'Stand ' + m[1];
+})();
 initScreenTracking();
 document.getElementById('core-settings-screen').addEventListener('transitionend', function(e){
   if (e.target === this && e.propertyName === 'transform' && this.classList.contains('open')) this.classList.add('settled');

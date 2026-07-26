@@ -1274,6 +1274,7 @@ async function loadFormImages(refs){
 }
 function rpCloseModal(){ $('form-overlay').classList.remove('open'); modalType=null; modalId=null; formImages=[]; }
 async function saveModal(){
+  if(!modalType || !SCHEMAS[modalType]) return;   // kein Formular offen
   const type=modalType, schema=SCHEMAS[type], obj={};
   for (const f of schema){
     if (f.editOnly && !modalId) continue;
@@ -1354,7 +1355,7 @@ async function rpInit(){
   await idbInit();
   await migrateInlineImages();
   renderHome();
-  initAppLock();
+  // Die App-Sperre gehoert dem Kern und wird dort einmalig gestartet.
   // Fotografie-Karten sind dauerhaft im Bearbeiten-Modus. Ist ein Feld fokussiert,
   // verbraucht iOS den ersten Tab-Tap nur zum Schließen der Tastatur. Deshalb ein evtl.
   // fokussiertes Feld schon beim pointerdown auf die Tab-Leiste defokussieren -> ein Tap reicht.
