@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2507261200">
+<link rel="manifest" href="manifest.json?v=2507261720">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -66,11 +66,25 @@
 
   .wrap { max-width: 720px; margin: 0 auto; }
 
-  .app-header { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; margin: 4px 2px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .gear-btn { flex-shrink: 0; width: 34px; height: 34px; border-radius: var(--r-pill); border: 1px solid var(--stroke); background: var(--glass); color: var(--muted); font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); transition: transform 0.4s var(--spring), background 0.2s, color 0.2s; }
-  .gear-btn:hover { color: var(--text); background: var(--glass-hi); }
-  .gear-btn:active { transform: rotate(90deg); color: var(--accent); }
-  .gear-btn svg { width: 17px; height: 17px; }
+  .app-header { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; margin: 22px 2px 34px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  /* Zahnrad als freigestellte Glaslinse: kein Vollkoerper, nur Brechung und Lichtkante */
+  .gear-btn {
+    flex-shrink: 0; width: 38px; height: 38px; border-radius: var(--r-pill);
+    border: none; background: transparent; color: rgba(245,245,247,0.82);
+    font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    -webkit-backdrop-filter: blur(12px) saturate(200%) brightness(1.35);
+    backdrop-filter: blur(12px) saturate(200%) brightness(1.35);
+    box-shadow:
+      inset 0 1px 0.5px rgba(255,255,255,0.42),
+      inset 0 -1px 0.5px rgba(255,255,255,0.10),
+      inset 1px 0 0.5px rgba(255,255,255,0.14),
+      inset -1px 0 0.5px rgba(255,255,255,0.14),
+      0 4px 14px rgba(0,0,0,0.28);
+    transition: transform 0.4s var(--spring), color 0.2s, box-shadow 0.2s;
+  }
+  .gear-btn:hover { color: #fff; }
+  .gear-btn:active { transform: rotate(90deg) scale(0.94); color: var(--accent); }
+  .gear-btn svg { width: 18px; height: 18px; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35)); }
 
   .glass {
     background: var(--glass);
@@ -164,6 +178,15 @@
   .bento { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 100%; }
   .bento-tile { background: #1c1c1e; border: 1px solid rgba(255,255,255,0.06); border-radius: 26px; padding: 15px 16px; min-width: 0; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 10px 30px rgba(0,0,0,0.4); cursor: pointer; transition: transform 0.2s var(--spring); }
   .bento-tile:active { transform: scale(0.97); }
+  /* Andeutung des naechsten Bereichs - rein optisch, nicht antippbar */
+  .tile-ghost {
+    background: transparent; border: 1px dashed rgba(255,255,255,0.13);
+    box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none;
+    cursor: default; pointer-events: none;
+    align-items: center; justify-content: center;
+  }
+  .tile-ghost:active { transform: none; }
+  .tile-ghost span { font-size: 1.7rem; font-weight: 200; line-height: 1; color: rgba(255,255,255,0.16); }
 
   /* Reise-Kacheln (kompakt, 2-spaltig wie Finanzen-Bento) */
   #trip-tiles .bento { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -388,6 +411,14 @@
   /* Nach der Öffnen-Animation die Transform entfernen – ein dauerhaftes transform auf einem
      position:fixed-Scrollcontainer bringt iOS-Safari beim Momentum-Scrollen zum Haken. */
   .screen.settled { transform: none; }
+  /* Zurück-Geste: der Bildschirm folgt dem Finger, darunter wird die vorige Ebene sichtbar */
+  .screen.dragging, .mod-container.dragging { transition: none !important; will-change: transform; }
+  .screen.dragging { box-shadow: -18px 0 46px rgba(0,0,0,0.55); }
+  .screen.gliding, .mod-container.gliding { transition: transform 0.32s var(--ease-ios) !important; }
+  .back-scrim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 398; display: none; }
+  .back-scrim.on { display: block; }
+  .back-under { will-change: transform; }
+  .back-under.gliding { transition: transform 0.32s var(--ease-ios); }
   .screen-topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
   .screen-back { width: 40px; height: 40px; border-radius: var(--r-pill); border: 1px solid var(--stroke); background: var(--glass); color: var(--text); font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.3s var(--spring); }
   .screen-back:active { transform: scale(0.9); }
@@ -636,42 +667,7 @@
   </div>
 
   
-  <div class="section-label">Daten übernehmen</div>
-  <div class="settings-group">
-    <button class="settings-row" onclick="openLegacyImport()">
-      <span class="sr-icon">☁️</span>
-      <span class="sr-body">
-        <span class="sr-title">Aus alter Sicherung übernehmen</span>
-        <span class="sr-sub">Backup der alten Reisen- oder Finanzen-App aus GitHub</span>
-      </span>
-      <span class="sr-chevron">›</span>
-    </button>
-    <button class="settings-row" onclick="importFromFile()">
-      <span class="sr-icon">📥</span>
-      <span class="sr-body">
-        <span class="sr-title">Aus Datei übernehmen</span>
-        <span class="sr-sub">Falls du eine Sicherung bereits heruntergeladen hast</span>
-      </span>
-      <span class="sr-chevron">›</span>
-    </button>
-  </div>
 </div>
-
-<!-- Übernahme aus dem Backup einer alten Einzel-App -->
-<div class="overlay" id="legacy-overlay">
-  <div class="modal">
-    <div class="grabber"></div>
-    <h2>Aus alter Sicherung übernehmen</h2>
-    <p class="backup-hint" style="margin:0 6px 10px">Trage das Repository der alten App ein. Die Sicherung wird gelesen, entschlüsselt und dem passenden Bereich zugeordnet – deine alte Sicherung bleibt unverändert liegen.</p>
-    <div class="field"><label>Repository der alten App</label><input id="lg-repo" placeholder="benutzername/reisen" autocomplete="off" autocapitalize="none" spellcheck="false"></div>
-    <div class="field"><label>GitHub-Token</label><input id="lg-token" type="password" autocomplete="off"></div>
-    <div class="field"><label>Passwort der Sicherung</label><input id="lg-pass" type="password" autocomplete="off"></div>
-    <p class="backup-hint" id="lg-status" style="margin:2px 6px 0"></p>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeLegacyImport()">Abbrechen</button>
-      <button class="btn btn-primary" onclick="runLegacyImport()">Übernehmen</button>
-    </div>
-  </div>
 </div>
 
 <div class="overlay" id="recovery-overlay">
@@ -848,21 +844,29 @@ async function decryptBackup(env,pass){ const key=await _deriveKey(pass,_unb64(e
    K liegt niemals im Speicher des Geraets, nur in doppelt verpackter Form. */
 
 const PRF_SALT = _te.encode('alles-sicherung-v1');
-let _prfRaw = null;   // PRF-Ergebnis der laufenden Sitzung, nur im Arbeitsspeicher
+let _prfRaw = null;      // PRF-Ergebnis der laufenden Sitzung, nur im Arbeitsspeicher
+let _prfPending = null;  // laufende Abfrage – verhindert eine zweite Face-ID-Aufforderung
+let _prfUnsupported = false;  // dieser Passkey liefert kein Schlüsselmaterial
 
 function _cachePrf(assertion){
   try {
     const ext = assertion.getClientExtensionResults ? assertion.getClientExtensionResults() : null;
     const first = ext && ext.prf && ext.prf.results && ext.prf.results.first;
     _prfRaw = first ? new Uint8Array(first) : null;
+    if(!_prfRaw) _prfUnsupported = true;   // Passkey ohne PRF – kein zweiter Versuch pro Sitzung
   } catch(e){ _prfRaw = null; }
   return _prfRaw;
 }
 /* Fragt Face ID gezielt nach dem Schluesselmaterial. */
 async function _prfMaterial({ silent = false } = {}){
   if(_prfRaw) return _prfRaw;
+  if(_prfUnsupported) return null;                 // schon festgestellt – nicht erneut fragen
   if(!(appLock && appLock.credId)) return null;
-  try {
+  // Solange die Sperre aktiv ist, laeuft bereits eine Abfrage im Sperrbildschirm.
+  // Dann hier keine zweite ausloesen, sondern auf deren Ergebnis warten.
+  if(appLock.enabled && !_unlocked && !_prfPending) return null;
+  if(_prfPending) { try { return await _prfPending; } catch(e){ if(!silent) throw e; return null; } }
+  _prfPending = (async () => {
     const res = await navigator.credentials.get({ publicKey:{
       challenge: crypto.getRandomValues(new Uint8Array(32)),
       allowCredentials: [{ type:'public-key', id:_unb64(appLock.credId) }],
@@ -870,7 +874,10 @@ async function _prfMaterial({ silent = false } = {}){
       extensions: { prf:{ eval:{ first: PRF_SALT } } }
     }});
     return _cachePrf(res);
-  } catch(e){ if(!silent) throw e; return null; }
+  })();
+  try { return await _prfPending; }
+  catch(e){ if(!silent) throw e; return null; }
+  finally { _prfPending = null; }
 }
 async function _prfKey(){
   const raw = await _prfMaterial();
@@ -1045,7 +1052,7 @@ async function toggleAppLock(){
   if(appLock&&appLock.enabled){ const ok=await showDialog('FaceID-Sperre wirklich deaktivieren?',{title:'App-Sperre',okText:'Deaktivieren'}); if(!ok) return; appLock=null; store.set(APPLOCK_KEY,JSON.stringify(null)); renderAppLockUI(); return; }
   try {
     const cred=await navigator.credentials.create({ publicKey:{ challenge:crypto.getRandomValues(new Uint8Array(32)), rp:{name:'Jörg Scheiderer',id:location.hostname}, user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'joerg',displayName:'Jörg Scheiderer'}, pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}], authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required'}, timeout:60000, attestation:'none', extensions:{ prf:{} } }});
-    appLock={ credId:_b64(cred.rawId), enabled:true }; store.set(APPLOCK_KEY,JSON.stringify(appLock)); renderAppLockUI();
+    appLock={ credId:_b64(cred.rawId), enabled:true }; store.set(APPLOCK_KEY,JSON.stringify(appLock)); _prfRaw=null; _prfPending=null; _prfUnsupported=false; renderAppLockUI();
     notify('FaceID-Sperre ist aktiv. Tipp: Richte auch das Cloud-Backup ein, damit deine Daten gesichert sind.','App-Sperre');
   } catch(e){ notify('Einrichtung abgebrochen oder nicht unterstützt.','App-Sperre'); }
 }
@@ -1061,7 +1068,7 @@ async function attemptUnlock(){
   catch(e){ const h=$('lock-hint'); if(h) h.textContent='Nicht erkannt – bitte erneut versuchen.'; }
 }
 
-function engageLock(){ if(!(appLock&&appLock.enabled)) return; _unlocked=false; const ls=$('lock-screen'); if(ls){ ls.style.display='flex'; const h=$('lock-hint'); if(h) h.textContent=''; } }
+function engageLock(){ if(!(appLock&&appLock.enabled)) return; _unlocked=false; _prfRaw=null; _prfPending=null; const ls=$('lock-screen'); if(ls){ ls.style.display='flex'; const h=$('lock-hint'); if(h) h.textContent=''; } }
 
 function renderAppLockUI(){
   const btn=$('applock-btn'),st=$('applock-status'),title=$('applock-title'); if(!btn) return;
@@ -1174,7 +1181,7 @@ function renderLauncher(){
       <div class="tt-cd"><span class="tt-cd-val">${esc(String(s.value ?? ''))}</span>${s.unit ? `<span class="tt-cd-unit">${esc(s.unit)}</span>` : ''}</div>
       <div class="tt-cd-label">${esc(s.note || '')}</div>
     </div>`;
-  }).join('');
+  }).join('') + `<div class="bento-tile trip-tile tile-ghost" aria-hidden="true"><span>+</span></div>`;
 }
 
 function openModule(id){
@@ -1425,7 +1432,12 @@ async function cloudBackupNow(manual){
 function scheduleCloudBackup(){
   if(!(cloudCfg && cloudCfg.auto && cloudReady())) return;
   clearTimeout(_cloudTimer);
-  _cloudTimer = setTimeout(() => cloudBackupNow(false), 30000);
+  _cloudTimer = setTimeout(() => {
+    // Solange der Sperrbildschirm steht, nicht sichern – sonst kaeme eine zweite
+    // Face-ID-Aufforderung neben der des Sperrbildschirms.
+    if(appLock && appLock.enabled && !_unlocked){ scheduleCloudBackup(); return; }
+    cloudBackupNow(false);
+  }, 30000);
 }
 async function cloudRestore(){
   if(!cloudCanRead()){ notify('Bitte zuerst Repository und Token eintragen.'); return; }
@@ -1448,29 +1460,6 @@ async function cloudRestore(){
   } catch(e){ notify('Wiederherstellen fehlgeschlagen: ' + e.message); }
 }
 
-/* ---------------- Datenübernahme aus den alten Apps ----------------
-   Liest eine exportierte Datei oder eine heruntergeladene, verschlüsselte Sicherung. */
-function importFromFile(){
-  const inp = document.createElement('input');
-  inp.type = 'file';
-  inp.accept = '.json,application/json';
-  inp.onchange = async () => {
-    const file = inp.files && inp.files[0];
-    if(!file) return;
-    try {
-      let text = await file.text();
-      let env = null;
-      try { env = JSON.parse(text); } catch(e){}
-      if(env && env.enc){
-        const pass = await askPassphrase();
-        if(pass === null) return;
-        text = await decryptEnvelope(env, { pass });
-      }
-      if(await applyCombined(text)) notify('Daten übernommen.');
-    } catch(e){ notify('Import fehlgeschlagen: ' + e.message); }
-  };
-  inp.click();
-}
 /* Kleine Passwort-Abfrage im Stil der App-Dialoge. */
 function askPassphrase(){
   return new Promise(resolve => {
@@ -1487,52 +1476,6 @@ function passResolve(ok){
   if(ov) ov.classList.remove('open');
   const r = window._passResolve; window._passResolve = null;
   if(r) r(ok ? $('pass-input').value : null);
-}
-
-/* ---------------- Übernahme aus einer alten Cloud-Sicherung ----------------
-   Die alten Einzel-Apps sichern ausschließlich nach GitHub (backup.enc.json).
-   Hier wird eine solche Sicherung gelesen, entschlüsselt und dem passenden
-   Bereich zugeordnet. Die alte Datei bleibt dabei unverändert liegen. */
-const LEGACY_FILE = 'backup.enc.json';
-
-function openLegacyImport(){
-  const ov = $('legacy-overlay');
-  if(!ov) return;
-  if(cloudCfg){
-    if($('lg-token')) $('lg-token').value = cloudCfg.token || '';
-    if($('lg-pass'))  $('lg-pass').value  = cloudCfg.pass  || '';
-  }
-  if($('lg-status')) $('lg-status').textContent = '';
-  ov.classList.add('open');
-}
-function closeLegacyImport(){
-  const ov = $('legacy-overlay');
-  if(ov) ov.classList.remove('open');
-}
-async function runLegacyImport(){
-  const repo  = $('lg-repo').value.trim();
-  const token = $('lg-token').value.trim();
-  const pass  = $('lg-pass').value;
-  const st    = $('lg-status');
-  if(!repo || !token || !pass){ st.textContent = 'Bitte Repository, Token und Passwort ausfüllen.'; return; }
-  st.textContent = 'Sicherung wird geladen …';
-  try {
-    let roh;
-    try { roh = await _ghReadText(repo, token, LEGACY_FILE); }
-    catch(e){
-      const m = String(e.message);
-      if(/401|403/.test(m)){ st.textContent = 'Token wird nicht akzeptiert.'; return; }
-      throw e;
-    }
-    if(roh === null){ st.textContent = 'In diesem Repository liegt keine Datei „backup.enc.json".'; return; }
-    const env = JSON.parse(roh);
-    let text;
-    try { text = env && env.enc ? await decryptBackup(env, pass) : JSON.stringify(env); }
-    catch(e){ st.textContent = 'Passwort passt nicht zu dieser Sicherung.'; return; }
-    const ok = await applyCombined(text);
-    if(ok){ closeLegacyImport(); renderLauncher(); notify('Daten übernommen.'); }
-    else st.textContent = 'Die Sicherung gehört zu keinem bekannten Bereich.';
-  } catch(e){ st.textContent = 'Fehlgeschlagen: ' + e.message; }
 }
 
 /* ---------------- Kurzmeldung (Toast) ----------------
@@ -1601,34 +1544,163 @@ function goBack(){
   }
   if(activeModule) closeModule();
 }
-(function initBackSwipe(){
-  const EDGE = 26, DIST = 70;
-  let sx=0, sy=0, tracking=false;
+/* ---------------- Interaktive Zurück-Geste ----------------
+   Im linken Drittel aufsetzen und nach rechts ziehen: Die oberste Ebene folgt
+   dem Finger, die darunterliegende schiebt sich aus dem Parallax-Versatz heraus.
+   Beim Loslassen entscheidet der zurückgelegte Weg oder die Geschwindigkeit. */
+(function initBackGesture(){
+  const ZONE    = 1 / 3;     // Startbereich: linkes Drittel
+  const COMMIT  = 0.35;      // ab diesem Anteil der Breite wird geschlossen
+  const V_COMM  = 0.8;       // px/ms – ein echter Schwung, kein langsames Ziehen
+  const V_MIN_W = 0.15;      // auch beim Schwung muss ein Stück Weg zurückgelegt sein
+  const V_FENSTER = 100;     // ms – Geschwindigkeit über dieses Fenster mitteln
+  const PARALLAX = 0.28;     // wie weit die untere Ebene mitgeht
+
+  let ziel = null, art = '', unten = null, scrim = null, breite = 0;
+  let sx = 0, sy = 0, dx = 0, entschieden = false, horizontal = false, aktiv = false;
+  let proben = [], tempo = 0;
+
+  function scrimEl(){
+    if(!scrim){ scrim = document.createElement('div'); scrim.className = 'back-scrim'; document.body.appendChild(scrim); }
+    return scrim;
+  }
+  /* Was liegt gerade obenauf? */
+  function obersteEbene(){
+    const sc = topOpenScreen();
+    if(sc) return { el: sc, art: 'screen' };
+    if(activeModule){ const c = $('mod-' + activeModule); if(c) return { el: c, art: 'modul' }; }
+    return null;
+  }
+  /* Was wird darunter sichtbar? */
+  function untereEbene(oben){
+    let tiefer = null;
+    document.querySelectorAll(_SCREEN_SEL).forEach(el => {
+      if(el === oben || !el.classList.contains('open')) return;
+      if(!tiefer || (el._openSeq || 0) > (tiefer._openSeq || 0)) tiefer = el;
+    });
+    if(tiefer) return tiefer;
+    if(activeModule){
+      const c = $('mod-' + activeModule);
+      const w = c && c.querySelector('.wrap');
+      if(w) return w;
+    }
+    return null;
+  }
+  /* Stellen, an denen die Geste stören würde */
+  function gesperrt(t){
+    return !!(t.closest && t.closest('input, textarea, select, .tab-bar, .dash-swipe, .picker-list, .img-viewer'));
+  }
+
+  function setzen(px){
+    const anteil = Math.min(1, px / breite);
+    ziel.style.transform = `translateX(${px}px)`;
+    if(unten) unten.style.transform = `translateX(${(-PARALLAX * breite) * (1 - anteil)}px)`;
+    if(scrim) scrim.style.opacity = String(0.28 * (1 - anteil));
+  }
+  function aufraeumen(){
+    if(ziel){ ziel.classList.remove('dragging', 'gliding'); ziel.style.transform = ''; ziel.style.zIndex = ''; }
+    if(unten){ unten.classList.remove('back-under', 'gliding'); unten.style.transform = ''; }
+    if(scrim){ scrim.classList.remove('on'); scrim.style.opacity = '0'; }
+    ziel = null; unten = null; art = ''; aktiv = false;
+  }
+
   document.addEventListener('touchstart', e => {
-    if(e.touches.length !== 1){ tracking=false; return; }
+    aktiv = false; entschieden = false; horizontal = false;
+    if(e.touches.length !== 1) return;
+    if(appLock && appLock.enabled && !_unlocked) return;
+    if(document.querySelector('.overlay.open')) return;
+    if(_openSwipe) return;
     const t = e.touches[0];
-    // Nur vom linken Rand, nicht wenn eine Zeile aufgeschoben ist oder ein Formular offen steht.
-    tracking = t.clientX <= EDGE && !_openSwipe && !document.querySelector('.overlay.open');
-    sx = t.clientX; sy = t.clientY;
-  }, { passive:true });
+    if(t.clientX > window.innerWidth * ZONE) return;
+    if(gesperrt(e.target)) return;
+    const oben = obersteEbene();
+    if(!oben) return;
+
+    ziel = oben.el; art = oben.art;
+    unten = art === 'screen' ? untereEbene(ziel) : null;
+    breite = window.innerWidth;
+    sx = t.clientX; sy = t.clientY; dx = 0;
+    proben = [{ x: sx, t: Date.now() }]; tempo = 0;
+    aktiv = true;
+  }, { passive: true });
+
   document.addEventListener('touchmove', e => {
-    if(!tracking) return;
+    if(!aktiv || !ziel) return;
     const t = e.touches[0];
-    const dx = t.clientX - sx, dy = t.clientY - sy;
-    if(Math.abs(dy) > 40 && Math.abs(dy) > Math.abs(dx)){ tracking = false; return; }
-    if(dx > DIST && dx > Math.abs(dy) * 1.5){ tracking = false; goBack(); }
-  }, { passive:true });
-  document.addEventListener('touchend', () => { tracking = false; }, { passive:true });
-  document.addEventListener('touchcancel', () => { tracking = false; }, { passive:true });
+    const mx = t.clientX - sx, my = t.clientY - sy;
+
+    if(!entschieden){
+      if(Math.abs(mx) < 10 && Math.abs(my) < 10) return;
+      entschieden = true;
+      // Deutlich horizontal und nach rechts – sonst soll normal gescrollt werden
+      horizontal = mx > 0 && Math.abs(mx) > Math.abs(my) * 1.4;
+      if(!horizontal){ aufraeumen(); return; }
+      ziel.classList.add('dragging');
+      ziel.style.zIndex = '400';
+      if(unten){ unten.classList.add('back-under'); }
+      scrimEl().classList.add('on');
+      if(unten && unten.compareDocumentPosition) scrim.style.zIndex = '398';
+    }
+    if(!horizontal) return;
+
+    // Geschwindigkeit über ein Zeitfenster mitteln – zwei aufeinanderfolgende
+    // Messpunkte liegen oft nur 1 ms auseinander und ergeben unbrauchbare Werte.
+    const jetzt = Date.now();
+    proben.push({ x: t.clientX, t: jetzt });
+    while(proben.length > 2 && jetzt - proben[0].t > V_FENSTER) proben.shift();
+    const p0 = proben[0];
+    tempo = (jetzt - p0.t) >= 16 ? (t.clientX - p0.x) / (jetzt - p0.t) : 0;
+    dx = Math.max(0, mx);
+    setzen(dx);
+  }, { passive: true });
+
+  function beenden(){
+    if(!aktiv || !ziel || !horizontal){ if(ziel && !horizontal) aufraeumen(); aktiv = false; return; }
+    const weit   = dx > breite * COMMIT;
+    const schwung = tempo > V_COMM && dx > breite * V_MIN_W;
+    const schliessen = weit || schwung;
+    const el = ziel, u = unten;
+
+    el.classList.remove('dragging'); el.classList.add('gliding');
+    if(u){ u.classList.add('gliding'); }
+    if(scrim) scrim.style.transition = 'opacity 0.32s var(--ease-ios)';
+
+    if(schliessen){
+      el.style.transform = `translateX(${breite}px)`;
+      if(u) u.style.transform = 'translateX(0)';
+      if(scrim) scrim.style.opacity = '0';
+      const fertig = () => {
+        // Erst jetzt tatsächlich schließen – die Ebene steht bereits außerhalb des Bildes
+        if(art === 'screen'){
+          const btn = el.querySelector('.screen-back, .settings-back');
+          if(btn) btn.click();
+          else { el.classList.remove('settled'); el.classList.remove('open'); }
+        } else {
+          closeModule();
+        }
+        if(scrim) scrim.style.transition = '';
+        aufraeumen();
+      };
+      setTimeout(fertig, 330);
+    } else {
+      el.style.transform = 'translateX(0)';
+      if(u) u.style.transform = `translateX(${-PARALLAX * breite}px)`;
+      if(scrim) scrim.style.opacity = '0.28';
+      setTimeout(() => { if(scrim) scrim.style.transition = ''; aufraeumen(); }, 330);
+    }
+    aktiv = false;
+  }
+  document.addEventListener('touchend', beenden, { passive: true });
+  document.addEventListener('touchcancel', () => { if(ziel) aufraeumen(); aktiv = false; }, { passive: true });
 })();
 
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2507261200"></script>
-<script src="mod-reisen.js?v=2507261200"></script>
-<script src="mod-finanzen.js?v=2507261200"></script>
-<script src="mod-impfpass.js?v=2507261200"></script>
+<script src="data-laender.js?v=2507261720"></script>
+<script src="mod-reisen.js?v=2507261720"></script>
+<script src="mod-finanzen.js?v=2507261720"></script>
+<script src="mod-impfpass.js?v=2507261720"></script>
 
 <!-- ===== Start ===== -->
 <script>
