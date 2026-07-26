@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607260900">
+<link rel="manifest" href="manifest.json?v=2607261330">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -204,7 +204,7 @@
   .rt-list .entry-wrap { border-radius: 0; overflow: visible; }
   .rt-list .tile-wrap { overflow: hidden; }
   .tile-action-bg { display: flex; flex-direction: row; align-items: center; gap: 6px; padding: 6px 0 6px 6px; flex-shrink: 0; background: transparent; }
-  .swipe-edit, .swipe-del { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 64px; align-self: stretch; border-radius: 18px; color: #fff; cursor: pointer; flex-shrink: 0; transition: transform 0.3s var(--spring); }
+  .swipe-edit, .swipe-del { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 64px; align-self: stretch; border-radius: 18px; color: #fff; cursor: pointer; flex-shrink: 0; transition: transform 0.3s var(--spring); border: none; outline: none; -webkit-appearance: none; appearance: none; font: inherit; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
   .swipe-edit:active, .swipe-del:active { transform: scale(0.92); }
   .swipe-edit { background: #E07A18; }
   .swipe-del  { background: #D93025; }
@@ -605,6 +605,21 @@
 
 
   /* ---- Startseite & Bereichsumschaltung ---- */
+  /* Bisher war .mod-container nur ueber [hidden] sichtbar/unsichtbar geschaltet, ohne
+     eigene Positionierung – dadurch konnte die Zurueck-Geste die Startseite darunter nie
+     aufdecken (kein Fixed-Layer, kein wirksames z-index). Jetzt wie .screen als eigener
+     Vollbild-Layer, damit Drag/Parallax exakt so funktionieren wie bei den Screens. */
+  .mod-container {
+    position: fixed; inset: 0; z-index: 400;
+    overflow-y: auto; overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    background: var(--bg);
+    background-image:
+      radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%),
+      radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%),
+      linear-gradient(180deg, var(--bg-2), var(--bg) 60%);
+    padding: max(24px, env(safe-area-inset-top)) 16px calc(48px + env(safe-area-inset-bottom));
+  }
   .mod-container[hidden] { display: none !important; }
   /* In einem Bereich steht der Zurück-Pfeil links neben dem Titel – eine Zeile statt zwei. */
   .mod-container .app-header { justify-content: flex-start; gap: 12px; }
@@ -1038,17 +1053,33 @@ function attachSwipeGeneric(wrap, onDelete, onEdit) {
 
   // iOS liefert den Klick auf zusammengesetzte Elemente nicht immer aus –
   // deshalb zusaetzlich direkt auf die Beruehrung reagieren, aber nur einmal.
+  // Wichtig: Beginnt eine Wischgeste zufaellig genau auf dem Button (naheliegend,
+  // da er ja an der Stelle sichtbar ist), darf das NICHT als Tap gewertet werden –
+  // sonst kapert das Schliessen der Zeile die Bearbeiten-/Loeschen-Aktion.
   const knopf = (el, fn) => {
     if(!el) return;
     let benutzt = false;
+    let tStartX = 0, tStartY = 0, tDrag = false;
+    el.addEventListener('touchstart', (e) => {
+      const t = e.touches[0];
+      tStartX = t.clientX; tStartY = t.clientY; tDrag = false;
+    }, { passive: true });
+    el.addEventListener('touchmove', (e) => {
+      const t = e.touches[0];
+      if (Math.abs(t.clientX - tStartX) > 10 || Math.abs(t.clientY - tStartY) > 10) tDrag = true;
+    }, { passive: true });
     const ausloesen = (e) => {
       e.stopPropagation();
       if(benutzt) return;
       benutzt = true; setTimeout(() => { benutzt = false; }, 400);
       closeOpenSwipe(); setTimeout(fn, 50);
     };
-    el.addEventListener('click', ausloesen);
-    el.addEventListener('touchend', (e) => { if(e.cancelable) e.preventDefault(); ausloesen(e); }, { passive: false });
+    el.addEventListener('click', (e) => { if(tDrag) return; ausloesen(e); });
+    el.addEventListener('touchend', (e) => {
+      if(tDrag) return; // Wischgeste – der Wrap entscheidet ueber offen/geschlossen
+      if(e.cancelable) e.preventDefault();
+      ausloesen(e);
+    }, { passive: false });
   };
   knopf(wrap.querySelector('.swipe-del'), onDelete);
   knopf(wrap.querySelector('.swipe-edit'), onEdit);
@@ -1707,7 +1738,7 @@ function topOpenScreen(){
     if(!oben) return;
 
     ziel = oben.el; art = oben.art;
-    unten = art === 'screen' ? untereEbene(ziel) : null;
+    unten = art === 'screen' ? untereEbene(ziel) : $('launcher');
     breite = window.innerWidth;
     sx = t.clientX; sy = t.clientY; dx = 0;
     proben = [{ x: sx, t: Date.now() }]; tempo = 0;
@@ -1728,7 +1759,7 @@ function topOpenScreen(){
       window._backAktiv = true;      // Zeilen-Swipe soll jetzt stillhalten
       ziel.classList.add('dragging');
       ziel.style.zIndex = '400';
-      if(unten){ unten.classList.add('back-under'); }
+      if(unten){ unten.classList.add('back-under'); if(unten.hidden) unten.hidden = false; }
       scrimEl().classList.add('on');
       if(unten && unten.compareDocumentPosition) scrim.style.zIndex = '398';
     }
@@ -1780,7 +1811,13 @@ function topOpenScreen(){
       el.style.transform = 'translateX(0)';
       if(u) u.style.transform = `translateX(${-PARALLAX * breite}px)`;
       if(scrim) scrim.style.opacity = '0.28';
-      setTimeout(() => { if(scrim) scrim.style.transition = ''; aufraeumen(); }, 330);
+      const warModul = (art === 'modul');
+      setTimeout(() => {
+        if(scrim) scrim.style.transition = '';
+        // Geste abgebrochen, Bereich bleibt offen -> Startseite wieder ausblenden
+        if(warModul && u && u.id === 'launcher') u.hidden = true;
+        aufraeumen();
+      }, 330);
     }
     aktiv = false;
   }
@@ -1792,10 +1829,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607260900"></script>
-<script src="mod-reisen.js?v=2607260900"></script>
-<script src="mod-finanzen.js?v=2607260900"></script>
-<script src="mod-impfpass.js?v=2607260900"></script>
+<script src="data-laender.js?v=2607261330"></script>
+<script src="mod-reisen.js?v=2607261330"></script>
+<script src="mod-finanzen.js?v=2607261330"></script>
+<script src="mod-impfpass.js?v=2607261330"></script>
 
 <!-- ===== Start ===== -->
 <script>
