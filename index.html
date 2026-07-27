@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607271030">
+<link rel="manifest" href="manifest.json?v=2607271230">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -221,13 +221,19 @@
      Platz ein, der zwischen den Textzeilen uebrig bleibt – dadurch kann sie den Text
      konstruktionsbedingt nicht ueberlappen, unabhaengig von Textlaenge und Schriftgroesse.
      Rechtsbuendig, damit links Luft fuer Untertitel und Kennzahl bleibt. */
-  .tt-map { flex: 1 1 auto; min-height: 0; align-self: flex-end; width: 60%;
-            margin: 4px 0 2px; opacity: 0.92; pointer-events: none; }
+  /* flex-basis MUSS 0 sein: bei "auto" zieht sich das Element seine natuerliche
+     Hoehe aus dem SVG-Seitenverhaeltnis (bei 60% Breite schnell ueber 90px) und
+     drueckt die Textzeilen aus der 156px hohen Kachel – sie werden dann oben und
+     unten abgeschnitten. Mit Basis 0 bekommt die Grafik ausschliesslich den Platz,
+     der nach den Textzeilen uebrig bleibt. */
+  .tt-map { display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; min-height: 0; align-self: flex-end; width: 60%;
+            margin: 5px 0 3px; opacity: 0.92; pointer-events: none; }
   .tt-map svg { width: 100%; height: 100%; display: block; }
-  /* Kachel ohne Kennzahl (z.B. Vermoegensverlauf): die Grafik nimmt die ganze
-     Flaeche unter dem Titel ein und laeuft bis an die Raender – ohne die
-     weiche Ellipsen-Maske, die bei einer Kurve nur die Enden abschneiden wuerde. */
-  .tt-artonly .tt-map { position: absolute; left: 0; right: 0; width: auto; top: 46px; bottom: 0; margin: 0; opacity: 1;
+  /* Kachel ohne Kennzahl (z.B. Vermoegensverlauf): gleicher Mechanismus wie oben,
+     nur ueber die volle Breite. Bewusst KEIN absolutes Positionieren mehr – der
+     Wechsel zwischen beiden Verfahren war die Ursache dafuer, dass der Graph
+     zwischenzeitlich gar nicht mehr zu sehen war. */
+  .tt-artonly .tt-map { align-self: stretch; width: 100%; margin: 8px 0 0; opacity: 1;
     -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
     mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%); }
   .tt-cd { margin-top: auto; display: flex; align-items: baseline; gap: 5px; white-space: nowrap; position: relative; z-index: 1; }
@@ -1881,10 +1887,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607271030"></script>
-<script src="mod-reisen.js?v=2607271030"></script>
-<script src="mod-finanzen.js?v=2607271030"></script>
-<script src="mod-impfpass.js?v=2607271030"></script>
+<script src="data-laender.js?v=2607271230"></script>
+<script src="mod-reisen.js?v=2607271230"></script>
+<script src="mod-finanzen.js?v=2607271230"></script>
+<script src="mod-impfpass.js?v=2607271230"></script>
 
 <!-- ===== Start ===== -->
 <script>

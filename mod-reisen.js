@@ -115,8 +115,13 @@ function tightCountryView(key){
   }
   let w = maxX - minX, h = maxY - minY;
   if (!(w > 0) || !(h > 0)) return null;
-  const rand = Math.max(w, h) * 0.05;            // kleiner Rand, damit nichts anstoesst
-  const box = [minX - rand, minY - rand, w + rand * 2, h + rand * 2];
+  // Oben mehr Rand als unten: dadurch sitzt das Land im Kachelstreifen etwas tiefer,
+  // statt mittig zu schweben. Der Rahmen wird dadurch minimal hoeher, das Land also
+  // ein paar Prozent kleiner – gewollter Tausch fuer die tiefere Lage.
+  const rand      = Math.max(w, h) * 0.04;      // seitlich, damit nichts anstoesst
+  const randOben  = Math.max(w, h) * 0.14;
+  const randUnten = Math.max(w, h) * 0.02;
+  const box = [minX - rand, minY - randOben, w + rand * 2, h + randOben + randUnten];
   _tightViewCache[key] = box;
   return box;
 }

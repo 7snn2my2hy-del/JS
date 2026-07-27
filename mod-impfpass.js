@@ -284,7 +284,10 @@ function impTileArt(){
   let skala = '';
   for (let i = 1; i <= 4; i++) skala += seg(16 + i * 5, -3.2, 16 + i * 5, 1.2);
 
-  return `<svg viewBox="0 0 120 120" preserveAspectRatio="xMaxYMid meet" fill="none" stroke="rgba(255,255,255,0.86)" stroke-width="2.1"
+    /* Rahmen eng am tatsaechlichen Inhalt (gemessen: x 8.4..104.4, y 13.6..103.6)
+     statt der lockeren 120x120-Flaeche – das Icon wird dadurch rund 14% groesser,
+     ohne dass an der Zeichnung selbst etwas geaendert wird. */
+  return `<svg viewBox="0.7 5.9 111.4 105.4" preserveAspectRatio="xMaxYMid meet" fill="none" stroke="rgba(255,255,255,0.86)" stroke-width="2.1"
        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <g>
       <circle cx="${cx}" cy="${cy}" r="${R}"/>
