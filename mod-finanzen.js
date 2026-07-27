@@ -2452,39 +2452,33 @@ function finInit(){
 function finTileArt() {
   const pts = (history || []).map(h => h.wealth).filter(v => typeof v === 'number' && isFinite(v));
   if (pts.length < 2) return '';
-  const W = 120, H = 66, padT = 8, padB = 8;
+  const W = 120, H = 66, padT = 9, padB = 2;
   const min = Math.min(...pts), max = Math.max(...pts);
   const span = (max - min) || Math.abs(max) * 0.01 || 1;
-  const lo = min - span * 0.18, hi = max + span * 0.18;
+  const lo = min - span * 0.22, hi = max + span * 0.18;
   const range = hi - lo;
   const xAt = i => (i / (pts.length - 1)) * W;
   const yAt = v => padT + (1 - (v - lo) / range) * (H - padT - padB);
 
   const first = pts[0], last = pts[pts.length - 1];
-  const steigt = last >= first;
-  const farbe = steigt ? 'var(--green)' : 'var(--danger)';
-  const yBase = yAt(first);
+  const farbe = last >= first ? 'var(--green)' : 'var(--danger)';
   const linie = pts.map((v, i) => `${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`).join(' ');
-  const flaeche = `0,${yBase.toFixed(1)} ${linie} ${W},${yBase.toFixed(1)}`;
+  // Flaeche laeuft von der Kurve bis zum unteren Rand aus – einfarbig nach Gesamttrend.
+  const flaeche = `0,${H} ${linie} ${W},${H}`;
   const ex = xAt(pts.length - 1), ey = yAt(last);
   const uid = 'fintile';
 
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
     <defs>
       <linearGradient id="${uid}-f" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="${farbe}" stop-opacity="0.42"/>
-        <stop offset="100%" stop-color="${farbe}" stop-opacity="0.04"/>
+        <stop offset="0%" stop-color="${farbe}" stop-opacity="0.40"/>
+        <stop offset="100%" stop-color="${farbe}" stop-opacity="0"/>
       </linearGradient>
-      <clipPath id="${uid}-oben"><rect x="0" y="0" width="${W}" height="${yBase.toFixed(1)}"/></clipPath>
-      <clipPath id="${uid}-unten"><rect x="0" y="${yBase.toFixed(1)}" width="${W}" height="${(H - yBase).toFixed(1)}"/></clipPath>
     </defs>
-    <polygon points="${flaeche}" fill="url(#${uid}-f)" clip-path="url(#${uid}-oben)"/>
-    <polygon points="${flaeche}" fill="url(#${uid}-f)" clip-path="url(#${uid}-unten)" opacity="0.55"/>
-    <line x1="0" y1="${yBase.toFixed(1)}" x2="${W}" y2="${yBase.toFixed(1)}"
-          stroke="rgba(255,255,255,0.22)" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/>
+    <polygon points="${flaeche}" fill="url(#${uid}-f)"/>
     <polyline points="${linie}" fill="none" stroke="${farbe}" stroke-width="2"
               stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
-    <circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="6" fill="${farbe}" opacity="0.28"/>
+    <circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="6" fill="${farbe}" opacity="0.26"/>
     <circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="2.8" fill="${farbe}"/>
     <circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="1.2" fill="#fff" opacity="0.9"/>
   </svg>`;

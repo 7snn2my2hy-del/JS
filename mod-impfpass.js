@@ -250,37 +250,56 @@ function impApplyBackup(text){
   }
 }
 
-/* Kachel-Grafik: Virus mit Spritze, als schlichte Linienzeichnung passend zum
-   Glas-Stil der uebrigen Kacheln. Eigene Konstruktion aus Kreisen/Linien –
-   die Vorlage aus dem Netz wird bewusst nicht nachgezeichnet. */
+/* Kachel-Grafik: Virus mit Spritze, schlichte Linienzeichnung passend zum
+   uebrigen Kachel-Stil. Eigene Konstruktion – die Vorlage aus dem Netz wird
+   bewusst nicht nachgezeichnet.
+   Die Spritze liegt auf einer sauberen 45-Grad-Achse: Nadel, Zylinder mit
+   Skalenstrichen, Kolben und Griff sitzen alle auf derselben Geraden, damit
+   sie nicht auseinanderfaellt. */
 function impTileArt(){
-  const R = 25, cx = 44, cy = 62;           // Virus-Koerper
+  const R = 23, cx = 42, cy = 70;
   let stacheln = '';
   for (let i = 0; i < 12; i++){
     const a = (i / 12) * Math.PI * 2;
     const x1 = cx + Math.cos(a) * R,        y1 = cy + Math.sin(a) * R;
-    const x2 = cx + Math.cos(a) * (R + 9),  y2 = cy + Math.sin(a) * (R + 9);
+    const x2 = cx + Math.cos(a) * (R + 8),  y2 = cy + Math.sin(a) * (R + 8);
     stacheln += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`
-             +  `<circle cx="${x2.toFixed(1)}" cy="${y2.toFixed(1)}" r="3.1" fill="none"/>`;
+             +  `<circle cx="${x2.toFixed(1)}" cy="${y2.toFixed(1)}" r="2.6"/>`;
   }
+
+  /* Spritze entlang der Achse von unten-links nach oben-rechts aufbauen.
+     u = Laengsrichtung, v = Querrichtung – so bleibt alles exakt ausgerichtet. */
+  const s = Math.SQRT1_2;                 // 45 Grad
+  const ax = 62, ay = 56;                 // Nadelspitze (zeigt zum Virus)
+  const P = (l, q) => [(ax + l * s + q * s).toFixed(1), (ay - l * s + q * s).toFixed(1)];
+  const seg = (l1, q1, l2, q2) => { const a = P(l1,q1), b = P(l2,q2); return `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}"/>`; };
+  const halbB = 6;                        // halbe Zylinderbreite
+
+  const zyl = [P(14,-halbB), P(40,-halbB), P(40,halbB), P(14,halbB)]
+                .map(p => p.join(',')).join(' ');
+  const griff = seg(41, -10, 41, 10);     // Fingerauflage am Zylinderende
+  const kolben = seg(41, 0, 52, 0) + seg(52, -8, 52, 8);   // Kolbenstange + Daumenplatte
+  const nadel = seg(0, 0, 14, 0);
+  const ansatz = `<polygon points="${[P(11,-3), P(14,-halbB), P(14,halbB), P(11,3)].map(p=>p.join(',')).join(' ')}"/>`;
+  let skala = '';
+  for (let i = 1; i <= 4; i++) skala += seg(16 + i * 5, -3.2, 16 + i * 5, 1.2);
+
   return `<svg viewBox="0 0 120 120" fill="none" stroke="rgba(255,255,255,0.86)" stroke-width="2.1"
        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <g opacity="0.95">
+    <g>
       <circle cx="${cx}" cy="${cy}" r="${R}"/>
       ${stacheln}
-      <circle cx="${cx - 8}" cy="${cy - 7}" r="4"/>
-      <circle cx="${cx + 8}" cy="${cy + 3}" r="5"/>
-      <circle cx="${cx - 3}" cy="${cy + 11}" r="3"/>
+      <circle cx="${cx - 7}" cy="${cy - 6}" r="3.4"/>
+      <circle cx="${cx + 7}" cy="${cy + 3}" r="4.4"/>
+      <circle cx="${cx - 2}" cy="${cy + 10}" r="2.6"/>
     </g>
-    <g opacity="0.95">
-      <line x1="60" y1="46" x2="79" y2="27"/>
-      <path d="M76 24 L96 44 L88 52 L68 32 Z"/>
-      <line x1="92" y1="20" x2="100" y2="28"/>
-      <line x1="98" y1="14" x2="106" y2="22"/>
-      <line x1="92" y1="20" x2="106" y2="34"/>
-      <line x1="80" y1="30" x2="86" y2="24"/>
-      <line x1="85" y1="35" x2="91" y2="29"/>
-      <line x1="90" y1="40" x2="96" y2="34"/>
+    <g>
+      ${nadel}
+      ${ansatz}
+      <polygon points="${zyl}"/>
+      ${skala}
+      ${griff}
+      ${kolben}
     </g>
   </svg>`;
 }

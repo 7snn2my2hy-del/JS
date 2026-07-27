@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607262030">
+<link rel="manifest" href="manifest.json?v=2607270930">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -216,7 +216,10 @@
   .trip-tile.done .tt-map path[fill="var(--accent)"] { fill: var(--muted); }
   .tt-name { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; z-index: 1; }
   .tt-country { font-size: 0.72rem; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; z-index: 1; }
-  .tt-map { position: absolute; right: 6px; top: 34px; bottom: 38px; width: 62%; opacity: 0.9; pointer-events: none; -webkit-mask-image: radial-gradient(ellipse 58% 58% at 50% 50%, #000 68%, transparent 100%); mask-image: radial-gradient(ellipse 58% 58% at 50% 50%, #000 68%, transparent 100%); }
+  /* Die Silhouette soll den Platz rechts und unten in der Kachel ausnutzen.
+     Die weiche Maske faellt weg – bei eng gerahmtem Umriss wuerde sie die Raender
+     des Landes wegblenden statt nur Leerraum. */
+  .tt-map { position: absolute; right: 0; top: 30px; bottom: 4px; width: 66%; opacity: 0.92; pointer-events: none; }
   .tt-map svg { width: 100%; height: 100%; display: block; }
   /* Kachel ohne Kennzahl (z.B. Vermoegensverlauf): die Grafik nimmt die ganze
      Flaeche unter dem Titel ein und laeuft bis an die Raender – ohne die
@@ -471,6 +474,9 @@
   .screen-title { flex: 1; min-width: 0; }
   .screen-title h2 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .screen-title p { color: var(--muted); font-size: 0.8rem; margin-top: 2px; }
+  /* Der Kopf soll deutlich vom ersten Abschnitt abgesetzt sein. */
+  #core-settings-screen .screen-topbar { margin-bottom: 34px; }
+  #core-settings-screen .section-label:first-of-type { margin-top: 0; }
   .icon-btn { width: 40px; height: 40px; border-radius: var(--r-pill); border: 1px solid var(--stroke); background: var(--glass); color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.95rem; transition: transform 0.3s var(--spring), color 0.2s; }
   .icon-btn:active { transform: scale(0.9); }
 
@@ -584,7 +590,7 @@
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .f-toggle { display: flex; align-items: center; justify-content: flex-start; gap: 10px; min-height: 44px; }
   .f-toggle .f-toggle-lab { font-size: 0.78rem; color: var(--text); line-height: 1.2; display: inline; margin: 0; }
-  .f-toggle .f-toggle-cb { width: 22px; height: 22px; accent-color: var(--accent); flex: 0 0 22px; cursor: pointer; margin: 0; }
+  .f-toggle .f-toggle-cb { width: 18px; height: 18px; accent-color: var(--accent); flex: 0 0 18px; cursor: pointer; margin: 0; }
 
   .modal-actions { display: flex; gap: 10px; margin-top: 22px; }
   .btn { flex: 1; padding: 14px; border-radius: var(--r-pill); font: inherit; font-size: 0.97rem; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.15s, transform 0.3s var(--spring); }
@@ -602,8 +608,11 @@
   .settings-row .sr-title { display: block; font-size: 0.92rem; font-weight: 500; }
   .settings-row .sr-sub { display: block; font-size: 0.72rem; color: var(--muted-2); margin-top: 3px; line-height: 1.4; }
   .settings-row .sr-chevron { color: var(--muted-2); font-size: 0.9rem; flex-shrink: 0; }
-  .settings-detail { border-top: 1px solid var(--stroke); background: rgba(0,0,0,0.22); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-  .settings-detail .field label { font-size: 0.72rem; }
+  .settings-detail { border-top: 1px solid var(--stroke); background: rgba(0,0,0,0.22); padding: 20px 16px; display: flex; flex-direction: column; gap: 18px; }
+  /* Alle direkten Zeilen im aufgeklappten Bereich haengen allein am gap oben –
+     eigene Abstaende wuerden das gleichmaessige Raster wieder zerreissen. */
+  .settings-detail > * { margin: 0 !important; }
+  .settings-detail .field label { font-size: 0.72rem; margin-bottom: 7px; }
   .backup-row { display: flex; gap: 10px; }
   .backup-btn { flex: 1; padding: 14px; font: inherit; font-size: 0.88rem; font-weight: 600; color: var(--text); cursor: pointer; border-radius: var(--r-control); border: 1px solid var(--stroke); background: var(--glass); -webkit-backdrop-filter: blur(30px) saturate(180%); backdrop-filter: blur(30px) saturate(180%); transition: background 0.2s, border-color 0.2s; }
   .backup-btn:active { transform: scale(0.97); opacity: 0.85; }
@@ -677,7 +686,7 @@
     <button class="settings-row" onclick="cloudRowTap()">
       <span class="sr-icon">☁</span>
       <span class="sr-body">
-        <span class="sr-title">Cloud-Backup</span>
+        <span class="sr-title">Cloud Backup</span>
         <span class="sr-sub" id="cloud-row-sub">Verschlüsselt zu GitHub – einrichten</span>
       </span>
       <span class="sr-chevron" id="cloud-row-chevron">›</span>
@@ -700,8 +709,8 @@
         <label class="f-toggle-lab" for="cb-auto">Automatisch nach jeder Änderung sichern</label>
       </div>
       <div class="backup-row">
-        <button class="backup-btn" onclick="saveCloudCfg(); cloudBackupNow(true)">☁ Jetzt sichern</button>
-        <button class="backup-btn" onclick="saveCloudCfg(); cloudRestore()">↓ Aus Cloud laden</button>
+        <button class="backup-btn" onclick="saveCloudCfg(); cloudBackupNow(true)">Jetzt sichern</button>
+        <button class="backup-btn" onclick="saveCloudCfg(); cloudRestore()">Aus Cloud laden</button>
       </div>
       <p class="backup-hint" id="cloud-status" style="margin:0 6px"></p>
     </div>
@@ -712,7 +721,7 @@
     <button class="settings-row" id="applock-btn" onclick="toggleAppLock()">
       <span class="sr-icon">🔒</span>
       <span class="sr-body">
-        <span class="sr-title" id="applock-title">FaceID-Sperre</span>
+        <span class="sr-title" id="applock-title">FaceID Sperre</span>
         <span class="sr-sub" id="applock-status">Schützt die App-Ansicht mit Face ID</span>
       </span>
       <span class="sr-chevron">›</span>
@@ -1137,11 +1146,11 @@ function initAppLock(){
 
 async function toggleAppLock(){
   if(!appLockAvailable()) return;
-  if(appLock&&appLock.enabled){ const ok=await showDialog('FaceID-Sperre wirklich deaktivieren?',{title:'App-Sperre',okText:'Deaktivieren'}); if(!ok) return; appLock=null; store.set(APPLOCK_KEY,JSON.stringify(null)); renderAppLockUI(); return; }
+  if(appLock&&appLock.enabled){ const ok=await showDialog('FaceID Sperre wirklich deaktivieren?',{title:'App-Sperre',okText:'Deaktivieren'}); if(!ok) return; appLock=null; store.set(APPLOCK_KEY,JSON.stringify(null)); renderAppLockUI(); return; }
   try {
     const cred=await navigator.credentials.create({ publicKey:{ challenge:crypto.getRandomValues(new Uint8Array(32)), rp:{name:'Jörg Scheiderer',id:location.hostname}, user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'joerg',displayName:'Jörg Scheiderer'}, pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}], authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required'}, timeout:60000, attestation:'none', extensions:{ prf:{} } }});
     appLock={ credId:_b64(cred.rawId), enabled:true }; store.set(APPLOCK_KEY,JSON.stringify(appLock)); _prfRaw=null; _prfPending=null; _prfUnsupported=false; renderAppLockUI();
-    notify('FaceID-Sperre ist aktiv. Tipp: Richte auch das Cloud-Backup ein, damit deine Daten gesichert sind.','App-Sperre');
+    notify('FaceID Sperre ist aktiv. Tipp: Richte auch das Cloud Backup ein, damit deine Daten gesichert sind.','App-Sperre');
   } catch(e){ notify('Einrichtung abgebrochen oder nicht unterstützt.','App-Sperre'); }
 }
 
@@ -1169,10 +1178,10 @@ function engageLock(){ if(!(appLock&&appLock.enabled)) return; _unlocked=false; 
 function renderAppLockUI(){
   const btn=$('applock-btn'),st=$('applock-status'),title=$('applock-title'); if(!btn) return;
   btn.style.display='';
-  if(!appLockAvailable()){ btn.disabled=true; btn.style.opacity='0.5'; if(title) title.textContent='FaceID-Sperre'; if(st) st.textContent='Nur in der installierten App (über die GitHub-Adresse) verfügbar'; return; }
+  if(!appLockAvailable()){ btn.disabled=true; btn.style.opacity='0.5'; if(title) title.textContent='FaceID Sperre'; if(st) st.textContent='Nur in der installierten App (über die GitHub-Adresse) verfügbar'; return; }
   btn.disabled=false; btn.style.opacity='';
   const on=!!(appLock&&appLock.enabled);
-  if(title) title.textContent=on?'FaceID-Sperre deaktivieren':'FaceID-Sperre';
+  if(title) title.textContent='FaceID Sperre';
   if(st) st.textContent=on?'Aktiv – Face ID nach 5 Min. im Hintergrund':'Schützt die App-Ansicht mit Face ID';
 }
 
@@ -1411,14 +1420,14 @@ async function togglePrfMode(){
   }
 
   if(!appLockAvailable()){ notify('Face ID steht auf diesem Gerät nicht zur Verfügung.'); return; }
-  if(!(appLock && appLock.credId)){ notify('Bitte zuerst die FaceID-Sperre einschalten – der Schlüssel hängt an diesem Passkey.', 'Face ID nötig'); return; }
+  if(!(appLock && appLock.credId)){ notify('Bitte zuerst die FaceID Sperre einschalten – der Schlüssel hängt an diesem Passkey.', 'Face ID nötig'); return; }
   if(!(cloudCfg && cloudCfg.repo && cloudCfg.token)){ notify('Bitte zuerst Repository und Token eintragen.'); return; }
 
   let material;
   try { material = await _prfMaterial(); }
   catch(e){ notify('Face ID wurde abgebrochen.'); return; }
   if(!material){
-    notify('Dieser Passkey liefert kein Schlüsselmaterial. Schalte die FaceID-Sperre einmal aus und wieder ein – der neue Passkey kann es.', 'Einmal neu einrichten');
+    notify('Dieser Passkey liefert kein Schlüsselmaterial. Schalte die FaceID Sperre einmal aus und wieder ein – der neue Passkey kann es.', 'Einmal neu einrichten');
     return;
   }
 
@@ -1460,7 +1469,7 @@ function renderCloudStatus(){
   if(!el) return;
   if(cloudCfg && cloudCfg.lastErr){ el.textContent = 'Letzter Versuch: ' + cloudCfg.lastErr; return; }
   el.textContent = prfMode()
-    ? 'Wird mit deinem Face-ID-Schlüssel verschlüsselt, bevor sie GitHub erreicht.'
+    ? 'Wird mit deinem FaceID Schlüssel verschlüsselt, bevor sie GitHub erreicht.'
     : 'Wird mit deinem Passwort verschlüsselt, bevor sie GitHub erreicht.';
 }
 
@@ -1865,10 +1874,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607262030"></script>
-<script src="mod-reisen.js?v=2607262030"></script>
-<script src="mod-finanzen.js?v=2607262030"></script>
-<script src="mod-impfpass.js?v=2607262030"></script>
+<script src="data-laender.js?v=2607270930"></script>
+<script src="mod-reisen.js?v=2607270930"></script>
+<script src="mod-finanzen.js?v=2607270930"></script>
+<script src="mod-impfpass.js?v=2607270930"></script>
 
 <!-- ===== Start ===== -->
 <script>

@@ -88,10 +88,42 @@ function resolveCountry(name){
   return hit||null;
 }
 /* Karte für eine Reise: Land hervorgehoben, eng gezoomt */
+/* Die Werte in COUNTRY_VIEW sind grosszuegig gerahmt – Namibia etwa fuellt seinen
+   Rahmen nur zu gut einem Drittel, wodurch die Silhouette auf der Kachel verloren wirkt.
+   Statt die hand-justierten Werte zu ersetzen, wird der tatsaechliche Umriss hier
+   ausgemessen und eng gerahmt. Alle Pfade bestehen ausschliesslich aus M/L/Z mit
+   absoluten Koordinaten, die Messung ist daher exakt.
+   Wichtig: mit einem engen Rahmen darf NICHT "slice" verwendet werden, sonst schneidet
+   das Seitenverhaeltnis der Kachel Teile des Landes ab (genau daran ist ein frueherer
+   Versuch gescheitert). Deshalb "meet" – das Land bleibt vollstaendig sichtbar und
+   wird so gross wie moeglich dargestellt. */
+const _tightViewCache = {};
+function tightCountryView(key){
+  if (_tightViewCache[key]) return _tightViewCache[key];
+  const d = COUNTRY_PATHS[key];
+  if (!d) return null;
+  const nums = d.match(/-?\d+(?:\.\d+)?/g);
+  if (!nums || nums.length < 4) return null;
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (let i = 0; i + 1 < nums.length; i += 2){
+    const x = parseFloat(nums[i]), y = parseFloat(nums[i+1]);
+    if (!isFinite(x) || !isFinite(y)) continue;
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  let w = maxX - minX, h = maxY - minY;
+  if (!(w > 0) || !(h > 0)) return null;
+  const rand = Math.max(w, h) * 0.05;            // kleiner Rand, damit nichts anstoesst
+  const box = [minX - rand, minY - rand, w + rand * 2, h + rand * 2];
+  _tightViewCache[key] = box;
+  return box;
+}
+
 function tripMapSVG(country){
   const key=resolveCountry(country);
   if(!key) return '';
-  const box=COUNTRY_VIEW[key];
   if(COUNTRY_DOT.has(key)){
     // Diese Kleinstaaten haben in den Kartendaten keinen echten Umriss (nur einen
     // Positions-Punkt). Statt eines Punkts eine große, eingefärbte Insel-Silhouette
@@ -99,6 +131,12 @@ function tripMapSVG(country){
     const island = "M40,30 C46,20 62,16 76,20 C86,14 100,18 104,28 C114,30 118,42 112,52 C118,62 110,74 98,76 C92,86 76,86 68,80 C56,84 42,78 40,68 C30,64 28,48 36,42 C34,36 36,32 40,30 Z M112,64 C118,62 122,68 118,73 C114,78 107,74 109,68 C109,66 110,64 112,64 Z M31,20 C35,18 39,21 37,25 C35,28 29,26 30,22 C30,21 30,20 31,20 Z";
     return `<svg viewBox="0 0 144 100" preserveAspectRatio="xMidYMid slice"><path d="${island}" fill="var(--accent)"/></svg>`;
   }
+  const eng = tightCountryView(key);
+  if (eng) {
+    return `<svg viewBox="${eng.map(v => v.toFixed(2)).join(' ')}" preserveAspectRatio="xMidYMid meet"><path d="${COUNTRY_PATHS[key]}" fill="var(--accent)"/></svg>`;
+  }
+  const box=COUNTRY_VIEW[key];
+  if(!box) return '';
   return `<svg viewBox="${box.join(' ')}" preserveAspectRatio="xMidYMid slice"><path d="${COUNTRY_PATHS[key]}" fill="var(--accent)"/></svg>`;
 }
 
