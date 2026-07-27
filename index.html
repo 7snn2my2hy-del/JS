@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607271230">
+<link rel="manifest" href="manifest.json?v=2607271700">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -210,30 +210,44 @@
   .swipe-del  { background: #D93025; }
   .swipe-edit svg, .swipe-del svg { width: 20px; height: 20px; }
   .swipe-edit span, .swipe-del span { font-size: 0.64rem; font-weight: 600; }
-  .trip-tile { height: 156px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+  /* Zweispaltiges Raster: links die Textzeilen, rechts eine eigene Spalte fuer die
+     Grafik ueber die gesamte Kachelhoehe. Vorher lag die Grafik unter dem Text und
+     hatte nur den schmalen Streifen dazwischen (~45px) – deshalb wirkte sie klein.
+     Als eigene Spalte kann sie die volle Hoehe nutzen, ohne Text zu ueberlappen. */
+  .trip-tile { height: 156px; display: grid; grid-template-columns: minmax(0, 1fr) 42%;
+               grid-template-rows: auto auto 1fr auto auto; position: relative; overflow: hidden; }
+  /* Titel und Untertitel ueber die volle Breite – sonst wuerden laengere Reisenamen
+     in der schmalen Textspalte abgeschnitten. Nur die Kennzahl unten teilt sich die
+     Zeile mit der Grafik, und die ist kurz genug. */
+  .trip-tile > .tt-name     { grid-column: 1 / -1; grid-row: 1; }
+  .trip-tile > .tt-country  { grid-column: 1 / -1; grid-row: 2; }
+  .trip-tile > .tt-cd       { grid-column: 1; grid-row: 4; margin-top: 0; }
+  /* Die unterste Zeile darf die volle Breite nutzen: die Grafik endet darueber,
+     und laengere Texte wie "bis zur Abreise" wuerden in der schmalen Spalte auf
+     kleineren Geraeten sonst abgeschnitten. */
+  .trip-tile > .tt-cd-label { grid-column: 1 / -1; grid-row: 5; }
+  /* Die Platzhalter-Kachel enthaelt nur ein Pluszeichen und braucht kein Raster.
+     Muss nach der .trip-tile-Regel stehen, sonst gewinnt deren display: grid. */
+  .trip-tile.tile-ghost { display: flex; align-items: center; justify-content: center; }
   .trip-tile.done { opacity: 0.72; }
   .trip-tile.done .tt-map { opacity: 0.55; }
   .trip-tile.done .tt-map path[fill="var(--accent)"] { fill: var(--muted); }
   .tt-name { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; z-index: 1; }
   .tt-country { font-size: 0.72rem; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; z-index: 1; }
-  /* Die Grafik sitzt im normalen Fluss der Kachel zwischen Untertitel und Kennzahl
-     (die Reihenfolge im Markup entspricht dem). Als flex-Element nimmt sie genau den
-     Platz ein, der zwischen den Textzeilen uebrig bleibt – dadurch kann sie den Text
-     konstruktionsbedingt nicht ueberlappen, unabhaengig von Textlaenge und Schriftgroesse.
-     Rechtsbuendig, damit links Luft fuer Untertitel und Kennzahl bleibt. */
-  /* flex-basis MUSS 0 sein: bei "auto" zieht sich das Element seine natuerliche
-     Hoehe aus dem SVG-Seitenverhaeltnis (bei 60% Breite schnell ueber 90px) und
-     drueckt die Textzeilen aus der 156px hohen Kachel – sie werden dann oben und
-     unten abgeschnitten. Mit Basis 0 bekommt die Grafik ausschliesslich den Platz,
-     der nach den Textzeilen uebrig bleibt. */
-  .tt-map { display: flex; flex-grow: 1; flex-shrink: 1; flex-basis: 0px; min-height: 0; align-self: flex-end; width: 60%;
-            margin: 5px 0 3px; opacity: 0.92; pointer-events: none; }
+  /* Die Grafik reicht bewusst in den rechten Innenabstand der Kachel hinein –
+     dort steht ohnehin nichts, und sie gewinnt dadurch spuerbar an Groesse.
+     Beschnitten wird nichts: durch "meet" passt sie sich immer vollstaendig ein. */
+  .tt-map { display: flex; grid-column: 2; grid-row: 3 / -1; align-self: stretch;
+            min-width: 0; min-height: 0;
+            width: calc(100% + 16px); margin: 6px -16px 6px 0;
+            opacity: 0.92; pointer-events: none; }
   .tt-map svg { width: 100%; height: 100%; display: block; }
   /* Kachel ohne Kennzahl (z.B. Vermoegensverlauf): gleicher Mechanismus wie oben,
      nur ueber die volle Breite. Bewusst KEIN absolutes Positionieren mehr – der
      Wechsel zwischen beiden Verfahren war die Ursache dafuer, dass der Graph
      zwischenzeitlich gar nicht mehr zu sehen war. */
-  .tt-artonly .tt-map { align-self: stretch; width: 100%; margin: 8px 0 0; opacity: 1;
+  .tt-artonly .tt-map { grid-column: 1 / -1; grid-row: 3 / -1; align-self: stretch;
+    width: calc(100% + 32px); margin: 4px -16px 0; opacity: 1;
     -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
     mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%); }
   .tt-cd { margin-top: auto; display: flex; align-items: baseline; gap: 5px; white-space: nowrap; position: relative; z-index: 1; }
@@ -1385,7 +1399,10 @@ function toggleCloudCfg(){
   const el = $('cloud-cfg');
   if(!el) return;
   const open = el.style.display !== 'none';
-  el.style.display = open ? 'none' : 'block';
+  // Beim Aufklappen die Inline-Angabe entfernen statt 'block' zu setzen: der Bereich
+  // ist im Stylesheet ein Flex-Container mit gleichmaessigem Zeilenabstand (gap).
+  // Mit 'block' greift gap nicht – genau daran lagen die ungleichen Abstaende.
+  el.style.display = open ? 'none' : '';
   const ch = $('cloud-row-chevron');
   if(ch) ch.textContent = open ? '›' : '⌄';
 }
@@ -1887,10 +1904,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607271230"></script>
-<script src="mod-reisen.js?v=2607271230"></script>
-<script src="mod-finanzen.js?v=2607271230"></script>
-<script src="mod-impfpass.js?v=2607271230"></script>
+<script src="data-laender.js?v=2607271700"></script>
+<script src="mod-reisen.js?v=2607271700"></script>
+<script src="mod-finanzen.js?v=2607271700"></script>
+<script src="mod-impfpass.js?v=2607271700"></script>
 
 <!-- ===== Start ===== -->
 <script>
