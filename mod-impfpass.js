@@ -284,7 +284,7 @@ function impTileArt(){
   let skala = '';
   for (let i = 1; i <= 4; i++) skala += seg(16 + i * 5, -3.2, 16 + i * 5, 1.2);
 
-  return `<svg viewBox="0 0 120 120" fill="none" stroke="rgba(255,255,255,0.86)" stroke-width="2.1"
+  return `<svg viewBox="0 0 120 120" preserveAspectRatio="xMaxYMid meet" fill="none" stroke="rgba(255,255,255,0.86)" stroke-width="2.1"
        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <g>
       <circle cx="${cx}" cy="${cy}" r="${R}"/>

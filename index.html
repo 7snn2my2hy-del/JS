@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607270930">
+<link rel="manifest" href="manifest.json?v=2607271030">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -216,15 +216,18 @@
   .trip-tile.done .tt-map path[fill="var(--accent)"] { fill: var(--muted); }
   .tt-name { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; z-index: 1; }
   .tt-country { font-size: 0.72rem; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; z-index: 1; }
-  /* Die Silhouette soll den Platz rechts und unten in der Kachel ausnutzen.
-     Die weiche Maske faellt weg – bei eng gerahmtem Umriss wuerde sie die Raender
-     des Landes wegblenden statt nur Leerraum. */
-  .tt-map { position: absolute; right: 0; top: 30px; bottom: 4px; width: 66%; opacity: 0.92; pointer-events: none; }
+  /* Die Grafik sitzt im normalen Fluss der Kachel zwischen Untertitel und Kennzahl
+     (die Reihenfolge im Markup entspricht dem). Als flex-Element nimmt sie genau den
+     Platz ein, der zwischen den Textzeilen uebrig bleibt – dadurch kann sie den Text
+     konstruktionsbedingt nicht ueberlappen, unabhaengig von Textlaenge und Schriftgroesse.
+     Rechtsbuendig, damit links Luft fuer Untertitel und Kennzahl bleibt. */
+  .tt-map { flex: 1 1 auto; min-height: 0; align-self: flex-end; width: 60%;
+            margin: 4px 0 2px; opacity: 0.92; pointer-events: none; }
   .tt-map svg { width: 100%; height: 100%; display: block; }
   /* Kachel ohne Kennzahl (z.B. Vermoegensverlauf): die Grafik nimmt die ganze
      Flaeche unter dem Titel ein und laeuft bis an die Raender – ohne die
      weiche Ellipsen-Maske, die bei einer Kurve nur die Enden abschneiden wuerde. */
-  .tt-artonly .tt-map { left: 0; right: 0; width: auto; top: 46px; bottom: 0; opacity: 1;
+  .tt-artonly .tt-map { position: absolute; left: 0; right: 0; width: auto; top: 46px; bottom: 0; margin: 0; opacity: 1;
     -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
     mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%); }
   .tt-cd { margin-top: auto; display: flex; align-items: baseline; gap: 5px; white-space: nowrap; position: relative; z-index: 1; }
@@ -608,11 +611,15 @@
   .settings-row .sr-title { display: block; font-size: 0.92rem; font-weight: 500; }
   .settings-row .sr-sub { display: block; font-size: 0.72rem; color: var(--muted-2); margin-top: 3px; line-height: 1.4; }
   .settings-row .sr-chevron { color: var(--muted-2); font-size: 0.9rem; flex-shrink: 0; }
-  .settings-detail { border-top: 1px solid var(--stroke); background: rgba(0,0,0,0.22); padding: 20px 16px; display: flex; flex-direction: column; gap: 18px; }
+  .settings-detail { border-top: 1px solid var(--stroke); background: rgba(0,0,0,0.22); padding: 18px 16px; display: flex; flex-direction: column; gap: 18px; }
   /* Alle direkten Zeilen im aufgeklappten Bereich haengen allein am gap oben –
      eigene Abstaende wuerden das gleichmaessige Raster wieder zerreissen. */
   .settings-detail > * { margin: 0 !important; }
-  .settings-detail .field label { font-size: 0.72rem; margin-bottom: 7px; }
+  .settings-detail .field label { font-size: 0.72rem; margin-bottom: 8px; }
+  /* Die Haken-Zeile hat sonst 44px Mindesthoehe – dadurch sitzt ober- und unterhalb
+     unsichtbar mehr Luft als zwischen den uebrigen Zeilen, und das Raster wirkt
+     ungleichmaessig. Im aufgeklappten Bereich zaehlt allein der gemeinsame Abstand. */
+  .settings-detail .f-toggle { min-height: 0; }
   .backup-row { display: flex; gap: 10px; }
   .backup-btn { flex: 1; padding: 14px; font: inherit; font-size: 0.88rem; font-weight: 600; color: var(--text); cursor: pointer; border-radius: var(--r-control); border: 1px solid var(--stroke); background: var(--glass); -webkit-backdrop-filter: blur(30px) saturate(180%); backdrop-filter: blur(30px) saturate(180%); transition: background 0.2s, border-color 0.2s; }
   .backup-btn:active { transform: scale(0.97); opacity: 0.85; }
@@ -1874,10 +1881,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607270930"></script>
-<script src="mod-reisen.js?v=2607270930"></script>
-<script src="mod-finanzen.js?v=2607270930"></script>
-<script src="mod-impfpass.js?v=2607270930"></script>
+<script src="data-laender.js?v=2607271030"></script>
+<script src="mod-reisen.js?v=2607271030"></script>
+<script src="mod-finanzen.js?v=2607271030"></script>
+<script src="mod-impfpass.js?v=2607271030"></script>
 
 <!-- ===== Start ===== -->
 <script>

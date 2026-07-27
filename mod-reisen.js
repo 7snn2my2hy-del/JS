@@ -133,7 +133,7 @@ function tripMapSVG(country){
   }
   const eng = tightCountryView(key);
   if (eng) {
-    return `<svg viewBox="${eng.map(v => v.toFixed(2)).join(' ')}" preserveAspectRatio="xMidYMid meet"><path d="${COUNTRY_PATHS[key]}" fill="var(--accent)"/></svg>`;
+    return `<svg viewBox="${eng.map(v => v.toFixed(2)).join(' ')}" preserveAspectRatio="xMaxYMid meet"><path d="${COUNTRY_PATHS[key]}" fill="var(--accent)"/></svg>`;
   }
   const box=COUNTRY_VIEW[key];
   if(!box) return '';
