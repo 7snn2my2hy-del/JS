@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607272330">
+<link rel="manifest" href="manifest.json?v=2607280100">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -593,9 +593,19 @@
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   /* Haken und Beschriftung stehen als Paar mittig in der Zeile. */
   .f-toggle { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; }
-  .f-toggle .f-toggle-lab { font-size: 0.78rem; color: var(--text); line-height: 1.2; display: inline; margin: 0; }
+  .f-toggle .f-toggle-lab { font-size: 0.78rem; color: var(--text); line-height: 18px; display: block; margin: 0; align-self: center; }
   /* Ohne Akzentfarbe: iOS zeichnet den Kasten dann weiss mit dunklem Haken. */
-  .f-toggle .f-toggle-cb { width: 18px; height: 18px; accent-color: #fff; flex: 0 0 18px; cursor: pointer; margin: 0; }
+  /* Haken und Beschriftung bekommen exakt dieselbe Hoehe (18px). Dadurch fallen ihre
+     Mittellinien zusammen – unabhaengig von Schriftart und Zeilenabstand. Ein fester
+     Versatz waere geraten und wuerde bei anderer Schriftgroesse wieder verrutschen. */
+  .rec-pass-row { display: flex; gap: 8px; align-items: stretch; }
+  .rec-pass-row input { flex: 1 1 auto; min-width: 0; font-variant-numeric: tabular-nums; }
+  .rec-copy { flex: 0 0 auto; padding: 0 14px; border-radius: var(--r-control);
+              border: 1px solid var(--stroke); background: var(--glass); color: var(--text);
+              font: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+              -webkit-appearance: none; appearance: none; }
+  .rec-copy:active { transform: scale(0.96); }
+  .f-toggle .f-toggle-cb { width: 18px; height: 18px; accent-color: #fff; flex: 0 0 18px; cursor: pointer; margin: 0; align-self: center; }
 
   .modal-actions { display: flex; gap: 10px; margin-top: 22px; }
   .btn { flex: 1; padding: 14px; border-radius: var(--r-pill); font: inherit; font-size: 0.97rem; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.15s, transform 0.3s var(--spring); }
@@ -743,6 +753,14 @@
       </span>
       <span class="sr-chevron">›</span>
     </button>
+    <button class="settings-row" id="renew-btn" onclick="renewRecoveryPass()" style="display:none">
+      <span class="sr-icon">🆘</span>
+      <span class="sr-body">
+        <span class="sr-title">Notfall-Passwort erneuern</span>
+        <span class="sr-sub">Erzeugt ein neues und zeigt es einmalig an</span>
+      </span>
+      <span class="sr-chevron">›</span>
+    </button>
   </div>
 
   <p class="backup-hint" id="build-stamp" style="text-align:center;margin:22px 6px 0"></p>
@@ -754,7 +772,12 @@
     <div class="grabber"></div>
     <h2>Notfall-Passwort sichern</h2>
     <p class="backup-hint" style="margin:0 6px 14px">Ab jetzt entsperrt Face ID deine Sicherung – du musst nichts mehr eintippen. Dieses Passwort brauchst du nur, wenn der Passkey einmal verloren geht, etwa auf einem neuen Gerät ohne iCloud-Schlüsselbund. Leg es in deinen Passwortmanager.</p>
-    <div class="field"><label>Notfall-Passwort</label><input type="text" id="rec-pass" readonly autocomplete="off" spellcheck="false"></div>
+    <div class="field"><label>Notfall-Passwort</label>
+      <div class="rec-pass-row">
+        <input type="text" id="rec-pass" readonly autocomplete="off" spellcheck="false">
+        <button type="button" class="rec-copy" id="rec-copy" onclick="copyRecoveryPass()">Kopieren</button>
+      </div>
+    </div>
     <div class="field f-toggle" style="margin-top:14px">
       <input type="checkbox" id="rec-ack" class="f-toggle-cb">
       <label class="f-toggle-lab" for="rec-ack">Ich habe es sicher hinterlegt</label>
@@ -1417,6 +1440,57 @@ function neuesNotfallPasswort(){
   return out;
 }
 
+/* Passwort in die Zwischenablage – spart das Abtippen von 16 Zeichen.
+   navigator.clipboard braucht einen sicheren Kontext; als Rueckfall die alte
+   Auswahl-Methode, damit es auch dort funktioniert, wo das gesperrt ist. */
+async function copyRecoveryPass(){
+  const inp = $('rec-pass'), btn = $('rec-copy');
+  if(!inp) return;
+  let ok = false;
+  try { await navigator.clipboard.writeText(inp.value); ok = true; }
+  catch(e){
+    try { inp.removeAttribute('readonly'); inp.select(); inp.setSelectionRange(0, 99);
+          ok = document.execCommand('copy'); }
+    catch(e2){ ok = false; }
+    finally { inp.setAttribute('readonly',''); }
+  }
+  if(btn){
+    const alt = btn.textContent;
+    btn.textContent = ok ? 'Kopiert' : 'Fehlgeschlagen';
+    setTimeout(() => { btn.textContent = alt; }, 1600);
+  }
+}
+
+/* Notfall-Passwort erneuern. Moeglich, solange der Datenschluessel erreichbar ist –
+   ueber Face ID, notfalls ueber das bisherige Passwort. Der Datenschluessel selbst
+   bleibt unveraendert, nur seine Passwort-Verpackung wird ersetzt. Anschliessend
+   wird sofort gesichert, damit die aktuelle Datei die neue Verpackung traegt. */
+async function renewRecoveryPass(){
+  if(!prfMode()){ notify('Erst wenn die Sicherung an Face ID haengt, gibt es ein Notfall-Passwort.', 'Noch nichts zu erneuern'); return; }
+  if(!(cloudCfg && cloudCfg.repo && cloudCfg.token)){ notify('Bitte zuerst Repository und Token eintragen.'); return; }
+
+  let k;
+  try {
+    k = await _dataKeyRaw();
+    if(!k) throw new Error('Kein Schlüssel erhalten');
+  } catch(e){
+    notify('Ohne Zugriff auf den bisherigen Schlüssel kann kein neues Passwort gesetzt werden. Deine Sicherung bleibt unverändert. (' + e.message + ')', 'Abgebrochen');
+    return;
+  }
+
+  const neu = neuesNotfallPasswort();
+  if(!await askRecovery(neu)) return;
+
+  try {
+    // Nur die Passwort-Verpackung tauschen – Face-ID-Verpackung und Datenschluessel bleiben.
+    cloudCfg.wraps = { prf: cloudCfg.wraps.prf, pass: await _wrapWithPass(k, neu) };
+    store.set(CLOUD_CFG_KEY, JSON.stringify(cloudCfg));
+    renderPrfRow();
+    await cloudBackupNow(true);
+    notify('Neues Notfall-Passwort gesetzt. Das bisherige gilt für die aktuelle Sicherung nicht mehr.', 'Fertig');
+  } catch(e){ notify('Fehlgeschlagen: ' + e.message); }
+}
+
 async function togglePrfMode(){
   if(prfMode()){
     const ok = await showDialog('Die Sicherung wird dann wieder mit einem gespeicherten Passwort verschlüsselt statt mit Face ID.',
@@ -1456,7 +1530,10 @@ async function togglePrfMode(){
       k = await _dataKeyRaw();               // ueber Face ID, sonst Abfrage des Notfall-Passworts
       if (!k) throw new Error('Kein Schlüssel erhalten');
     } else {
-      notfall = (cloudCfg.pass && cloudCfg.pass.length >= 8) ? cloudCfg.pass : neuesNotfallPasswort();
+      // Bewusst IMMER ein neues Zufallspasswort: ein zuvor selbst gewaehltes waere als
+      // Zweitschluessel deutlich schwaecher (rund 40 statt 80 Bit) und muesste einem
+      // Angreifer mit der Sicherungsdatei nur offline standhalten.
+      notfall = neuesNotfallPasswort();
       if(!await askRecovery(notfall)) return;
       k = crypto.getRandomValues(new Uint8Array(32));
     }
@@ -1487,9 +1564,11 @@ function renderPrfRow(){
   const an = prfMode();
   // Ist der Schluessel an Face ID gebunden, ist nichts mehr einzurichten:
   // dann verschwinden Umstell-Zeile und Passwortfeld, die Pruefzeile erscheint.
-  const feld = $('cb-pass-field'), um = $('prf-btn');
+  const feld = $('cb-pass-field'), um = $('prf-btn'), neu = $('renew-btn');
   if(feld) feld.style.display = an ? 'none' : '';
   if(um)   um.style.display   = an ? 'none' : '';
+  // Umgekehrt: erneuern ergibt erst Sinn, wenn ueberhaupt ein Notfall-Passwort existiert.
+  if(neu)  neu.style.display  = an ? '' : 'none';
   renderCloudStatus();
 }
 
@@ -1910,10 +1989,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607272330"></script>
-<script src="mod-reisen.js?v=2607272330"></script>
-<script src="mod-finanzen.js?v=2607272330"></script>
-<script src="mod-impfpass.js?v=2607272330"></script>
+<script src="data-laender.js?v=2607280100"></script>
+<script src="mod-reisen.js?v=2607280100"></script>
+<script src="mod-finanzen.js?v=2607280100"></script>
+<script src="mod-impfpass.js?v=2607280100"></script>
 
 <!-- ===== Start ===== -->
 <script>

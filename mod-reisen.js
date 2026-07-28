@@ -1451,7 +1451,7 @@ registerModule({
       if (kommend) {
         const tage = Math.round((kommend.d - heute) / 86400000);
         const ziel = kommend.t.name || '';
-        return { sub: ziel ? 'Next: ' + ziel : '', value: tage, unit: 'Tage', note: 'bis zur Abreise',
+        return { sub: ziel, value: tage, unit: 'Tage', note: 'bis zur Abreise',
                  art: (kommend.t.country ? tripMapSVG(kommend.t.country) : '') };
       }
       return { sub: trips.length ? 'Keine kommende Reise' : 'Noch keine Reise',
