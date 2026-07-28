@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607280530">
+<link rel="manifest" href="manifest.json?v=2607280630">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -716,10 +716,6 @@
         <label>Passwort der Sicherung</label>
         <input type="password" id="cb-pass" placeholder="z.B. namibia-2027!" autocomplete="off">
       </div>
-      <div class="field f-toggle">
-        <input type="checkbox" id="cb-auto" class="f-toggle-cb" checked>
-        <label class="f-toggle-lab" for="cb-auto">Automatisch nach jeder Änderung sichern</label>
-      </div>
       <div class="backup-row">
         <button class="backup-btn" onclick="saveCloudCfg(); cloudBackupNow(true)">Jetzt sichern</button>
         <button class="backup-btn" onclick="saveCloudCfg(); cloudRestore()">Aus Cloud laden</button>
@@ -1279,12 +1275,10 @@ function saveCloudCfg(){
   cloudCfg = {
     repo: $('cb-repo').value.trim(),
     token: $('cb-token').value.trim(),
-    pass: (cloudCfg && cloudCfg.wraps) ? '' : eingabe,   // im Face-ID-Betrieb wird kein Passwort abgelegt
-    auto: $('cb-auto').checked,
+    pass: eingabe,
     lastOk: (cloudCfg && cloudCfg.lastOk) || null,
     lastErr: (cloudCfg && cloudCfg.lastErr) || null,
-    sha: (cloudCfg && cloudCfg.sha) || null,
-    wraps: (cloudCfg && cloudCfg.wraps) || null
+    sha: (cloudCfg && cloudCfg.sha) || null
   };
   store.set(CLOUD_CFG_KEY, JSON.stringify(cloudCfg));
   renderCloudRow();
@@ -1294,7 +1288,6 @@ function loadCloudCfgUI(){
   if($('cb-repo'))  $('cb-repo').value  = cloudCfg.repo || '';
   if($('cb-token')) $('cb-token').value = cloudCfg.token || '';
   if($('cb-pass'))  $('cb-pass').value  = cloudCfg.pass || '';
-  if($('cb-auto'))  $('cb-auto').checked = !!cloudCfg.auto;
   renderCloudStatus();
 }
 function toggleCloudCfg(){
@@ -1449,8 +1442,9 @@ async function cloudBackupNow(manual){
     }
   } finally { _backupLaeuft = false; }
 }
+/* Nach jeder Aenderung wird gesichert – das ist fest, keine Option mehr. */
 function scheduleCloudBackup(){
-  if(!(cloudCfg && cloudCfg.auto && cloudReady())) return;
+  if(!cloudReady()) return;
   clearTimeout(_cloudTimer);
   _cloudTimer = setTimeout(() => {
     // Solange der Sperrbildschirm steht, nicht sichern – sonst kaeme eine zweite
@@ -1743,10 +1737,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607280530"></script>
-<script src="mod-reisen.js?v=2607280530"></script>
-<script src="mod-finanzen.js?v=2607280530"></script>
-<script src="mod-impfpass.js?v=2607280530"></script>
+<script src="data-laender.js?v=2607280630"></script>
+<script src="mod-reisen.js?v=2607280630"></script>
+<script src="mod-finanzen.js?v=2607280630"></script>
+<script src="mod-impfpass.js?v=2607280630"></script>
 
 <!-- ===== Start ===== -->
 <script>
