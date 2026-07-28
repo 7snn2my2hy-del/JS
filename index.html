@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607280230">
+<link rel="manifest" href="manifest.json?v=2607280430">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -598,6 +598,8 @@
   /* Haken und Beschriftung bekommen exakt dieselbe Hoehe (18px). Dadurch fallen ihre
      Mittellinien zusammen – unabhaengig von Schriftart und Zeilenabstand. Ein fester
      Versatz waere geraten und wuerde bei anderer Schriftgroesse wieder verrutschen. */
+  /* Hauptschaltflaeche ohne Akzentblau – helle Flaeche mit dunkler Schrift. */
+  .btn-primary.btn-plain { background: rgba(255,255,255,0.92); color: #111; }
   .rec-pass-row { display: flex; gap: 8px; align-items: stretch; }
   .rec-pass-row input { flex: 1 1 auto; min-width: 0; font-variant-numeric: tabular-nums; }
   .rec-copy { flex: 0 0 auto; padding: 0 14px; border-radius: var(--r-control);
@@ -757,7 +759,7 @@
       <span class="sr-icon">🆘</span>
       <span class="sr-body">
         <span class="sr-title">Notfall-Passwort erneuern</span>
-        <span class="sr-sub">Erzeugt ein neues und zeigt es einmalig an</span>
+        <span class="sr-sub">Face ID genügt – das bisherige wird ungültig</span>
       </span>
       <span class="sr-chevron">›</span>
     </button>
@@ -770,21 +772,16 @@
 <div class="overlay" id="recovery-overlay">
   <div class="modal">
     <div class="grabber"></div>
-    <h2>Notfall-Passwort sichern</h2>
-    <p class="backup-hint" style="margin:0 6px 14px">Ab jetzt entsperrt Face ID deine Sicherung – du musst nichts mehr eintippen. Dieses Passwort brauchst du nur, wenn der Passkey einmal verloren geht, etwa auf einem neuen Gerät ohne iCloud-Schlüsselbund. Leg es in deinen Passwortmanager.</p>
+    <h2>Neues Passwort festlegen</h2>
     <div class="field"><label>Notfall-Passwort</label>
       <div class="rec-pass-row">
         <input type="text" id="rec-pass" readonly autocomplete="off" spellcheck="false">
         <button type="button" class="rec-copy" id="rec-copy" onclick="copyRecoveryPass()">Kopieren</button>
       </div>
     </div>
-    <div class="field f-toggle" style="margin-top:14px">
-      <input type="checkbox" id="rec-ack" class="f-toggle-cb">
-      <label class="f-toggle-lab" for="rec-ack">Ich habe es sicher hinterlegt</label>
-    </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="recoveryResolve(false)">Abbrechen</button>
-      <button class="btn btn-primary" onclick="recoveryResolve(true)">Umstellen</button>
+      <button class="btn btn-primary btn-plain" onclick="recoveryResolve(true)">Umstellen</button>
     </div>
   </div>
 </div>
@@ -960,13 +957,18 @@ function _cachePrf(assertion){
   return _prfRaw;
 }
 /* Fragt Face ID gezielt nach dem Schluesselmaterial. */
-async function _prfMaterial({ silent = false } = {}){
+/* force = der Nutzer hat bewusst etwas angetippt, das Face ID erfordert.
+   Die Sparmassnahmen unten sollen im Hintergrund eine zweite Face-ID-Aufforderung
+   verhindern. Sie duerfen aber nicht dazu fuehren, dass ohne jede Rueckfrage
+   sofort das Notfall-Passwort verlangt wird – genau das ist passiert. */
+async function _prfMaterial({ silent = false, force = false } = {}){
   if(_prfRaw) return _prfRaw;
-  if(_prfUnsupported) return null;                 // schon festgestellt – nicht erneut fragen
+  if(_prfUnsupported && !force) return null;       // schon festgestellt – nicht erneut fragen
   if(!(appLock && appLock.credId)) return null;
   // Solange die Sperre aktiv ist, laeuft bereits eine Abfrage im Sperrbildschirm.
   // Dann hier keine zweite ausloesen, sondern auf deren Ergebnis warten.
-  if(appLock.enabled && !_unlocked && !_prfPending) return null;
+  if(appLock.enabled && !_unlocked && !_prfPending && !force) return null;
+  if(force) _prfUnsupported = false;               // einen frischen Versuch zulassen
   if(_prfPending) { try { return await _prfPending; } catch(e){ if(!silent) throw e; return null; } }
   _prfPending = (async () => {
     const res = await navigator.credentials.get({ publicKey:{
@@ -981,8 +983,8 @@ async function _prfMaterial({ silent = false } = {}){
   catch(e){ if(!silent) throw e; return null; }
   finally { _prfPending = null; }
 }
-async function _prfKey(){
-  const raw = await _prfMaterial();
+async function _prfKey(opt){
+  const raw = await _prfMaterial(opt);
   return raw ? crypto.subtle.importKey('raw', raw, {name:'AES-GCM'}, false, ['encrypt','decrypt']) : null;
 }
 function prfMode(){ return !!(cloudCfg && cloudCfg.wraps && cloudCfg.wraps.prf); }
@@ -1004,9 +1006,9 @@ async function _wrapWithPass(rawKey, pass){
 }
 
 /* Datenschluessel der laufenden Sitzung beschaffen (Face ID, sonst Notfall-Passwort). */
-async function _dataKeyRaw(){
+async function _dataKeyRaw({ forcePrf = false } = {}){
   if(!prfMode()) return null;
-  const pk = await _prfKey();
+  const pk = await _prfKey(forcePrf ? { force: true, silent: true } : undefined);
   if(pk){ try { return await _unwrap(cloudCfg.wraps.prf, pk); } catch(e){} }
   if(cloudCfg.wraps.pass){
     const pass = await askPassphrase();
@@ -1419,14 +1421,13 @@ function recoveryResolve(ok){
   const ov = $('recovery-overlay');
   if(ov) ov.classList.remove('open');
   const r = window._recResolve; window._recResolve = null;
-  if(r) r(ok && $('rec-ack').checked);
+  if(r) r(ok);
 }
 function askRecovery(pass){
   return new Promise(resolve => {
     const ov = $('recovery-overlay');
     if(!ov){ resolve(false); return; }
     $('rec-pass').value = pass;
-    $('rec-ack').checked = false;
     ov.classList.add('open');
     window._recResolve = resolve;
   });
@@ -1471,7 +1472,7 @@ async function renewRecoveryPass(){
 
   let k;
   try {
-    k = await _dataKeyRaw();
+    k = await _dataKeyRaw({ forcePrf: true });   // erst Face ID fragen, Passwort nur als Rueckfall
     if(!k) throw new Error('Kein Schlüssel erhalten');
   } catch(e){
     notify('Ohne Zugriff auf den bisherigen Schlüssel kann kein neues Passwort gesetzt werden. Deine Sicherung bleibt unverändert. (' + e.message + ')', 'Abgebrochen');
@@ -1527,7 +1528,7 @@ async function togglePrfMode(){
   let k, notfall = null;
   try {
     if (hatSchluessel) {
-      k = await _dataKeyRaw();               // ueber Face ID, sonst Abfrage des Notfall-Passworts
+      k = await _dataKeyRaw({ forcePrf: true });   // erst Face ID fragen, Passwort nur als Rueckfall
       if (!k) throw new Error('Kein Schlüssel erhalten');
     } else {
       // Bewusst IMMER ein neues Zufallspasswort: ein zuvor selbst gewaehltes waere als
@@ -2001,10 +2002,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607280230"></script>
-<script src="mod-reisen.js?v=2607280230"></script>
-<script src="mod-finanzen.js?v=2607280230"></script>
-<script src="mod-impfpass.js?v=2607280230"></script>
+<script src="data-laender.js?v=2607280430"></script>
+<script src="mod-reisen.js?v=2607280430"></script>
+<script src="mod-finanzen.js?v=2607280430"></script>
+<script src="mod-impfpass.js?v=2607280430"></script>
 
 <!-- ===== Start ===== -->
 <script>
