@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607271830">
+<link rel="manifest" href="manifest.json?v=2607272100">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -221,18 +221,15 @@
   .tt-country { font-size: 0.72rem; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; z-index: 1; }
   /* Grafik als Wasserzeichen: gross ueber die ganze Kachel, stark transparent und
      hinter dem Text (der liegt auf z-index 1). Ueberlappung ist hier gewollt – dadurch
-     entfaellt die Platzrechnerei, und die Silhouette kann so gross wie moeglich sein.
-     Zusaetzlich nach links weich ausgeblendet, wo Titel und Kennzahl stehen. */
+     entfaellt die Platzrechnerei, und die Grafik kann so gross wie moeglich sein.
+     Gilt einheitlich fuer alle Kacheln, auch fuer den Vermoegensverlauf.
+     Die Ausblendung ist bewusst rundum symmetrisch: die Grafiken sind mittig
+     ausgerichtet, eine einseitige Blende wuerde sie schief wirken lassen. */
   .tt-map { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 0; display: flex;
             opacity: 0.2; pointer-events: none;
-            -webkit-mask-image: linear-gradient(100deg, transparent 4%, rgba(0,0,0,0.3) 36%, #000 78%);
-            mask-image: linear-gradient(100deg, transparent 4%, rgba(0,0,0,0.3) 36%, #000 78%); }
+            -webkit-mask-image: radial-gradient(125% 125% at 50% 50%, #000 58%, transparent 100%);
+            mask-image: radial-gradient(125% 125% at 50% 50%, #000 58%, transparent 100%); }
   .tt-map svg { width: 100%; height: 100%; display: block; }
-  /* Kachel ohne Kennzahl (Vermoegensverlauf): dort ist der Graph der eigentliche
-     Inhalt und kein Wasserzeichen – volle Deckkraft, erst unterhalb des Untertitels. */
-  .tt-artonly .tt-map { top: 46px; opacity: 1;
-    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
-    mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%); }
   .tt-cd { margin-top: auto; display: flex; align-items: baseline; gap: 5px; white-space: nowrap; position: relative; z-index: 1; }
   .tt-cd-val { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1; }
   .tt-cd-val.accent { color: var(--accent); }
@@ -1291,12 +1288,12 @@ function renderLauncher(){
   el.innerHTML = [...MODULES].sort((a,b)=>(a.order??99)-(b.order??99)).map(m => {
     let s = {};
     try { s = (m.summary && m.summary()) || {}; } catch(e) { s = {}; }
-    return `<div class="bento-tile trip-tile${s.hideValue ? ' tt-artonly' : ''}" onclick="openModule('${m.id}')">
+    return `<div class="bento-tile trip-tile" onclick="openModule('${m.id}')">
       <div class="tt-name">${esc(m.name)}</div>
       <div class="tt-country">${esc(s.sub || m.tagline || '\u00A0')}</div>
       ${s.art ? `<div class="tt-map">${s.art}</div>` : ''}
-      ${s.hideValue ? '' : `<div class="tt-cd"><span class="tt-cd-val">${esc(String(s.value ?? ''))}</span>${s.unit ? `<span class="tt-cd-unit">${esc(s.unit)}</span>` : ''}</div>
-      <div class="tt-cd-label">${esc(s.note || '')}</div>`}
+      <div class="tt-cd"><span class="tt-cd-val">${esc(String(s.value ?? ''))}</span>${s.unit ? `<span class="tt-cd-unit">${esc(s.unit)}</span>` : ''}</div>
+      <div class="tt-cd-label">${esc(s.note || '')}</div>
     </div>`;
   }).join('') + `<div class="bento-tile trip-tile tile-ghost" aria-hidden="true"><span>+</span></div>`;
 }
@@ -1889,10 +1886,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607271830"></script>
-<script src="mod-reisen.js?v=2607271830"></script>
-<script src="mod-finanzen.js?v=2607271830"></script>
-<script src="mod-impfpass.js?v=2607271830"></script>
+<script src="data-laender.js?v=2607272100"></script>
+<script src="mod-reisen.js?v=2607272100"></script>
+<script src="mod-finanzen.js?v=2607272100"></script>
+<script src="mod-impfpass.js?v=2607272100"></script>
 
 <!-- ===== Start ===== -->
 <script>

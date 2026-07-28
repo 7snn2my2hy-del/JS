@@ -2498,9 +2498,18 @@ registerModule({
   summary: () => {
     try {
       const art = finTileArt();
-      if (art) return { sub: 'Verträge & Budgets', art, hideValue: true };
+      // Gesamtvermoegen nach derselben Formel wie im Hero der Finanzen-Startseite.
+      const konten  = (data.b||[]).reduce((s,e) => s + (isGiro(e) ? 0 : (e.balance || 0)), 0);
+      const vorsorge = (data.a||[]).reduce((s,e) => s + (e.cat === 'Privat' ? (e.current || 0) : 0), 0);
+      const vermoegen = konten + vorsorge;
+      if (vermoegen > 0) {
+        // Ohne Nachkommastellen und ohne Waehrungszeichen – das Euro-Zeichen steht
+        // als kleine Einheit daneben, wie "Tage" oder "Hinweise" auf den anderen Kacheln.
+        const zahl = Math.round(vermoegen).toLocaleString('de-DE', { maximumFractionDigits: 0 });
+        return { sub: 'Verträge & Budgets', art, value: zahl, unit: '€', note: 'Gesamtvermögen' };
+      }
       const n = (data.v||[]).length + (data.b||[]).length + (data.a||[]).length;
-      return { sub: 'Verträge & Budgets', value: n, unit: n === 1 ? 'Eintrag' : 'Einträge', note: 'erfasst' };
+      return { sub: 'Verträge & Budgets', art, value: n, unit: n === 1 ? 'Eintrag' : 'Einträge', note: 'erfasst' };
     } catch(e) { return { sub: 'Versicherungen, Budgets & Vorsorge' }; }
   }
 });

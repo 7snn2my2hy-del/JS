@@ -287,7 +287,9 @@ function impTileArt(){
     /* Rahmen eng am tatsaechlichen Inhalt (gemessen: x 8.4..104.4, y 13.6..103.6)
      statt der lockeren 120x120-Flaeche – das Icon wird dadurch rund 14% groesser,
      ohne dass an der Zeichnung selbst etwas geaendert wird. */
-  return `<svg viewBox="0.7 5.9 111.4 105.4" preserveAspectRatio="xMaxYMid meet" fill="none" stroke="rgba(255,255,255,0.86)" stroke-width="2.1"
+    /* Leicht eingefaerbt statt rein weiss: Petrol setzt sich vom Blau der
+     Laendersilhouette ab und passt zum Gesundheitsthema. */
+  return `<svg viewBox="0.7 5.9 111.4 105.4" preserveAspectRatio="xMidYMid meet" fill="none" stroke="var(--petrol)" stroke-width="2.1"
        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <g>
       <circle cx="${cx}" cy="${cy}" r="${R}"/>
