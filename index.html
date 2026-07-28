@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607280430">
+<link rel="manifest" href="manifest.json?v=2607280530">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -598,15 +598,6 @@
   /* Haken und Beschriftung bekommen exakt dieselbe Hoehe (18px). Dadurch fallen ihre
      Mittellinien zusammen – unabhaengig von Schriftart und Zeilenabstand. Ein fester
      Versatz waere geraten und wuerde bei anderer Schriftgroesse wieder verrutschen. */
-  /* Hauptschaltflaeche ohne Akzentblau – helle Flaeche mit dunkler Schrift. */
-  .btn-primary.btn-plain { background: rgba(255,255,255,0.92); color: #111; }
-  .rec-pass-row { display: flex; gap: 8px; align-items: stretch; }
-  .rec-pass-row input { flex: 1 1 auto; min-width: 0; font-variant-numeric: tabular-nums; }
-  .rec-copy { flex: 0 0 auto; padding: 0 14px; border-radius: var(--r-control);
-              border: 1px solid var(--stroke); background: var(--glass); color: var(--text);
-              font: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer;
-              -webkit-appearance: none; appearance: none; }
-  .rec-copy:active { transform: scale(0.96); }
   .f-toggle .f-toggle-cb { width: 18px; height: 18px; accent-color: #fff; flex: 0 0 18px; cursor: pointer; margin: 0; align-self: center; }
 
   .modal-actions { display: flex; gap: 10px; margin-top: 22px; }
@@ -747,43 +738,10 @@
       </span>
       <span class="sr-chevron">›</span>
     </button>
-    <button class="settings-row" id="prf-btn" onclick="togglePrfMode()" style="display:none">
-      <span class="sr-icon">🔑</span>
-      <span class="sr-body">
-        <span class="sr-title">Schlüssel der Sicherung</span>
-        <span class="sr-sub" id="prf-status">Passwort ist im Gerät gespeichert</span>
-      </span>
-      <span class="sr-chevron">›</span>
-    </button>
-    <button class="settings-row" id="renew-btn" onclick="renewRecoveryPass()" style="display:none">
-      <span class="sr-icon">🆘</span>
-      <span class="sr-body">
-        <span class="sr-title">Notfall-Passwort erneuern</span>
-        <span class="sr-sub">Face ID genügt – das bisherige wird ungültig</span>
-      </span>
-      <span class="sr-chevron">›</span>
-    </button>
   </div>
 
   <p class="backup-hint" id="build-stamp" style="text-align:center;margin:22px 6px 0"></p>
 </div>
-</div>
-
-<div class="overlay" id="recovery-overlay">
-  <div class="modal">
-    <div class="grabber"></div>
-    <h2>Neues Passwort festlegen</h2>
-    <div class="field"><label>Notfall-Passwort</label>
-      <div class="rec-pass-row">
-        <input type="text" id="rec-pass" readonly autocomplete="off" spellcheck="false">
-        <button type="button" class="rec-copy" id="rec-copy" onclick="copyRecoveryPass()">Kopieren</button>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="recoveryResolve(false)">Abbrechen</button>
-      <button class="btn btn-primary btn-plain" onclick="recoveryResolve(true)">Umstellen</button>
-    </div>
-  </div>
 </div>
 
 <div class="overlay" id="pass-overlay">
@@ -942,52 +900,12 @@ async function decryptBackup(env,pass){ const key=await _deriveKey(pass,_unb64(e
      - Notfall-Passwort (nur wenn der Passkey verloren geht)
    K liegt niemals im Speicher des Geraets, nur in doppelt verpackter Form. */
 
-const PRF_SALT = _te.encode('alles-sicherung-v1');
-let _prfRaw = null;      // PRF-Ergebnis der laufenden Sitzung, nur im Arbeitsspeicher
-let _prfPending = null;  // laufende Abfrage – verhindert eine zweite Face-ID-Aufforderung
-let _prfUnsupported = false;  // dieser Passkey liefert kein Schlüsselmaterial
 
-function _cachePrf(assertion){
-  try {
-    const ext = assertion.getClientExtensionResults ? assertion.getClientExtensionResults() : null;
-    const first = ext && ext.prf && ext.prf.results && ext.prf.results.first;
-    _prfRaw = first ? new Uint8Array(first) : null;
-    if(!_prfRaw) _prfUnsupported = true;   // Passkey ohne PRF – kein zweiter Versuch pro Sitzung
-  } catch(e){ _prfRaw = null; }
-  return _prfRaw;
-}
 /* Fragt Face ID gezielt nach dem Schluesselmaterial. */
 /* force = der Nutzer hat bewusst etwas angetippt, das Face ID erfordert.
    Die Sparmassnahmen unten sollen im Hintergrund eine zweite Face-ID-Aufforderung
    verhindern. Sie duerfen aber nicht dazu fuehren, dass ohne jede Rueckfrage
    sofort das Notfall-Passwort verlangt wird – genau das ist passiert. */
-async function _prfMaterial({ silent = false, force = false } = {}){
-  if(_prfRaw) return _prfRaw;
-  if(_prfUnsupported && !force) return null;       // schon festgestellt – nicht erneut fragen
-  if(!(appLock && appLock.credId)) return null;
-  // Solange die Sperre aktiv ist, laeuft bereits eine Abfrage im Sperrbildschirm.
-  // Dann hier keine zweite ausloesen, sondern auf deren Ergebnis warten.
-  if(appLock.enabled && !_unlocked && !_prfPending && !force) return null;
-  if(force) _prfUnsupported = false;               // einen frischen Versuch zulassen
-  if(_prfPending) { try { return await _prfPending; } catch(e){ if(!silent) throw e; return null; } }
-  _prfPending = (async () => {
-    const res = await navigator.credentials.get({ publicKey:{
-      challenge: crypto.getRandomValues(new Uint8Array(32)),
-      allowCredentials: [{ type:'public-key', id:_unb64(appLock.credId) }],
-      userVerification: 'required', timeout: 60000,
-      extensions: { prf:{ eval:{ first: PRF_SALT } } }
-    }});
-    return _cachePrf(res);
-  })();
-  try { return await _prfPending; }
-  catch(e){ if(!silent) throw e; return null; }
-  finally { _prfPending = null; }
-}
-async function _prfKey(opt){
-  const raw = await _prfMaterial(opt);
-  return raw ? crypto.subtle.importKey('raw', raw, {name:'AES-GCM'}, false, ['encrypt','decrypt']) : null;
-}
-function prfMode(){ return !!(cloudCfg && cloudCfg.wraps && cloudCfg.wraps.prf); }
 
 /* Verpacken und Auspacken des Datenschluessels */
 async function _wrap(rawKey, key){
@@ -1006,33 +924,12 @@ async function _wrapWithPass(rawKey, pass){
 }
 
 /* Datenschluessel der laufenden Sitzung beschaffen (Face ID, sonst Notfall-Passwort). */
-async function _dataKeyRaw({ forcePrf = false } = {}){
-  if(!prfMode()) return null;
-  const pk = await _prfKey(forcePrf ? { force: true, silent: true } : undefined);
-  if(pk){ try { return await _unwrap(cloudCfg.wraps.prf, pk); } catch(e){} }
-  if(cloudCfg.wraps.pass){
-    const pass = await askPassphrase();
-    if(pass === null) throw new Error('Abgebrochen');
-    return _unwrap(cloudCfg.wraps.pass, await _deriveKey(pass, _unb64(cloudCfg.wraps.pass.salt)));
-  }
-  throw new Error('Kein Schluessel verfuegbar');
-}
 
 /* Umschlag 2: Nutzdaten mit K, K getrennt verpackt im selben Dokument. */
-async function encryptBackupV2(text, rawKey){
-  const key = await crypto.subtle.importKey('raw', rawKey, {name:'AES-GCM'}, false, ['encrypt']);
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, _te.encode(text));
-  return { app:'alles', enc:2, alg:'AES-256-GCM', wraps: cloudCfg.wraps, iv:_b64(iv), data:_b64(ct) };
-}
 /* Liest beide Umschlag-Formate. Alte Sicherungen (enc:1) bleiben lesbar. */
 async function decryptEnvelope(env, { pass } = {}){
   if(env.enc === 2){
     let raw = null;
-    if(env.wraps && env.wraps.prf){
-      const pk = await _prfMaterial({ silent:true }).then(m => m ? crypto.subtle.importKey('raw', m, {name:'AES-GCM'}, false, ['decrypt']) : null).catch(() => null);
-      if(pk){ try { raw = await _unwrap(env.wraps.prf, pk); } catch(e){} }
-    }
     if(!raw && env.wraps && env.wraps.pass){
       const p = pass !== undefined && pass !== null ? pass : await askPassphrase();
       if(p === null) throw new Error('Abgebrochen');
@@ -1183,7 +1080,7 @@ async function toggleAppLock(){
   if(appLock&&appLock.enabled){ const ok=await showDialog('FaceID Sperre wirklich deaktivieren?',{title:'App-Sperre',okText:'Deaktivieren'}); if(!ok) return; appLock=null; store.set(APPLOCK_KEY,JSON.stringify(null)); renderAppLockUI(); return; }
   try {
     const cred=await navigator.credentials.create({ publicKey:{ challenge:crypto.getRandomValues(new Uint8Array(32)), rp:{name:'Jörg Scheiderer',id:location.hostname}, user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'Jörg Scheiderer',displayName:'Jörg Scheiderer'}, pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}], authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required'}, timeout:60000, attestation:'none', extensions:{ prf:{} } }});
-    appLock={ credId:_b64(cred.rawId), enabled:true }; store.set(APPLOCK_KEY,JSON.stringify(appLock)); _prfRaw=null; _prfPending=null; _prfUnsupported=false; renderAppLockUI();
+    appLock={ credId:_b64(cred.rawId), enabled:true }; store.set(APPLOCK_KEY,JSON.stringify(appLock)); renderAppLockUI();
     notify('FaceID Sperre ist aktiv. Tipp: Richte auch das Cloud Backup ein, damit deine Daten gesichert sind.','App-Sperre');
   } catch(e){ notify('Einrichtung abgebrochen oder nicht unterstützt.','App-Sperre'); }
 }
@@ -1196,9 +1093,8 @@ async function attemptUnlock(){
   if(_unlockPending) return _unlockPending;
   _unlockPending = (async () => {
     try {
-      const res = await navigator.credentials.get({ publicKey:{ challenge:crypto.getRandomValues(new Uint8Array(32)), allowCredentials:[{type:'public-key',id:_unb64(appLock.credId)}], userVerification:'required', timeout:60000, extensions:{ prf:{ eval:{ first: PRF_SALT } } } }});
+      const res = await navigator.credentials.get({ publicKey:{ challenge:crypto.getRandomValues(new Uint8Array(32)), allowCredentials:[{type:'public-key',id:_unb64(appLock.credId)}], userVerification:'required', timeout:60000 }});
       _unlocked=true;
-      _cachePrf(res);                     // Sicherungsschluessel gleich mitnehmen
       const ls=$('lock-screen'); if(ls) ls.style.display='none';
     }
     catch(e){ const h=$('lock-hint'); if(h) h.textContent='Nicht erkannt – bitte erneut versuchen.'; }
@@ -1207,7 +1103,7 @@ async function attemptUnlock(){
   return _unlockPending;
 }
 
-function engageLock(){ if(!(appLock&&appLock.enabled)) return; _unlocked=false; _prfRaw=null; _prfPending=null; _unlockPending=null; const ls=$('lock-screen'); if(ls){ ls.style.display='flex'; const h=$('lock-hint'); if(h) h.textContent=''; } }
+function engageLock(){ if(!(appLock&&appLock.enabled)) return; _unlocked=false; _unlockPending=null; const ls=$('lock-screen'); if(ls){ ls.style.display='flex'; const h=$('lock-hint'); if(h) h.textContent=''; } }
 
 function renderAppLockUI(){
   const btn=$('applock-btn'),st=$('applock-status'),title=$('applock-title'); if(!btn) return;
@@ -1346,7 +1242,6 @@ function openCoreSettings(){
   if(!sc) return;
   loadCloudCfgUI();
   renderAppLockUI();
-  renderPrfRow();
   sc.classList.add('open');
   sc.scrollTop = 0;
   setTimeout(() => { if(sc.classList.contains('open')) sc.classList.add('settled'); }, 460);
@@ -1366,7 +1261,7 @@ const CLOUD_CFG_KEY = 'cloud_backup_v1';
 let cloudCfg = safeParse(store.get(CLOUD_CFG_KEY), null);
 let _cloudTimer = null;
 
-function cloudReady(){ return !!(cloudCfg && cloudCfg.repo && cloudCfg.token && (cloudCfg.pass || prfMode())); }
+function cloudReady(){ return !!(cloudCfg && cloudCfg.repo && cloudCfg.token && cloudCfg.pass); }
 /* Zum Wiederherstellen genuegen Repository und Token: Die Verpackungen des
    Schluessels liegen in der Sicherung selbst – so klappt es auch auf einem neuen Geraet. */
 function cloudCanRead(){ return !!(cloudCfg && cloudCfg.repo && cloudCfg.token); }
@@ -1417,161 +1312,18 @@ function cloudRowTap(){ toggleCloudCfg(); loadCloudCfgUI(); }
 /* ---------------- Umstellung auf den Face-ID-Schluessel ----------------
    Erzeugt einen zufaelligen Datenschluessel und verpackt ihn zweifach:
    mit dem Passkey (Alltag) und mit dem Notfall-Passwort (Wiederherstellung). */
-function recoveryResolve(ok){
-  const ov = $('recovery-overlay');
-  if(ov) ov.classList.remove('open');
-  const r = window._recResolve; window._recResolve = null;
-  if(r) r(ok);
-}
-function askRecovery(pass){
-  return new Promise(resolve => {
-    const ov = $('recovery-overlay');
-    if(!ov){ resolve(false); return; }
-    $('rec-pass').value = pass;
-    ov.classList.add('open');
-    window._recResolve = resolve;
-  });
-}
 /* Notfall-Passwort: gut lesbar, ausreichend Entropie (rund 77 Bit). */
-function neuesNotfallPasswort(){
-  const zeichen = 'abcdefghijkmnopqrstuvwxyz23456789';
-  const b = crypto.getRandomValues(new Uint8Array(16));
-  let out = '';
-  for(let i=0;i<16;i++){ out += zeichen[b[i] % zeichen.length]; if(i%4===3 && i<15) out += '-'; }
-  return out;
-}
 
 /* Passwort in die Zwischenablage – spart das Abtippen von 16 Zeichen.
    navigator.clipboard braucht einen sicheren Kontext; als Rueckfall die alte
    Auswahl-Methode, damit es auch dort funktioniert, wo das gesperrt ist. */
-async function copyRecoveryPass(){
-  const inp = $('rec-pass'), btn = $('rec-copy');
-  if(!inp) return;
-  let ok = false;
-  try { await navigator.clipboard.writeText(inp.value); ok = true; }
-  catch(e){
-    try { inp.removeAttribute('readonly'); inp.select(); inp.setSelectionRange(0, 99);
-          ok = document.execCommand('copy'); }
-    catch(e2){ ok = false; }
-    finally { inp.setAttribute('readonly',''); }
-  }
-  if(btn){
-    const alt = btn.textContent;
-    btn.textContent = ok ? 'Kopiert' : 'Fehlgeschlagen';
-    setTimeout(() => { btn.textContent = alt; }, 1600);
-  }
-}
 
 /* Notfall-Passwort erneuern. Moeglich, solange der Datenschluessel erreichbar ist –
    ueber Face ID, notfalls ueber das bisherige Passwort. Der Datenschluessel selbst
    bleibt unveraendert, nur seine Passwort-Verpackung wird ersetzt. Anschliessend
    wird sofort gesichert, damit die aktuelle Datei die neue Verpackung traegt. */
-async function renewRecoveryPass(){
-  if(!prfMode()){ notify('Erst wenn die Sicherung an Face ID haengt, gibt es ein Notfall-Passwort.', 'Noch nichts zu erneuern'); return; }
-  if(!(cloudCfg && cloudCfg.repo && cloudCfg.token)){ notify('Bitte zuerst Repository und Token eintragen.'); return; }
 
-  let k;
-  try {
-    k = await _dataKeyRaw({ forcePrf: true });   // erst Face ID fragen, Passwort nur als Rueckfall
-    if(!k) throw new Error('Kein Schlüssel erhalten');
-  } catch(e){
-    notify('Ohne Zugriff auf den bisherigen Schlüssel kann kein neues Passwort gesetzt werden. Deine Sicherung bleibt unverändert. (' + e.message + ')', 'Abgebrochen');
-    return;
-  }
 
-  const neu = neuesNotfallPasswort();
-  if(!await askRecovery(neu)) return;
-
-  try {
-    // Nur die Passwort-Verpackung tauschen – Face-ID-Verpackung und Datenschluessel bleiben.
-    cloudCfg.wraps = { prf: cloudCfg.wraps.prf, pass: await _wrapWithPass(k, neu) };
-    store.set(CLOUD_CFG_KEY, JSON.stringify(cloudCfg));
-    renderPrfRow();
-    await cloudBackupNow(true);
-    notify('Neues Notfall-Passwort gesetzt. Das bisherige gilt für die aktuelle Sicherung nicht mehr.', 'Fertig');
-  } catch(e){ notify('Fehlgeschlagen: ' + e.message); }
-}
-
-async function togglePrfMode(){
-  if(prfMode()){
-    const ok = await showDialog('Die Sicherung wird dann wieder mit einem gespeicherten Passwort verschlüsselt statt mit Face ID.',
-                                { title:'Zurück zum Passwort?', okText:'Umstellen' });
-    if(!ok) return;
-    const pass = await askPassphrase();
-    if(pass === null) return;
-    cloudCfg.pass = pass; cloudCfg.wraps = null;
-    store.set(CLOUD_CFG_KEY, JSON.stringify(cloudCfg));
-    renderPrfRow();
-    await cloudBackupNow(true);
-    return;
-  }
-
-  if(!appLockAvailable()){ notify('Face ID steht auf diesem Gerät nicht zur Verfügung.'); return; }
-  if(!(appLock && appLock.credId)){ notify('Bitte zuerst die FaceID Sperre einschalten – der Schlüssel hängt an diesem Passkey.', 'Face ID nötig'); return; }
-  if(!(cloudCfg && cloudCfg.repo && cloudCfg.token)){ notify('Bitte zuerst Repository und Token eintragen.'); return; }
-
-  let material;
-  try { material = await _prfMaterial(); }
-  catch(e){ notify('Face ID wurde abgebrochen.'); return; }
-  if(!material){
-    notify('Dieser Passkey liefert kein Schlüsselmaterial. Schalte die FaceID Sperre einmal aus und wieder ein – der neue Passkey kann es.', 'Einmal neu einrichten');
-    return;
-  }
-
-  /* Gibt es bereits einen Datenschluessel, wird er WIEDERVERWENDET statt neu erzeugt.
-     Wichtig, wenn der Passkey neu angelegt wurde (etwa nach einem Namenswechsel oder
-     Geraetewechsel): Ein neuer Zufallsschluessel wuerde bedeuten, dass alle bisher in
-     der Cloud liegenden Sicherungen nur noch mit dem ALTEN Notfall-Passwort lesbar
-     waeren – das nachtraeglich zu bemerken waere fatal. Auch die Passwort-Verpackung
-     bleibt daher unveraendert bestehen. */
-  const hatSchluessel = !!(cloudCfg.wraps && cloudCfg.wraps.pass);
-  let k, notfall = null;
-  try {
-    if (hatSchluessel) {
-      k = await _dataKeyRaw({ forcePrf: true });   // erst Face ID fragen, Passwort nur als Rueckfall
-      if (!k) throw new Error('Kein Schlüssel erhalten');
-    } else {
-      // Bewusst IMMER ein neues Zufallspasswort: ein zuvor selbst gewaehltes waere als
-      // Zweitschluessel deutlich schwaecher (rund 40 statt 80 Bit) und muesste einem
-      // Angreifer mit der Sicherungsdatei nur offline standhalten.
-      notfall = neuesNotfallPasswort();
-      if(!await askRecovery(notfall)) return;
-      k = crypto.getRandomValues(new Uint8Array(32));
-    }
-  } catch(e){
-    notify('Ohne den bisherigen Schlüssel kann nicht umgestellt werden – bestehende Sicherungen bleiben unverändert. (' + e.message + ')', 'Abgebrochen');
-    return;
-  }
-
-  try {
-    const prfKey = await crypto.subtle.importKey('raw', material, {name:'AES-GCM'}, false, ['encrypt','decrypt']);
-    cloudCfg.wraps = {
-      prf: await _wrap(k, prfKey),
-      // Bestehende Passwort-Verpackung unveraendert uebernehmen: gleicher Datenschluessel,
-      // gleiches Notfall-Passwort – dadurch bleiben aeltere Sicherungen lesbar.
-      pass: hatSchluessel ? cloudCfg.wraps.pass : await _wrapWithPass(k, notfall)
-    };
-    cloudCfg.pass = '';                       // ab hier liegt kein Passwort mehr im Gerät
-    store.set(CLOUD_CFG_KEY, JSON.stringify(cloudCfg));
-    renderPrfRow(); loadCloudCfgUI();
-    await cloudBackupNow(true);               // Sicherung sofort im neuen Format ablegen
-    notify(hatSchluessel
-      ? 'Face ID neu verknüpft. Datenschlüssel und Notfall-Passwort sind unverändert – bestehende Sicherungen bleiben lesbar.'
-      : 'Umgestellt. Die Sicherung hängt jetzt an Face ID.', 'Fertig');
-  } catch(e){ notify('Umstellung fehlgeschlagen: ' + e.message); }
-}
-
-function renderPrfRow(){
-  const an = prfMode();
-  // Ist der Schluessel an Face ID gebunden, ist nichts mehr einzurichten:
-  // dann verschwinden Umstell-Zeile und Passwortfeld, die Pruefzeile erscheint.
-  const feld = $('cb-pass-field'), um = $('prf-btn'), neu = $('renew-btn');
-  if(feld) feld.style.display = an ? 'none' : '';
-  if(um)   um.style.display   = an ? 'none' : '';
-  // Umgekehrt: erneuern ergibt erst Sinn, wenn ueberhaupt ein Notfall-Passwort existiert.
-  if(neu)  neu.style.display  = an ? '' : 'none';
-  renderCloudStatus();
-}
 
 function renderCloudRow(){
   const sub = $('cloud-row-sub');
@@ -1584,9 +1336,7 @@ function renderCloudStatus(){
   const el = $('cloud-status');
   if(!el) return;
   if(cloudCfg && cloudCfg.lastErr){ el.textContent = 'Letzter Versuch: ' + cloudCfg.lastErr; return; }
-  el.textContent = prfMode()
-    ? 'Wird mit deinem FaceID Schlüssel verschlüsselt, bevor sie GitHub erreicht.'
-    : 'Wird mit deinem Passwort verschlüsselt, bevor sie GitHub erreicht.';
+  el.textContent = 'Wird mit deinem Passwort verschlüsselt, bevor sie GitHub erreicht.';
 }
 
 /* Liest eine Datei aus einem Repository – auch wenn sie größer als 1 MB ist.
@@ -1658,9 +1408,7 @@ async function cloudBackupNow(manual){
   _backupLaeuft = true;
   try {
     const text = JSON.stringify(await buildCombinedPayload());
-    const env  = prfMode()
-      ? await encryptBackupV2(text, await _dataKeyRaw())
-      : await encryptBackup(text, cloudCfg.pass);
+    const env  = await encryptBackup(text, cloudCfg.pass);
     const body = btoa(unescape(encodeURIComponent(JSON.stringify(env, null, 2))));
     if (manual && body.length > 20 * 1024 * 1024)
       notify('Hinweis: Die Sicherung ist sehr groß (' + (body.length/1048576).toFixed(0) + ' MB) – meist durch Referenzfotos.');
@@ -1721,14 +1469,7 @@ async function cloudRestore(){
     if(!roh){ notify('Keine Sicherung im Repository gefunden.'); return; }
     const env = JSON.parse(roh);
     const text = env && env.enc ? await decryptEnvelope(env, { pass: cloudCfg.pass || undefined }) : JSON.stringify(env);
-    if(await applyCombined(text)){
-      if(env && env.enc === 2 && env.wraps && !prfMode()){
-        cloudCfg.wraps = env.wraps;                 // Schlüssel-Verpackungen für dieses Gerät übernehmen
-        store.set(CLOUD_CFG_KEY, JSON.stringify(cloudCfg));
-        renderPrfRow();
-      }
-      notify('Wiederhergestellt.');
-    }
+    if(await applyCombined(text)) notify('Wiederhergestellt.');
   } catch(e){ notify('Wiederherstellen fehlgeschlagen: ' + e.message); }
 }
 
@@ -1736,8 +1477,8 @@ async function cloudRestore(){
 /* Je nach Betrieb ist es das Passwort der Sicherung oder das Notfall-Passwort. */
 function askPassphrase(){
   const t = $('pass-title'), l = $('pass-label');
-  if(t) t.textContent = prfMode() ? 'Notfall-Passwort' : 'Passwort der Sicherung';
-  if(l) l.textContent = prfMode() ? 'Notfall-Passwort' : 'Passwort';
+  if(t) t.textContent = 'Passwort der Sicherung';
+  if(l) l.textContent = 'Passwort';
   return new Promise(resolve => {
     const ov = $('pass-overlay');
     if(!ov){ resolve(null); return; }
@@ -2002,17 +1743,16 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607280430"></script>
-<script src="mod-reisen.js?v=2607280430"></script>
-<script src="mod-finanzen.js?v=2607280430"></script>
-<script src="mod-impfpass.js?v=2607280430"></script>
+<script src="data-laender.js?v=2607280530"></script>
+<script src="mod-reisen.js?v=2607280530"></script>
+<script src="mod-finanzen.js?v=2607280530"></script>
+<script src="mod-impfpass.js?v=2607280530"></script>
 
 <!-- ===== Start ===== -->
 <script>
 refreshCloudKeys();
 initAppLock();
 renderCloudRow();
-renderPrfRow();
 renderLauncher();
 MODULES.forEach(m => { if (m.init) { try { m.init(); } catch(e){} } });
 (function(){
