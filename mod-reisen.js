@@ -119,7 +119,9 @@ function tightCountryView(key){
   // Kachel und soll dort mittig sitzen. (Frueher war der Rand oben groesser, um das
   // Land im damals schmalen Streifen tiefer zu setzen – im jetzigen Layout erzeugt
   // das nur einen sichtbar ungleichen Abstand nach oben und unten.)
-  const rand = Math.max(w, h) * 0.04;
+  // Der Rand bestimmt zugleich die Groesse: je mehr Rand im Rahmen steckt, desto
+  // kleiner erscheint das Land in der Kachel. 0.09 laesst rundum etwas Luft.
+  const rand = Math.max(w, h) * 0.09;
   const box = [minX - rand, minY - rand, w + rand * 2, h + rand * 2];
   _tightViewCache[key] = box;
   return box;
