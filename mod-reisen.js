@@ -115,13 +115,12 @@ function tightCountryView(key){
   }
   let w = maxX - minX, h = maxY - minY;
   if (!(w > 0) || !(h > 0)) return null;
-  // Oben mehr Rand als unten: dadurch sitzt das Land im Kachelstreifen etwas tiefer,
-  // statt mittig zu schweben. Der Rahmen wird dadurch minimal hoeher, das Land also
-  // ein paar Prozent kleiner – gewollter Tausch fuer die tiefere Lage.
-  const rand      = Math.max(w, h) * 0.04;      // seitlich, damit nichts anstoesst
-  const randOben  = Math.max(w, h) * 0.14;
-  const randUnten = Math.max(w, h) * 0.02;
-  const box = [minX - rand, minY - randOben, w + rand * 2, h + randOben + randUnten];
+  // Rundum gleicher Rand: die Silhouette liegt als Wasserzeichen ueber der ganzen
+  // Kachel und soll dort mittig sitzen. (Frueher war der Rand oben groesser, um das
+  // Land im damals schmalen Streifen tiefer zu setzen – im jetzigen Layout erzeugt
+  // das nur einen sichtbar ungleichen Abstand nach oben und unten.)
+  const rand = Math.max(w, h) * 0.04;
+  const box = [minX - rand, minY - rand, w + rand * 2, h + rand * 2];
   _tightViewCache[key] = box;
   return box;
 }
@@ -138,7 +137,7 @@ function tripMapSVG(country){
   }
   const eng = tightCountryView(key);
   if (eng) {
-    return `<svg viewBox="${eng.map(v => v.toFixed(2)).join(' ')}" preserveAspectRatio="xMaxYMid meet"><path d="${COUNTRY_PATHS[key]}" fill="var(--accent)"/></svg>`;
+    return `<svg viewBox="${eng.map(v => v.toFixed(2)).join(' ')}" preserveAspectRatio="xMidYMid meet"><path d="${COUNTRY_PATHS[key]}" fill="var(--accent)"/></svg>`;
   }
   const box=COUNTRY_VIEW[key];
   if(!box) return '';
