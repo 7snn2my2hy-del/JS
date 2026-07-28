@@ -543,10 +543,10 @@ function renderHeroBento() {
       <circle cx="${xAt(n-1).toFixed(1)}" cy="${yAt(vals[n-1]).toFixed(1)}" r="3" fill="${col}"/>
     </svg>`;
     const achse = `<div class="hero-axis"><span>${fmtShort(mx)}</span><span>${fmtShort((mx + mn) / 2)}</span><span>${fmtShort(mn)}</span></div>`;
-    const von = histLabel(hist[0]), bis = histLabel(hist[hist.length-1]);
-    const dTxt = (spanne >= 0 ? '+' : '') + fmtShort(spanne);
-    hSpark.innerHTML = `<div class="hero-plot">${achse}${svg}</div>
-      <div class="hero-range">${von} – ${bis} · ${fmtShort(vals[n-1])} <span class="${spanne>=0?'hist-up':'hist-down'}">(${dTxt})</span></div>`;
+    // Die Zeitraum-/Wertzeile unter dem Sparkline entfaellt bewusst – die Zahlen
+    // stehen bereits darueber im Hero. (Eigene Umsetzung, nicht die .hist-range
+    // der Detail-Graphen; deshalb war sie von deren Entfernung nicht betroffen.)
+    hSpark.innerHTML = `<div class="hero-plot">${achse}${svg}</div>`;
   } else {
     hDelta.style.display = 'none';
     hSpark.innerHTML = '';
