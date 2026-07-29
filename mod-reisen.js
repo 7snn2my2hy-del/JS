@@ -40,7 +40,7 @@ async function migrateInlineImages(){
     if (a.images && a.images.some(isDataUri)) {
       const refs=[];
       for (const ref of a.images) {
-        if (isDataUri(ref)) { const nid='img_'+uid(); await idbPut(nid, ref); refs.push(nid); changed=true; }
+        if (isDataUri(ref)) { const nid='img_'+neueId(); await idbPut(nid, ref); refs.push(nid); changed=true; }
         else refs.push(ref);
       }
       a.images=refs;
@@ -205,7 +205,7 @@ function setArr(type, val){
   else if (name==='packing') packing=val; else if (name==='todos') todos=val;
 }
 function persist(type){ store.set(DATA[type][1], JSON.stringify(arr(type))); }
-function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+// Kennungen kommen aus dem Kern (neueId).
 
 /* ===== DATUM ===== */
 
@@ -503,7 +503,7 @@ function runImport(){
   let n=0;
   for(const it of gewaehlt){
     if(it.type==='__meta'){ Object.assign(t, it.data); persist('trip'); n++; continue; }
-    const obj={ ...it.data, id:uid(), tripId:t.id };
+    const obj={ ...it.data, id:neueId(), tripId:t.id };
     if(it.type==='photo') obj.type='foto';
     if(it.type==='activity') obj.type='normal';
     if(it.type==='pack'||it.type==='todo') obj.checked=false;
@@ -570,16 +570,13 @@ function tripTileHTML(t, done){
 /* swipeWrap liegt im gemeinsamen Kern (index.html). */
 /* Löscht einen Eintrag nach Rückfrage – inkl. Bildern aus der Datenbank */
 async function deleteEntryById(type, id){
-  const e = arr(type).find(x=>x.id===id); if(!e) return;
-  const ok = await showDialog('Der Eintrag wird unwiderruflich gelöscht.', { title:'Löschen?', okText:'Löschen' });
-  if(!ok) return;
-  if (idbReady && e.images) for (const ref of e.images) if(!isDataUri(ref)) await idbDelete(ref);
-  const list = arr(type); const i = list.findIndex(x=>x.id===id);
-  if (i>=0) list.splice(i,1);
-  persist(type);
-  closeOpenSwipe();
-  renderTabContent(); renderHome();
-  showToast('Gelöscht');
+  await loeschenMitRueckfrage({
+    liste: arr(type), id,
+    // Bilder gehoeren zum Eintrag und werden vor dem Entfernen mit aufgeraeumt.
+    vorher: async (e) => { if (idbReady && e.images) for (const ref of e.images) if(!isDataUri(ref)) await idbDelete(ref); },
+    speichern: () => persist(type),
+    zeichnen: () => { renderTabContent(); renderHome(); }
+  });
 }
 /* Hängt die Swipe-Gesten an alle Einträge im Reiter */
 function wireEntrySwipe(){
@@ -627,6 +624,9 @@ function renderTripCards(){
    auch beim Start der Zurueck-Geste, was diese durcheinanderbrachte. */
 
 /* Reise inkl. aller zugehörigen Daten und Bilder löschen (über Swipe) */
+/* Bewusst nicht ueber loeschenMitRueckfrage: hier haengen sieben weitere Listen dran.
+   Ein Rueckgaengig muesste all diese Eintraege wiederherstellen – das waere eine andere,
+   deutlich groessere Mechanik als das Zurueckholen eines einzelnen Eintrags. */
 async function deleteTripById(id){
   const t = trips.find(x=>x.id===id); if(!t) return;
   const ok = await showDialog('Die Reise inkl. aller Stopps, Flüge, Hotels, Aktivitäten und Listen wird unwiderruflich gelöscht.', { title:'Löschen?', okText:'Löschen' });
@@ -758,7 +758,7 @@ function addPackInline(silent){
   const inp=$('pack-new'); if(!inp) return;
   const name=inp.value.trim();
   if (!name) return;
-  packing.push({ id:uid(), tripId:currentTripId, name, checked:false });
+  packing.push({ id:neueId(), tripId:currentTripId, name, checked:false });
   persist('pack');
   renderTabContent();
   if (!silent) { const next=$('pack-new'); if(next) next.focus(); }
@@ -973,7 +973,7 @@ async function loadFotoImages(){
   }
 }
 function addFotoPlace(){
-  const p={ id:uid(), tripId:currentTripId, type:'foto', name:'', equipment:[], notes:'', images:[], order:Date.now() };
+  const p={ id:neueId(), tripId:currentTripId, type:'foto', name:'', equipment:[], notes:'', images:[], order:Date.now() };
   activities.push(p);
   persist('activity');
   renderTabContent();
@@ -982,14 +982,13 @@ function addFotoPlace(){
 function renameFotoPlace(id,val){ const p=activities.find(x=>x.id===id); if(!p) return; p.name=(val||'').trim(); persist('activity'); }
 function setFotoNotes(id,val){ const p=activities.find(x=>x.id===id); if(!p) return; p.notes=val; persist('activity'); }
 async function deleteFotoPlace(id){
-  const p=activities.find(x=>x.id===id); if(!p) return;
-  const ok=await showDialog('Der Foto-Ort wird unwiderruflich gelöscht.',{title:'Löschen?',okText:'Löschen'});
-  if(!ok) return;
-  if(idbReady && p.images) for(const ref of p.images) if(!isDataUri(ref)) await idbDelete(ref);
-  setArr('activity', activities.filter(x=>x.id!==id));
-  persist('activity');
-  renderTabContent();
-  showToast('Gelöscht');
+  await loeschenMitRueckfrage({
+    liste: arr('activity'), id,
+    text: 'Der Foto-Ort wird unwiderruflich gelöscht.',
+    vorher: async (p) => { if(idbReady && p.images) for(const ref of p.images) if(!isDataUri(ref)) await idbDelete(ref); },
+    speichern: () => persist('activity'),
+    zeichnen: () => renderTabContent()
+  });
 }
 let _fotoPickId = null;
 function pickFotoImages(id){ _fotoPickId=id; const inp=$('foto-file-input'); if(inp){ inp.value=''; inp.click(); } }
@@ -999,7 +998,7 @@ async function handleFotoFiles(files){
   for(const f of files){
     try{
       const data=await resizeImage(f);
-      if(idbReady){ const nid='img_'+uid(); await idbPut(nid,data); p.images.push(nid); }
+      if(idbReady){ const nid='img_'+neueId(); await idbPut(nid,data); p.images.push(nid); }
       else p.images.push(data);
     }catch(e){}
   }
@@ -1021,9 +1020,9 @@ async function viewFotoImage(id, idx){
   let src = isDataUri(ref) ? ref : (idbReady ? await idbGet(ref) : null);
   if(!src) return;
   $('img-viewer-img').src=src;
-  $('img-viewer').classList.add('open');
+  oeffneOverlay('img-viewer', closeImgViewer);
 }
-function closeImgViewer(){ $('img-viewer').classList.remove('open'); $('img-viewer-img').src=''; }
+function closeImgViewer(){ schliesseOverlay('img-viewer'); $('img-viewer-img').src=''; }
 
 /* ===== AUSRÜSTUNG (global, kategorisiert, in Einstellungen pflegbar) ===== */
 function persistGear(){ store.set(KEYS.gear, JSON.stringify(gear)); }
@@ -1072,8 +1071,8 @@ function gearAddManage(cat,silent){
 
 /* Ausrüstung pro Foto-Ort aus der Liste wählen (nach Kategorien gruppiert) */
 let _gearPickId=null, _gearItems=[];
-function openGearPicker(placeId){ _gearPickId=placeId; renderGearChoices(); $('gear-overlay').classList.add('open'); attachSheetSwipe('gear-overlay', closeGearPicker); }
-function closeGearPicker(){ $('gear-overlay').classList.remove('open'); _gearPickId=null; renderTabContent(); loadFotoImages(); }
+function openGearPicker(placeId){ _gearPickId=placeId; renderGearChoices(); oeffneOverlay('gear-overlay', closeGearPicker); }
+function closeGearPicker(){ schliesseOverlay('gear-overlay'); _gearPickId=null; renderTabContent(); loadFotoImages(); }
 function renderGearChoices(){
   const p=activities.find(x=>x.id===_gearPickId); if(!p) return;
   const sel=p.equipment||[];
@@ -1105,15 +1104,7 @@ function toggleGearForPlace(idx){
 }
 
 /* Sheet nach unten wegwischen zum Schließen (nur vom oberen Rand aus) */
-function attachSheetSwipe(overlayId, closeFn){
-  const overlay=$(overlayId); if(!overlay) return;
-  const modal=overlay.querySelector('.modal'); if(!modal || modal._swipeWired) return;
-  modal._swipeWired=true;
-  let startY=0, cur=0, dragging=false, atTop=true;
-  modal.addEventListener('touchstart', e=>{ if(e.touches.length!==1){ dragging=false; return; } startY=e.touches[0].clientY; cur=0; dragging=true; atTop=modal.scrollTop<=0; modal.style.transition='none'; }, {passive:true});
-  modal.addEventListener('touchmove', e=>{ if(!dragging) return; const dy=e.touches[0].clientY-startY; if(dy>0 && atTop){ cur=dy; modal.style.transform='translateY('+dy+'px)'; } else if(dy<0){ dragging=false; modal.style.transform=''; } }, {passive:true});
-  modal.addEventListener('touchend', ()=>{ if(!dragging) return; dragging=false; modal.style.transition=''; const drop=cur; modal.style.transform=''; if(drop>110) closeFn(); }, {passive:true});
-}
+// Wischgeste fuer Blaetter liegt im Kern (attachSheetSwipe).
 
 /* Checkliste im Apple-Notizen-Stil: rahmenlos, direkt eintippbar,
    erledigte werden durchgestrichen und ans Ende geschoben. */
@@ -1153,7 +1144,7 @@ function addTodoInline(silent){
   const inp=$('todo-new'); if(!inp) return;
   const name=inp.value.trim();
   if (!name) return;
-  todos.push({ id:uid(), tripId:currentTripId, name, checked:false });
+  todos.push({ id:neueId(), tripId:currentTripId, name, checked:false });
   persist('todo');
   renderTabContent();
   // Nach dem Anlegen direkt weitertippen können
@@ -1284,9 +1275,9 @@ function openAddPicker(){
   $('add-choices').innerHTML = opts.map(([type,label,icon,cls])=>
     `<button class="add-choice ${cls}" onclick="pickAdd('${type}')"><span class="ac-ic">${icon}</span><span class="ac-label">${label}</span><span class="ac-arrow">›</span></button>`
   ).join('');
-  $('add-overlay').classList.add('open');
+  oeffneOverlay('add-overlay', closeAddPicker);
 }
-function closeAddPicker(){ $('add-overlay').classList.remove('open'); }
+function closeAddPicker(){ schliesseOverlay('add-overlay'); }
 function pickAdd(type){ closeAddPicker(); rpOpenModal(type); }
 
 function rpOpenModal(type, id){
@@ -1305,7 +1296,7 @@ function rpOpenModal(type, id){
     renderImageGrid();
     if (entry && entry.images && entry.images.length) loadFormImages(entry.images);
   }
-  $('form-overlay').classList.add('open');
+  oeffneOverlay('form-overlay', rpCloseModal);
 }
 async function loadFormImages(refs){
   // Platzhalter-Einträge anlegen, damit Reihenfolge/Anzahl stimmen, dann Bilddaten nachladen
@@ -1316,7 +1307,7 @@ async function loadFormImages(refs){
   }
   if (modalType==='photo') renderImageGrid();
 }
-function rpCloseModal(){ $('form-overlay').classList.remove('open'); modalType=null; modalId=null; formImages=[]; }
+function rpCloseModal(){ schliesseOverlay('form-overlay'); modalType=null; modalId=null; formImages=[]; }
 async function saveModal(){
   if(!modalType || !SCHEMAS[modalType]) return;   // kein Formular offen
   const type=modalType, schema=SCHEMAS[type], obj={};
@@ -1340,7 +1331,7 @@ async function saveModal(){
   if (type==='photo') obj.type='foto';
   else if (type==='activity') obj.type='normal';
   if (modalId){ Object.assign(arr(type).find(x=>x.id===modalId), obj); }
-  else { obj.id=uid(); if(type==='pack'||type==='todo') obj.checked=false; arr(type).push(obj); }
+  else { obj.id=neueId(); if(type==='pack'||type==='todo') obj.checked=false; arr(type).push(obj); }
   persist(type);
   rpCloseModal();
   if (type==='trip'){ renderHome(); if(currentTripId) renderTripScreen(); }
@@ -1354,10 +1345,10 @@ async function persistFormImages(){
   for (const im of formImages) {
     if (im.id) { kept.push(im.id); }
     else if (im.existingRef && isDataUri(im.existingRef)) {
-      if (idbReady) { const nid='img_'+uid(); await idbPut(nid, im.existingRef); kept.push(nid); }
+      if (idbReady) { const nid='img_'+neueId(); await idbPut(nid, im.existingRef); kept.push(nid); }
       else kept.push(im.existingRef);
     } else if (im.data) {
-      if (idbReady) { const nid='img_'+uid(); await idbPut(nid, im.data); kept.push(nid); }
+      if (idbReady) { const nid='img_'+neueId(); await idbPut(nid, im.data); kept.push(nid); }
       else kept.push(im.data);
     }
   }

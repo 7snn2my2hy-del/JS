@@ -91,7 +91,7 @@ if (!Array.isArray(impfungen)) {
 }
 
 function impPersist(){ store.set(IMP_KEYS.impfungen, JSON.stringify(impfungen)); }
-function impNewId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+// Kennungen kommen aus dem Kern (neueId).
 
 /* ---------------- Status ----------------
    Leitet sich ausschließlich aus den eingetragenen Daten ab – es wird nichts
@@ -197,9 +197,9 @@ function impOpenModal(id){
   $('imp-f-note').value     = e ? (e.note || '') : '';
   $('imp-f-open').checked   = e ? !!e.open : false;
   closeOpenSwipe();
-  $('imp-overlay').classList.add('open');
+  oeffneOverlay('imp-overlay', impCloseModal);
 }
-function impCloseModal(){ $('imp-overlay').classList.remove('open'); impEditId = null; }
+function impCloseModal(){ schliesseOverlay('imp-overlay'); impEditId = null; }
 
 async function impSave(){
   const name = $('imp-f-name').value.trim();
@@ -217,7 +217,7 @@ async function impSave(){
     const e = impfungen.find(x => x.id === impEditId);
     if (e) Object.assign(e, daten);
   } else {
-    impfungen.push(Object.assign({ id: impNewId() }, daten));
+    impfungen.push(Object.assign({ id: neueId() }, daten));
   }
   impPersist();
   impCloseModal();
@@ -227,16 +227,11 @@ async function impSave(){
 }
 
 async function impDelete(id){
-  const e = impfungen.find(x => x.id === id); if(!e) return;
-  const ok = await showDialog('Der Eintrag wird unwiderruflich gelöscht.', { title: 'Löschen?', okText: 'Löschen' });
-  if (!ok) return;
-  const i = impfungen.findIndex(x => x.id === id);
-  if (i >= 0) impfungen.splice(i, 1);
-  impPersist();
-  closeOpenSwipe();
-  impRender();
-  renderLauncher();
-  showToast('Gelöscht');
+  await loeschenMitRueckfrage({
+    liste: impfungen, id,
+    speichern: () => impPersist(),
+    zeichnen: () => impRender()
+  });
 }
 
 /* ---------------- Sicherung ---------------- */
