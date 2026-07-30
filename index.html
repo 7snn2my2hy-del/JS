@@ -445,9 +445,7 @@
     font-size: 0.82rem; font-weight: 600; padding: 7px 14px; border-radius: var(--r-pill);
     cursor: pointer; transition: transform 0.3s var(--spring); }
   .undo-btn:active { transform: scale(0.94); }
-  .back-scrim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 398; display: none; }
-  .back-scrim.on { display: block; }
-  .back-prep { will-change: transform; }
+  .back-scrim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 398; }
   .back-under { will-change: transform; }
   .back-under.gliding { transition: transform var(--back-dur, 0.32s) var(--ease-ios); }
   .screen-topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
@@ -1672,8 +1670,12 @@ function topOpenScreen(){
   return best;
 }
 (function initBackGesture(){
-  const ZONE_PX = 34;        // Startbereich: schmaler Streifen am linken Rand, wie in iOS
-  const ZONE_MAX = 0.12;     // auf sehr schmalen Geraeten nie mehr als 12% der Breite
+  /* Startbereich: linkes Drittel. Ein schmaler Randstreifen (wie iOS systemseitig nutzt)
+     wurde getestet und wieder verworfen - dort greift auf dem iPhone die eigene
+     Randerkennung des Systems zuerst zu, die Geste wird dadurch unruhig und ist zudem
+     schwerer zu treffen. Die Pixelgrenze deckelt die Zone auf breiten Geraeten. */
+  const ZONE_PX = 130;
+  const ZONE_MAX = 1 / 3;
   const COMMIT  = 0.35;      // ab diesem Anteil der Breite wird geschlossen
   const V_COMM  = 0.8;       // px/ms – ein echter Schwung, kein langsames Ziehen
   const V_MIN_W = 0.15;      // auch beim Schwung muss ein Stück Weg zurückgelegt sein
@@ -1685,10 +1687,17 @@ function topOpenScreen(){
   let proben = [], tempo = 0;
   let untenWarVersteckt = false;   // war die untere Ebene vor der Geste ausgeblendet?
 
+  /* Einmal beim Start anlegen. Wird das Element erst beim Gestenbeginn erzeugt und
+     eingehaengt, loest das mitten in der Bewegung eine Stilneuberechnung aus. */
   function scrimEl(){
-    if(!scrim){ scrim = document.createElement('div'); scrim.className = 'back-scrim'; document.body.appendChild(scrim); }
+    if(!scrim && document.body){
+      scrim = document.createElement('div');
+      scrim.className = 'back-scrim';
+      document.body.appendChild(scrim);
+    }
     return scrim;
   }
+  scrimEl();
   /* Was liegt gerade obenauf? */
   function obersteEbene(){
     const sc = topOpenScreen();
@@ -1716,42 +1725,35 @@ function topOpenScreen(){
     return !!(t.closest && t.closest('input, textarea, select, .tab-bar, .dash-swipe, .picker-list, .img-viewer'));
   }
 
-  /* Das eigentliche Verschieben wird an den Bildaufbau gekoppelt: iOS liefert
-     touchmove teils mehrfach pro Bild, jedes sofortige Schreiben waere verschenkte
-     Arbeit. So wird pro Bild genau einmal gesetzt – das ist der spuerbarste
-     Unterschied bei der Fluessigkeit. translate3d erzwingt zudem eine eigene
-     GPU-Ebene, die iOS ruhiger bewegt als ein einfaches translateX. */
-  let _rafId = null, _pxWunsch = 0;
+  /* Das Verschieben wird direkt im touchmove geschrieben. Mit preventDefault liefert iOS
+     touchmove bereits im Bildtakt – ein zwischengeschaltetes requestAnimationFrame haette
+     die Bewegung um genau ein Bild verzoegert, und diese 8–16 ms sind der Grund, warum
+     sich die Ebene nicht am Finger "festgeklebt" anfuehlt, sondern leicht nachzieht.
+     translate3d erzwingt eine eigene GPU-Ebene, die iOS ruhiger bewegt als translateX.
+     Im heissen Pfad wird bewusst nichts berechnet, was sich vorab bestimmen laesst, und
+     keine Zwischenzeichenkette erzeugt (kein toFixed). */
+  let invBreite = 0, untenStart = 0;
   function setzenSofort(px){
-    const anteil = Math.min(1, px / breite);
-    if(ziel) ziel.style.transform = `translate3d(${px}px,0,0)`;
-    if(unten) unten.style.transform = `translate3d(${((-PARALLAX * breite) * (1 - anteil)).toFixed(1)}px,0,0)`;
-    if(scrim) scrim.style.opacity = String((0.28 * (1 - anteil)).toFixed(3));
-  }
-  function setzen(px){
-    _pxWunsch = px;
-    if(_rafId !== null) return;
-    _rafId = requestAnimationFrame(() => { _rafId = null; setzenSofort(_pxWunsch); });
-  }
-  function rafStop(){
-    if(_rafId !== null){ cancelAnimationFrame(_rafId); _rafId = null; }
+    const rest = 1 - (px < breite ? px * invBreite : 1);
+    if(ziel) ziel.style.transform = 'translate3d(' + px + 'px,0,0)';
+    if(unten) unten.style.transform = 'translate3d(' + (untenStart * rest) + 'px,0,0)';
+    if(scrim) scrim.style.opacity = 0.28 * rest;
   }
   function aufraeumen(untenSichtbarLassen){
-    rafStop();
     if(ziel){
-      ziel.classList.remove('dragging', 'gliding', 'back-prep');
+      ziel.classList.remove('dragging', 'gliding');
       ziel.style.transform = ''; ziel.style.zIndex = '';
       ziel.style.removeProperty('--back-dur');
     }
     if(unten){
-      unten.classList.remove('back-under', 'gliding', 'back-prep');
+      unten.classList.remove('back-under', 'gliding');
       unten.style.transform = '';
       unten.style.removeProperty('--back-dur');
       // Nur zurueckverstecken, wenn die Ebene vorher versteckt war und die Geste
       // abgebrochen wurde - nach einem echten Zurueck muss sie sichtbar bleiben.
       if(untenWarVersteckt && !untenSichtbarLassen) unten.hidden = true;
     }
-    if(scrim){ scrim.classList.remove('on'); scrim.style.opacity = '0'; scrim.style.transition = ''; }
+    if(scrim){ scrim.style.opacity = '0'; scrim.style.transition = ''; }
     ziel = null; unten = null; art = ''; aktiv = false; untenWarVersteckt = false;
   }
 
@@ -1777,20 +1779,11 @@ function topOpenScreen(){
     ziel = oben.el; art = oben.art;
     unten = art === 'screen' ? untereEbene(ziel) : $('launcher');
     breite = window.innerWidth;
+    invBreite = 1 / breite;
+    untenStart = -PARALLAX * breite;
     sx = t.clientX; sy = t.clientY; dx = 0;
     proben = [{ x: sx, t: performance.now() }]; tempo = 0;
-    // Beide Ebenen sofort auf eine eigene GPU-Ebene heben und die untere schon jetzt
-    // einblenden. Passiert das erst, wenn die Geste als horizontal erkannt ist, muss iOS
-    // mitten in der Bewegung eine Ebene anlegen und neu zeichnen - genau dort entsteht
-    // das Stocken im ersten Drittel der Bewegung.
-    ziel.classList.add('back-prep');
-    if(unten){
-      untenWarVersteckt = !!unten.hidden;
-      if(unten.hidden) unten.hidden = false;
-      unten.classList.add('back-prep');
-    } else {
-      untenWarVersteckt = false;
-    }
+    untenWarVersteckt = false;
     aktiv = true;
   }, OPT_P);
 
@@ -1808,8 +1801,12 @@ function topOpenScreen(){
       window._backAktiv = true;      // Zeilen-Swipe soll jetzt stillhalten
       ziel.classList.add('dragging');
       ziel.style.zIndex = '400';
-      if(unten){ unten.classList.add('back-under'); }
-      scrimEl().classList.add('on');
+      if(unten){
+        untenWarVersteckt = !!unten.hidden;
+        unten.classList.add('back-under');
+        if(unten.hidden) unten.hidden = false;
+      }
+      scrimEl();
       if(unten && unten.compareDocumentPosition) scrim.style.zIndex = '398';
     }
     if(!horizontal) return;
@@ -1826,7 +1823,7 @@ function topOpenScreen(){
     // Nicht passiv: verhindert, dass iOS die Bewegung als Seiten-Scrollen uebernimmt
     // und die Geste mit einem touchcancel abbricht.
     if(e.cancelable) e.preventDefault();
-    setzen(dx);
+    setzenSofort(dx);
   }, OPT_A);
 
   function beenden(){
@@ -1835,9 +1832,6 @@ function topOpenScreen(){
     const schwung = tempo > V_COMM && dx > breite * V_MIN_W;
     const schliessen = weit || schwung;
     const el = ziel, u = unten;
-
-    // Ausstehendes Einzelbild verwerfen, sonst koennte es die Endposition ueberschreiben
-    rafStop();
 
     /* Dauer nach dem noch zu fahrenden Weg und dem Tempo beim Loslassen. Eine feste
        Dauer wirkt zaeh, wenn nur noch wenige Pixel fehlen, und abgehackt, wenn man
