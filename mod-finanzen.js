@@ -579,22 +579,31 @@ function renderHeroBento() {
   // KONTEN: Scalable Tagesgeld + Mini-Donut der Aufteilung
   {
     const acct = 'Scalable Tagesgeld';
-    const cats = {};
-    let total = 0;
+    const cats = {};      // nur positive Anteile - der Segmentbalken kann keine negativen zeigen
+    const negCats = {};   // negative Betraege, werden in der Legende ausgewiesen
+    let total = 0;        // echte Summe inkl. negativer Betraege
+    let posTotal = 0;
     data.b.forEach(e => {
-      if (isGiro(e) || !(e.balance > 0)) return;
+      if (isGiro(e)) return;
       if ((e.account || '') !== acct) return;
-      cats[e.cat] = (cats[e.cat] || 0) + e.balance;
-      total += e.balance;
+      const b = Number(e.balance) || 0;
+      if (b === 0) return;
+      total += b;
+      if (b > 0) { cats[e.cat] = (cats[e.cat] || 0) + b; posTotal += b; }
+      else { negCats[e.cat] = (negCats[e.cat] || 0) + b; }
     });
-    if (total > 0) {
+    if (posTotal > 0 || Object.keys(negCats).length) {
       const CAT_COL = { Urlaub: 'var(--violet)', Sparen: 'var(--green)', Konsum: 'var(--accent)' };
       const order = Object.entries(cats).sort((a,b) => b[1] - a[1]);
-      const bar = order.map(([cat,v]) => `<span class="bento-seg" style="flex:${(v/total).toFixed(4)};background:${CAT_COL[cat]||'var(--muted)'}"></span>`).join('');
-      const legend = order.map(([cat,v]) => `<div class="bento-break-row"><span class="bl"><span class="bento-leg-dot" style="background:${CAT_COL[cat]||'var(--muted)'}"></span>${esc(cat)}</span><span class="bv">${fmt(v)}</span></div>`).join('');
+      const bar = posTotal > 0
+        ? order.map(([cat,v]) => `<span class="bento-seg" style="flex:${(v/posTotal).toFixed(4)};background:${CAT_COL[cat]||'var(--muted)'}"></span>`).join('')
+        : `<span class="bento-seg" style="flex:1;background:var(--stroke)"></span>`;
+      const zeile = (cat, v, farbe) => `<div class="bento-break-row"><span class="bl"><span class="bento-leg-dot" style="background:${farbe}"></span>${esc(cat)}</span><span class="bv">${fmt(v)}</span></div>`;
+      const legend = order.map(([cat,v]) => zeile(cat, v, CAT_COL[cat] || 'var(--muted)')).join('')
+        + Object.entries(negCats).sort((a,b) => a[1] - b[1]).map(([cat,v]) => zeile(cat, v, 'var(--danger)')).join('');
       tiles.push(`<div class="bento-tile" onclick="openDetail('uebersicht')">
         <div class="bento-head"><span class="bento-title">${esc(acct)}</span></div>
-        <div class="bento-primary">${fmt(total)}</div>
+        <div class="bento-primary ${total < 0 ? 'neg' : ''}">${fmt(total)}</div>
         <div class="bento-foot bento-foot-col"><div class="bento-segbar">${bar}</div><div class="bento-break">${legend}</div></div>
       </div>`);
     }
@@ -1372,6 +1381,10 @@ function urlaubOffeneZahlungen() {
    die Reise planerisch belastet. */
 function tripRealYear(u) {
   if (u.year) { const m = String(u.year).match(/\d{4}/); if (m) return m[0]; }
+  // Rueckfall auf das Von-Datum: ohne diesen Zweig konnte bei Eintraegen ohne year-Feld
+  // kein Jahr ermittelt werden - die Kosten fielen dann lautlos aus dem Kontoverlauf.
+  const von = tripFrom(u);
+  if (von && /^\d{4}/.test(von)) return von.slice(0, 4);
   return urlaubYear(u.month);
 }
 
@@ -1477,9 +1490,16 @@ function startInlineKontoStart(el) {
   const commit = () => {
     if (done) return; done = true;
     const v = parseMoneySigned(inp.value);
-    if (v != null && !isNaN(v)) {
+    if (v != null && !isNaN(v) && v !== (e.balance || 0)) {
       e.balance = v;
       store.set(SECTIONS.b.storageKey, JSON.stringify(data.b));
+      // Ein neuer Startwert soll durchgreifen. Manuell gesetzte Monats-Salden wirken als
+      // Anker und wuerden ihn blockieren - sie werden deshalb aufgeloest, damit die
+      // Automatik ab dem Startwert durchrechnet und nichts zweimal angefasst werden muss.
+      if (Object.keys(urlaubKontoOverrides).length) {
+        urlaubKontoOverrides = {};
+        store.set(URLAUB_KONTO_OVERRIDE_KEY, JSON.stringify(urlaubKontoOverrides));
+      }
       renderSection('b'); renderDashboard(); updateIncome();
     }
     renderUrlaubeAll();
