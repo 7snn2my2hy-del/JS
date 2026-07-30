@@ -417,7 +417,7 @@
      Bild neu zeichnen) eine schmale Kante – waehrend der Bewegung optisch kaum zu
      unterscheiden, aber deutlich guenstiger. */
   .screen.dragging, .mod-container.dragging { box-shadow: -1px 0 0 rgba(255,255,255,0.10), -10px 0 18px rgba(0,0,0,0.45); }
-  .screen.gliding, .mod-container.gliding { transition: transform 0.32s var(--ease-ios) !important; }
+  .screen.gliding, .mod-container.gliding { transition: transform var(--back-dur, 0.32s) var(--ease-ios) !important; }
   /* Waehrend die Zurueck-Geste den ganzen Bildschirm bewegt, muesste iOS jedes einzelne
      Glas-Element (davon gibt es je Ansicht viele) laufend neu weichzeichnen – das ist die
      Hauptursache fuer das Ruckeln. Fuer die kurze Dauer der Animation reicht ein einfacher,
@@ -447,8 +447,9 @@
   .undo-btn:active { transform: scale(0.94); }
   .back-scrim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 398; display: none; }
   .back-scrim.on { display: block; }
+  .back-prep { will-change: transform; }
   .back-under { will-change: transform; }
-  .back-under.gliding { transition: transform 0.32s var(--ease-ios); }
+  .back-under.gliding { transition: transform var(--back-dur, 0.32s) var(--ease-ios); }
   .screen-topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
   .screen-back { width: 40px; height: 40px; border-radius: var(--r-pill); border: 1px solid var(--stroke); background: var(--glass); color: var(--text); font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.3s var(--spring); }
   .screen-back:active { transform: scale(0.9); }
@@ -1671,7 +1672,8 @@ function topOpenScreen(){
   return best;
 }
 (function initBackGesture(){
-  const ZONE    = 1 / 3;     // Startbereich: linkes Drittel
+  const ZONE_PX = 34;        // Startbereich: schmaler Streifen am linken Rand, wie in iOS
+  const ZONE_MAX = 0.12;     // auf sehr schmalen Geraeten nie mehr als 12% der Breite
   const COMMIT  = 0.35;      // ab diesem Anteil der Breite wird geschlossen
   const V_COMM  = 0.8;       // px/ms – ein echter Schwung, kein langsames Ziehen
   const V_MIN_W = 0.15;      // auch beim Schwung muss ein Stück Weg zurückgelegt sein
@@ -1681,6 +1683,7 @@ function topOpenScreen(){
   let ziel = null, art = '', unten = null, scrim = null, breite = 0;
   let sx = 0, sy = 0, dx = 0, entschieden = false, horizontal = false, aktiv = false;
   let proben = [], tempo = 0;
+  let untenWarVersteckt = false;   // war die untere Ebene vor der Geste ausgeblendet?
 
   function scrimEl(){
     if(!scrim){ scrim = document.createElement('div'); scrim.className = 'back-scrim'; document.body.appendChild(scrim); }
@@ -1733,12 +1736,23 @@ function topOpenScreen(){
   function rafStop(){
     if(_rafId !== null){ cancelAnimationFrame(_rafId); _rafId = null; }
   }
-  function aufraeumen(){
+  function aufraeumen(untenSichtbarLassen){
     rafStop();
-    if(ziel){ ziel.classList.remove('dragging', 'gliding'); ziel.style.transform = ''; ziel.style.zIndex = ''; }
-    if(unten){ unten.classList.remove('back-under', 'gliding'); unten.style.transform = ''; }
-    if(scrim){ scrim.classList.remove('on'); scrim.style.opacity = '0'; }
-    ziel = null; unten = null; art = ''; aktiv = false;
+    if(ziel){
+      ziel.classList.remove('dragging', 'gliding', 'back-prep');
+      ziel.style.transform = ''; ziel.style.zIndex = '';
+      ziel.style.removeProperty('--back-dur');
+    }
+    if(unten){
+      unten.classList.remove('back-under', 'gliding', 'back-prep');
+      unten.style.transform = '';
+      unten.style.removeProperty('--back-dur');
+      // Nur zurueckverstecken, wenn die Ebene vorher versteckt war und die Geste
+      // abgebrochen wurde - nach einem echten Zurueck muss sie sichtbar bleiben.
+      if(untenWarVersteckt && !untenSichtbarLassen) unten.hidden = true;
+    }
+    if(scrim){ scrim.classList.remove('on'); scrim.style.opacity = '0'; scrim.style.transition = ''; }
+    ziel = null; unten = null; art = ''; aktiv = false; untenWarVersteckt = false;
   }
 
   const OPT_P = { passive: true, capture: true };   // Erfassungsphase: laeuft vor allen Modul-Handlern
@@ -1755,7 +1769,7 @@ function topOpenScreen(){
     if(_openSwipe && !document.body.contains(_openSwipe)) _openSwipe = null;
     if(_openSwipe) return;
     const t = e.touches[0];
-    if(t.clientX > window.innerWidth * ZONE) return;
+    if(t.clientX > Math.min(ZONE_PX, window.innerWidth * ZONE_MAX)) return;
     if(gesperrt(e.target)) return;
     const oben = obersteEbene();
     if(!oben) return;
@@ -1764,7 +1778,19 @@ function topOpenScreen(){
     unten = art === 'screen' ? untereEbene(ziel) : $('launcher');
     breite = window.innerWidth;
     sx = t.clientX; sy = t.clientY; dx = 0;
-    proben = [{ x: sx, t: Date.now() }]; tempo = 0;
+    proben = [{ x: sx, t: performance.now() }]; tempo = 0;
+    // Beide Ebenen sofort auf eine eigene GPU-Ebene heben und die untere schon jetzt
+    // einblenden. Passiert das erst, wenn die Geste als horizontal erkannt ist, muss iOS
+    // mitten in der Bewegung eine Ebene anlegen und neu zeichnen - genau dort entsteht
+    // das Stocken im ersten Drittel der Bewegung.
+    ziel.classList.add('back-prep');
+    if(unten){
+      untenWarVersteckt = !!unten.hidden;
+      if(unten.hidden) unten.hidden = false;
+      unten.classList.add('back-prep');
+    } else {
+      untenWarVersteckt = false;
+    }
     aktiv = true;
   }, OPT_P);
 
@@ -1778,11 +1804,11 @@ function topOpenScreen(){
       entschieden = true;
       // Deutlich horizontal und nach rechts – sonst soll normal gescrollt werden
       horizontal = mx > 0 && Math.abs(mx) > Math.abs(my) * 1.4;
-      if(!horizontal){ aufraeumen(); return; }
+      if(!horizontal){ aufraeumen(false); return; }
       window._backAktiv = true;      // Zeilen-Swipe soll jetzt stillhalten
       ziel.classList.add('dragging');
       ziel.style.zIndex = '400';
-      if(unten){ unten.classList.add('back-under'); if(unten.hidden) unten.hidden = false; }
+      if(unten){ unten.classList.add('back-under'); }
       scrimEl().classList.add('on');
       if(unten && unten.compareDocumentPosition) scrim.style.zIndex = '398';
     }
@@ -1790,7 +1816,8 @@ function topOpenScreen(){
 
     // Geschwindigkeit über ein Zeitfenster mitteln – zwei aufeinanderfolgende
     // Messpunkte liegen oft nur 1 ms auseinander und ergeben unbrauchbare Werte.
-    const jetzt = Date.now();
+    // performance.now() ist feiner aufgelöst und monoton, Date.now() kann springen.
+    const jetzt = performance.now();
     proben.push({ x: t.clientX, t: jetzt });
     while(proben.length > 2 && jetzt - proben[0].t > V_FENSTER) proben.shift();
     const p0 = proben[0];
@@ -1803,7 +1830,7 @@ function topOpenScreen(){
   }, OPT_A);
 
   function beenden(){
-    if(!aktiv || !ziel || !horizontal){ if(ziel && !horizontal) aufraeumen(); aktiv = false; return; }
+    if(!aktiv || !ziel || !horizontal){ if(ziel && !horizontal) aufraeumen(false); aktiv = false; return; }
     const weit   = dx > breite * COMMIT;
     const schwung = tempo > V_COMM && dx > breite * V_MIN_W;
     const schliessen = weit || schwung;
@@ -1811,9 +1838,32 @@ function topOpenScreen(){
 
     // Ausstehendes Einzelbild verwerfen, sonst koennte es die Endposition ueberschreiben
     rafStop();
+
+    /* Dauer nach dem noch zu fahrenden Weg und dem Tempo beim Loslassen. Eine feste
+       Dauer wirkt zaeh, wenn nur noch wenige Pixel fehlen, und abgehackt, wenn man
+       schnell wischt - natives iOS fuehrt die Bewegung mit dem Schwung des Fingers
+       weiter. Untergrenze verhindert ein Aufblitzen, Obergrenze ein Nachschleppen. */
+    const restweg = schliessen ? Math.max(0, breite - dx) : dx;
+    const v = Math.min(Math.max(Math.abs(tempo), 0.6), 3.5);     // px/ms, sinnvoll begrenzt
+    const dauer = Math.round(Math.max(130, Math.min(340, restweg / v)));
+
     el.classList.remove('dragging'); el.classList.add('gliding');
-    if(u){ u.classList.add('gliding'); }
-    if(scrim) scrim.style.transition = 'opacity 0.32s var(--ease-ios)';
+    el.style.setProperty('--back-dur', dauer + 'ms');
+    if(u){ u.classList.add('gliding'); u.style.setProperty('--back-dur', dauer + 'ms'); }
+    if(scrim) scrim.style.transition = `opacity ${dauer}ms var(--ease-ios)`;
+
+    /* Abschluss am tatsaechlichen Ende des Uebergangs statt an einem festen Timer:
+       weicht die Laufzeit ab (ausgelastete Hauptschleife, geaenderte Dauer), sass der
+       Timer entweder zu frueh - sichtbarer Sprung - oder zu spaet. Der Timer bleibt
+       als Rueckfall, falls transitionend ausbleibt (z.B. Ebene wird zwischenzeitlich
+       ausgeblendet). */
+    let erledigt = false;
+    const einmal = (fn) => {
+      if(erledigt) return; erledigt = true;
+      el.removeEventListener('transitionend', beiEnde);
+      fn();
+    };
+    let beiEnde;
 
     if(schliessen){
       el.style.transform = `translate3d(${breite}px,0,0)`;
@@ -1828,21 +1878,19 @@ function topOpenScreen(){
         } else {
           closeModule();
         }
-        if(scrim) scrim.style.transition = '';
-        aufraeumen();
+        aufraeumen(true);
       };
-      setTimeout(fertig, 330);
+      beiEnde = ev => { if(ev.target === el && ev.propertyName === 'transform') einmal(fertig); };
+      el.addEventListener('transitionend', beiEnde);
+      setTimeout(() => einmal(fertig), dauer + 90);
     } else {
       el.style.transform = 'translate3d(0,0,0)';
       if(u) u.style.transform = `translate3d(${-PARALLAX * breite}px,0,0)`;
       if(scrim) scrim.style.opacity = '0.28';
-      const warModul = (art === 'modul');
-      setTimeout(() => {
-        if(scrim) scrim.style.transition = '';
-        // Geste abgebrochen, Bereich bleibt offen -> Startseite wieder ausblenden
-        if(warModul && u && u.id === 'launcher') u.hidden = true;
-        aufraeumen();
-      }, 330);
+      const zurueck = () => aufraeumen(false);
+      beiEnde = ev => { if(ev.target === el && ev.propertyName === 'transform') einmal(zurueck); };
+      el.addEventListener('transitionend', beiEnde);
+      setTimeout(() => einmal(zurueck), dauer + 90);
     }
     aktiv = false;
   }
