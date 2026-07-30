@@ -550,9 +550,6 @@
      Gehoert in den Kern, damit alle Module dieselbe Optik und Bedienung nutzen. */
   .balance-inline { font-family: inherit; font-size: 0.74rem; font-weight: 600; line-height: 1.2; color: var(--petrol); background: rgba(0,179,184,0.10); border: 1px solid rgba(0,179,184,0.35); border-radius: 6px; padding: 2px 6px; width: 108px; max-width: 55%; outline: none; font-variant-numeric: tabular-nums; -webkit-appearance: none; box-sizing: border-box; }
   .balance-inline:focus { border-color: var(--petrol); }
-  .signed-wrap { display: inline-flex; align-items: center; gap: 6px; }
-  .sign-toggle { flex-shrink: 0; width: 28px; height: 28px; border-radius: var(--r-pill); border: 1px solid var(--stroke); background: rgba(255,255,255,0.07); color: var(--text); font: inherit; font-size: 0.88rem; font-weight: 700; line-height: 1; cursor: pointer; -webkit-appearance: none; appearance: none; padding: 0; }
-  .sign-toggle:active { background: rgba(255,255,255,0.14); }
   /* Haken und Beschriftung stehen als Paar mittig in der Zeile. */
   .f-toggle { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; }
   .f-toggle .f-toggle-lab { font-size: 0.78rem; color: var(--text); line-height: 18px; display: block; margin: 0; align-self: center; }
@@ -1154,31 +1151,18 @@ function parseMoneySigned(s) {
   return negativ ? -Math.abs(v) : v;
 }
 
-/* Baut ein Inline-Eingabefeld fuer Geldbetraege mit Vorzeichen-Umschalter. Die
-   Zifferntastatur auf iOS bietet kein Minus an, deshalb braucht es dafuer einen Knopf.
+/* Baut ein Inline-Eingabefeld fuer Geldbetraege, in dem auch negative Werte eingegeben
+   werden koennen. Bewusst inputmode="text" statt "decimal": die Zifferntastatur auf iOS
+   bietet kein Minuszeichen an, die vollstaendige Tastatur schon (Ebene "123").
    Liegt im Kern, damit alle Module dieselbe Eingabe verwenden.
    opts: { inputClass, prefixHTML } */
 function buildSignedInput(el, wert, opts) {
   opts = opts || {};
   const cls = opts.inputClass || 'balance-inline';
   el.innerHTML = (opts.prefixHTML || '') +
-    '<span class="signed-wrap">' +
-      '<button type="button" class="sign-toggle" tabindex="-1" aria-label="Vorzeichen wechseln">\u00B1</button>' +
-      '<input type="text" class="' + cls + '" inputmode="decimal" autocomplete="transaction-amount">' +
-    '</span>';
+    '<input type="text" class="' + cls + '" inputmode="text" autocomplete="transaction-amount">';
   const inp = el.querySelector('input');
-  const btn = el.querySelector('.sign-toggle');
   inp.value = wert;
-  // Fokus halten, damit die Tastatur offen bleibt und kein vorzeitiges blur/commit ausloest
-  const halten = ev => ev.preventDefault();
-  btn.addEventListener('mousedown', halten);
-  btn.addEventListener('touchstart', halten, { passive: false });
-  btn.addEventListener('click', ev => {
-    ev.preventDefault(); ev.stopPropagation();
-    const v = parseMoneySigned(inp.value);
-    inp.value = (v == null) ? '-' : fmt(-v);
-    inp.focus();
-  });
   return inp;
 }
 
