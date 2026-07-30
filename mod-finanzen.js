@@ -1612,8 +1612,19 @@ function urlaubGroups() {
   return { groups, years };
 }
 
+/* Sortierung innerhalb eines Jahres. Bewusst nach dem tatsaechlichen Von-Datum und nicht
+   nur nach der Monatsnummer: Eine Reise ueber den Jahreswechsel kann per Budget-Jahr in
+   der Gruppe des Folgejahres stehen, beginnt real aber im Dezember des Vorjahres. Nach
+   Monatsnummer allein (12) waere sie ans Ende gerutscht, obwohl sie zeitlich zuerst kommt. */
 function urlaubItems(group) {
-  return group.slice().sort((a,b) => tripMonthNum(a) - tripMonthNum(b));
+  const schluessel = u => {
+    const von = tripFrom(u);
+    if (von && /^\d{4}-\d{2}/.test(von)) return von;
+    const j = tripRealYear(u) || '9999';
+    const m = String(tripMonthNum(u) || 12).padStart(2, '0');
+    return `${j}-${m}-01`;
+  };
+  return group.slice().sort((a,b) => schluessel(a).localeCompare(schluessel(b)));
 }
 
 // Reisen je Jahr als kompakte Liste: Reisemonat + Gesamtkosten
