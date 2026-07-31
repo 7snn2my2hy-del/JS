@@ -17,7 +17,7 @@ document.getElementById('mod-impfpass').insertAdjacentHTML('beforeend', `
 
   <button class="add-btn" onclick="impOpenModal()">＋ Impfung hinzufügen</button>
 
-  <p class="backup-hint" style="margin:18px 6px 0">Auffrischungsintervalle nach RKI/STIKO · nur zur persönlichen Übersicht, ersetzt keine ärztliche Beratung.</p>
+  <p class="backup-hint footnote">Auffrischungsintervalle nach RKI/STIKO · nur zur persönlichen Übersicht, ersetzt keine ärztliche Beratung.</p>
 </div>
 
 <div class="overlay" id="imp-overlay" onclick="if(event.target===this)impCloseModal()">
@@ -222,7 +222,6 @@ async function impSave(){
   impPersist();
   impCloseModal();
   impRender();
-  renderLauncher();
   showToast('Gespeichert');
 }
 
@@ -236,13 +235,15 @@ async function impDelete(id){
 
 /* ---------------- Sicherung ---------------- */
 function impBuildBackupPayload(){ return { impfungen }; }
+/* Uebernimmt nur Daten und meldet zurueck, ob es geklappt hat. Rueckfrage,
+   Erfolgsmeldung und Neuzeichnen macht der Kern in applyCombined – so verhaelt sich
+   dieser Bereich beim Wiederherstellen genauso wie Reisen und Finanzen. */
 function impApplyBackup(text){
   const p = safeParse(text, null);
-  if (p && Array.isArray(p.impfungen)){
-    impfungen = p.impfungen;
-    impPersist();
-    impRender();
-  }
+  if (!(p && Array.isArray(p.impfungen))) return false;
+  impfungen = p.impfungen;
+  impPersist();
+  return true;
 }
 
 /* Kachel-Grafik: Virus mit Spritze, schlichte Linienzeichnung passend zum
@@ -309,6 +310,7 @@ registerModule({
   keys: IMP_KEYS,
   buildPayload: () => impBuildBackupPayload(),
   applyBackup: (t) => impApplyBackup(t),
+  restoreInfo: p => ((p && p.impfungen || []).length) + ' Impfung(en)',
   detect: p => !!(p && Array.isArray(p.impfungen)),
   init: () => { try { impRender(); } catch(e){} },
   onOpen: () => { try { impRender(); } catch(e){} },

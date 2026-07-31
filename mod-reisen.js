@@ -182,19 +182,22 @@ if (gear === null) {
 } else {
   gear = normalizeGear(gear);
 }
-/* Vorhandene Ausrüstung aus Foto-Orten übernehmen */
-(function mergeExistingGear(){
-  let changed=false;
-  for (const a of activities){ if (a.type==='foto' && Array.isArray(a.equipment)){ for (const e of a.equipment){ if (e && !gearAll().includes(e)){ gear[gearClassify(e)].push(e); changed=true; } } } }
-  if (changed) store.set(KEYS.gear, JSON.stringify(gear));
-})();
+/* Datenumstellungen. Laufen ueber den migrate-Haken des Kerns – beim Start und nach dem
+   Wiederherstellen. Vorher waren es zwei IIFEs, die nur beim Laden der Datei liefen:
+   eine aeltere Sicherung wurde dadurch unveraendert uebernommen. Beide Schritte sind
+   wiederholbar und aendern nichts, wenn es nichts zu tun gibt. */
+function rpMigrate(){
+  /* Vorhandene Ausruestung aus Foto-Orten uebernehmen */
+  let gearChanged=false;
+  gear = normalizeGear(gear);
+  for (const a of activities){ if (a.type==='foto' && Array.isArray(a.equipment)){ for (const e of a.equipment){ if (e && !gearAll().includes(e)){ gear[gearClassify(e)].push(e); gearChanged=true; } } } }
+  if (gearChanged) store.set(KEYS.gear, JSON.stringify(gear));
 
-/* Migration: früheres Hotel-Feld „Adresse" ins neue Feld „Ort" übernehmen */
-(function migrateHotelCity(){
-  let changed=false;
-  for (const h of hotels){ if (h.address && !h.city){ h.city = h.address; delete h.address; changed=true; } }
-  if (changed) store.set(KEYS.hotels, JSON.stringify(hotels));
-})();
+  /* Frueheres Hotel-Feld "Adresse" ins neue Feld "Ort" uebernehmen */
+  let hotelChanged=false;
+  for (const h of hotels){ if (h.address && !h.city){ h.city = h.address; delete h.address; hotelChanged=true; } }
+  if (hotelChanged) store.set(KEYS.hotels, JSON.stringify(hotels));
+}
 const DATA = { trip:['trips',KEYS.trips], stop:['stops',KEYS.stops], hotel:['hotels',KEYS.hotels], flight:['flights',KEYS.flights], car:['cars',KEYS.cars], activity:['activities',KEYS.activities], photo:['activities',KEYS.activities], pack:['packing',KEYS.packing], todo:['todos',KEYS.todos] };
 const REFS = { trips:()=>trips, stops:()=>stops, hotels:()=>hotels, flights:()=>flights, cars:()=>cars, activities:()=>activities, packing:()=>packing, todos:()=>todos };
 function arr(type){ return REFS[DATA[type][0]](); }
@@ -744,7 +747,7 @@ function renderPackSection(t){
              onblur="addPackInline(true)">
     </div>`;
   const count = list.length ? ` <span class="sl-count">${done.length}/${list.length}</span>` : '';
-  return `<div class="section-label" style="margin-top:26px">Packliste${count}</div><div class="todo-list">${rows}${newRow}</div>`;
+  return `<div class="section-label spaced">Packliste${count}</div><div class="todo-list">${rows}${newRow}</div>`;
 }
 function togglePack(id){ const i=packing.find(x=>x.id===id); if(!i) return; i.checked=!i.checked; persist('pack'); renderTabContent(); }
 function renamePack(id, val){
@@ -862,7 +865,7 @@ function renderRouteRow(item, last){
         <div class="rt-name">${esc(o.company||'Mietwagen')}${o.vehicle?' · '+esc(o.vehicle):''}</div>
         <div class="rt-meta">
           ${(o.pickupDate||o.dropoffDate)?`<span>${displayDate(o.pickupDate)||'?'} – ${displayDate(o.dropoffDate)||'?'}</span>`:''}
-          ${days?`<span class="rt-nights" style="background:rgba(48,209,88,0.15);color:var(--green)">${days} ${days===1?'Tag':'Tage'}</span>`:''}
+          ${days?`<span class="rt-nights green">${days} ${days===1?'Tag':'Tage'}</span>`:''}
         </div>
         ${routeTxt?`<div class="rt-sub">${esc(routeTxt)}</div>`:''}
         ${o.notes?`<div class="rt-notes">${esc(o.notes)}</div>`:''}
@@ -1091,7 +1094,7 @@ function renderGearChoices(){
       html+=`<button class="gear-choice${on?' on':''}" onclick="toggleGearForPlace(${idx})"><span class="gc-check">${check}</span><span class="gc-label">${esc(it)}</span></button>`;
     });
   });
-  $('gear-choices').innerHTML = html || '<div class="foto-equip-empty" style="padding:8px 4px">Noch keine Ausrüstung – lege sie in den Einstellungen an.</div>';
+  $('gear-choices').innerHTML = html || '<div class="foto-equip-empty inset">Noch keine Ausrüstung – lege sie in den Einstellungen an.</div>';
 }
 function toggleGearForPlace(idx){
   const item=_gearItems[idx]; if(item===undefined) return;
@@ -1359,11 +1362,12 @@ async function persistFormImages(){
 /* ===== BACKUP (Payload) – von Cloud-Backup genutzt ===== */
 function rpBuildBackupPayload(){ return { app:'reiseplaner', version:1, exportedAt:new Date().toISOString(), trips, stops, hotels, flights, cars, activities, packing, todos, visited, autoTrips, gear }; }
 async function rpBuildBackupPayloadFull(){ const base=rpBuildBackupPayload(); if(idbReady) base.imageStore = await idbAll(); return base; }
+/* Uebernimmt nur noch Daten. Rueckfrage, Erfolgsmeldung und das Neuzeichnen macht der
+   Kern in applyCombined – vorher fragte dieser Bereich zusaetzlich selbst nach, sodass
+   beim Laden aus der Cloud mehrere Rueckfragen hintereinander kamen. */
 async function rpApplyBackup(rawText){
-  let p; try { p=JSON.parse(rawText); } catch(e){ notify('Das ist keine gültige Backup-Datei.'); return; }
-  if (!p || !Array.isArray(p.trips)){ notify('Diese Datei sieht nicht wie ein gültiges Reiseplaner-Backup aus.'); return; }
-  const ok=await showDialog(`${p.trips.length} Reise(n) gefunden. Dies ersetzt alle aktuellen Daten in dieser App.`,{title:'Backup wiederherstellen?',okText:'Wiederherstellen'});
-  if(!ok) return;
+  let p; try { p=JSON.parse(rawText); } catch(e){ return false; }
+  if (!p || !Array.isArray(p.trips)) return false;
   trips=p.trips||[]; stops=p.stops||[]; hotels=p.hotels||[]; flights=p.flights||[]; cars=p.cars||[]; activities=p.activities||[]; packing=p.packing||[]; todos=p.todos||[];
   visited=Array.isArray(p.visited)?p.visited:[]; store.set(KEYS.visited, JSON.stringify(visited));
   autoTrips=Array.isArray(p.autoTrips)?p.autoTrips:[]; store.set(KEYS.autoTrips, JSON.stringify(autoTrips));
@@ -1371,8 +1375,7 @@ async function rpApplyBackup(rawText){
   ['trip','stop','hotel','flight','car','activity','pack','todo'].forEach(persist);
   if (idbReady) { await idbClear(); if (Array.isArray(p.imageStore)) { for (const rec of p.imageStore) { if (rec && rec.id) await idbPut(rec.id, rec.data); } } }
   await migrateInlineImages();
-  renderHome();
-  showToast('Backup wiederhergestellt');
+  return true;
 }
 
 /* ===== CLOUD-BACKUP (GitHub, verschlüsselt) ===== */
@@ -1383,7 +1386,8 @@ async function rpApplyBackup(rawText){
 
 /* ===== APP-SPERRE (FaceID via WebAuthn) ===== */
 
-document.addEventListener('keydown', e => { if(e.key==='Escape'){ rpCloseModal(); if($('dialog-overlay').classList.contains('open')) dialogResolve(false); } });
+/* Der Escape-Zuhoerer lag frueher hier und schloss immer nur das Formular dieses
+   Bereichs. Er liegt jetzt im Kern und schliesst das jeweils oberste offene Blatt. */
 
 /* ===== INIT ===== */
 async function rpInit(){
@@ -1431,6 +1435,8 @@ registerModule({
   keys: KEYS,
   buildPayload: () => rpBuildBackupPayloadFull(),
   applyBackup: (t) => rpApplyBackup(t),
+  restoreInfo: p => ((p && p.trips || []).length) + ' Reise(n)',
+  migrate: () => rpMigrate(),
   detect: p => !!(p && Array.isArray(p.trips)),
   init: () => rpInit(),
   onOpen: () => { try { renderHome(); } catch(e){} },

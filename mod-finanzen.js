@@ -806,7 +806,7 @@ function renderDashboard() {
       return `<div class="legend-row"><span class="legend-dot" style="background:${s.color}"></span><span class="legend-name">${s.name}</span><span class="legend-val">${fmt(s.val)}</span><span class="legend-pct">${pct}%</span></div>`;
     }).join('');
     if (income > 0 && totalExpenses > income) {
-      legend.innerHTML += `<div class="legend-row" style="margin-top:2px"><span class="legend-dot" style="background:var(--danger)"></span><span class="legend-name" style="color:var(--danger)">Über Budget</span><span class="legend-val" style="color:var(--danger)">${fmt(totalExpenses - income)}</span><span class="legend-pct"></span></div>`;
+      legend.innerHTML += `<div class="legend-row over"><span class="legend-dot" style="background:var(--danger)"></span><span class="legend-name">Über Budget</span><span class="legend-val">${fmt(totalExpenses - income)}</span><span class="legend-pct"></span></div>`;
     }
   } else {
     legend.innerHTML = '<div class="dash-empty">Noch keine Daten.</div>';
@@ -950,9 +950,12 @@ function renderAll() { renderSection('v'); renderSection('b'); renderSection('a'
 
 /* Normalisiert beim Verlassen auf TT.MM.JJJJ. Ungültiges bleibt stehen zum Korrigieren. */
 
-/* Einmalige Migration: gespeicherte Datumsangaben (Stichtag, Abbuchung, Bonus-Verfall)
-   von TT.MM.JJJJ auf ISO umstellen. Anzeige & Parsing lesen beide Formate -> gefahrlos. */
-(function migrateDatesToISO(){
+/* Gespeicherte Datumsangaben (Stichtag, Abbuchung, Bonus-Verfall) von TT.MM.JJJJ auf ISO
+   umstellen. Anzeige und Parsing lesen beide Formate -> gefahrlos und wiederholbar.
+   Laeuft ueber den migrate-Haken des Kerns: beim Start und nach dem Wiederherstellen.
+   Vorher war es eine IIFE, die nur beim Laden der Datei lief – eine aeltere Sicherung
+   wurde dadurch mit alten Datumsformaten uebernommen. */
+function finMigrate(){
   const changed = { v:false, b:false, a:false, bonus:false };
   const conv = (obj, key, flag) => {
     const v = obj && obj[key];
@@ -967,7 +970,7 @@ function renderAll() { renderSection('v'); renderSection('b'); renderSection('a'
   if (changed.b) store.set(SECTIONS.b.storageKey, JSON.stringify(data.b));
   if (changed.a) store.set(SECTIONS.a.storageKey, JSON.stringify(data.a));
   if (changed.bonus) store.set(BONUS_KEY, JSON.stringify(bonus));
-})();
+}
 
 // Parst Kündigungsfrist-Freitext ("4 Monate", "6 Wochen", "30 Tage") -> Tage (oder null)
 function parseNoticeDays(s) {
@@ -1018,7 +1021,7 @@ function dueThisMonthHTML() {
   due.forEach(d => {
     html += `<div class="due-row"><span class="due-date">${String(d.day).padStart(2, '0')}.${curM}.</span><span class="due-name">${esc(d.e.name)}${d.e.provider ? `<span class="due-prov"> · ${esc(d.e.provider)}</span>` : ''}</span><span class="due-amount">${fmt(d.e.amount)}</span></div>`;
   });
-  html += `</div><div class="uc-divider" style="margin:14px 0"></div>`;
+  html += `</div><div class="uc-divider"></div>`;
   return html;
 }
 
@@ -1371,32 +1374,6 @@ function urlaubYear(monthStr) {
 function urlaubMonthlyRate() {
   const e = data.b.find(x => x.name && x.name.trim() === 'Urlaub I');
   return e ? toMonthly(e.amount || 0, e.period || 'monatlich') : 0;
-}
-
-/* Summe aller noch nicht faelligen, bereits geplanten Zahlungen (Anzahlungen bzw. volle
-   Reisekosten ohne Anzahlungsplan) ab dem aktuellen Monat - unabhaengig vom Reisejahr.
-   Zeigt, wie viel vom heutigen Kontostand rechnerisch schon "verplant" ist, weil es
-   demnaechst vom Konto abgebucht wird (z.B. Anzahlungen fuer einen Urlaub im Folgejahr). */
-function urlaubOffeneZahlungen() {
-  const now = new Date();
-  const ymNow = now.getFullYear() * 12 + now.getMonth();
-  let sum = 0;
-  urlaube.forEach(u => {
-    if (Array.isArray(u.payments) && u.payments.length) {
-      u.payments.forEach(p => {
-        const y = parseInt(p.y || finTripYear(u), 10);
-        const m = p.m;
-        if (!y || !m) return;
-        if ((y * 12 + (m - 1)) >= ymNow) sum += (p.amount || 0);
-      });
-    } else {
-      const y = parseInt(finTripYear(u), 10);
-      const m = tripMonthNum(u);
-      if (!y || !m) return;
-      if ((y * 12 + (m - 1)) >= ymNow) sum += tripCost(u);
-    }
-  });
-  return sum;
 }
 
 /* Wann der nicht durch Anzahlungen gedeckte Rest vom Konto abgeht. Standard ist der
@@ -2489,8 +2466,8 @@ function finOpenModal(sec, id) {
   $('f-texts').innerHTML = (() => {
     let html = '', i = 0;
     const fieldHtml = (ff) => ff.date
-      ? `<div class="field"><label>${ff.label}</label><input type="text" id="tf-${ff.key}" placeholder="${ff.placeholder||''}" inputmode="numeric" autocomplete="off" oninput="autoDate(this)" onblur="fixDate(this)"></div>`
-      : `<div class="field"><label>${ff.label}</label><input type="${ff.kind === 'date' ? 'date' : 'text'}" id="tf-${ff.key}" placeholder="${ff.placeholder||''}" autocomplete="off"></div>`;
+      ? `<div class="field"><label>${ff.label}</label><input type="text" id="tf-${ff.key}" placeholder="${ff.placeholder||''}" inputmode="decimal" autocomplete="off" oninput="autoDate(this)" onblur="fixDate(this)"></div>`
+      : `<div class="field"><label>${ff.label}</label><input type="text" id="tf-${ff.key}" placeholder="${ff.placeholder||''}" autocomplete="off"></div>`;
     while (i < tf.length) {
       const f = tf[i];
       if (f.half && tf[i+1] && tf[i+1].half) {
@@ -2793,35 +2770,26 @@ function finBuildBackupPayload() {
     urlaubDeposits: urlaubDeposits,
     urlaubManualDays: manuelleUrlaubstage,
     urlaubKontoOverride: urlaubKontoOverrides,
-    avViewMode: avViewMode,
     history: history
   };
 }
 
-async function finApplyBackup(rawText) {
+/* Uebernimmt nur noch Daten. Rueckfrage, Erfolgsmeldung und Neuzeichnen macht der Kern
+   in applyCombined – vorher fragte dieser Bereich zusaetzlich selbst nach und meldete
+   selbst Erfolg, sodass beim Laden aus der Cloud mehrere Rueckfragen und mehrere
+   Erfolgsmeldungen hintereinander kamen. */
+function finApplyBackup(rawText) {
   let parsed;
-  try { parsed = JSON.parse(rawText); }
-  catch (e) { notify('Das ist keine gültige Backup-Datei.'); return; }
+  try { parsed = JSON.parse(rawText); } catch (e) { return false; }
   const sec = parsed && parsed.sections ? parsed.sections : null;
-  if (!sec || (!Array.isArray(sec.v) && !Array.isArray(sec.b) && !Array.isArray(sec.a))) {
-    notify('Diese Datei sieht nicht wie ein gültiges Backup aus.');
-    return;
-  }
-  const nV = Array.isArray(sec.v) ? sec.v.length : 0;
-  const nB = Array.isArray(sec.b) ? sec.b.length : 0;
-  const nA = Array.isArray(sec.a) ? sec.a.length : 0;
-  const ok = await showDialog(
-    `Versicherungen & Verträge: ${nV}\nKonsum, Urlaub & Sparen: ${nB}\nAltersvorsorge: ${nA}\n\nDies ersetzt deine aktuellen Einträge.`,
-    { title: 'Backup wiederherstellen?', okText: 'Wiederherstellen' }
-  );
-  if (!ok) return;
+  if (!sec || (!Array.isArray(sec.v) && !Array.isArray(sec.b) && !Array.isArray(sec.a))) return false;
   if (Array.isArray(sec.v)) { data.v = sec.v; store.set(SECTIONS.v.storageKey, JSON.stringify(data.v)); }
   if (Array.isArray(sec.b)) { data.b = sec.b; store.set(SECTIONS.b.storageKey, JSON.stringify(data.b)); }
   if (Array.isArray(sec.a)) { data.a = sec.a; store.set(SECTIONS.a.storageKey, JSON.stringify(data.a)); }
   if (typeof parsed.income === 'number') {
     income = parsed.income;
     store.set(INCOME_KEY, String(income));
-    $('income-input').value = income > 0 ? fmt(income) : '';
+    if ($('income-input')) $('income-input').value = income > 0 ? fmt(income) : '';
   }
   if (Array.isArray(parsed.bonus)) {
     bonus = parsed.bonus;
@@ -2855,22 +2823,23 @@ async function finApplyBackup(rawText) {
     urlaubKontoOverrides = parsed.urlaubKontoOverride;
     store.set(URLAUB_KONTO_OVERRIDE_KEY, JSON.stringify(urlaubKontoOverrides));
   }
-  if (parsed.avViewMode === 'nominal' || parsed.avViewMode === 'real') {
-    avViewMode = parsed.avViewMode;
-    store.set('fin_av_view_mode_v1', avViewMode);
-  }
   if (Array.isArray(parsed.history)) {
     history = parsed.history;
     store.set(HISTORY_KEY, JSON.stringify(history));
   }
-  renderAll();
-  notify('Backup erfolgreich wiederhergestellt.', 'Fertig');
+  return true;
 }
 
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') finCloseModal();
-  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') saveEntry();
-});
+/* Kurzangabe fuer die Rueckfrage des Kerns. */
+function finRestoreInfo(p) {
+  const s = (p && p.sections) || {};
+  const n = (x) => (Array.isArray(x) ? x.length : 0);
+  return `${n(s.v)} Verträge, ${n(s.b)} Budgets, ${n(s.a)} Vorsorge`;
+}
+
+/* Der Escape-Zuhoerer lag frueher hier und schloss immer nur das Formular dieses
+   Bereichs – er liegt jetzt im Kern und schliesst das oberste offene Blatt. Die
+   Tastenkombination zum Speichern ist entfallen: auf dem iPhone nicht erreichbar. */
 
 function populateFilters() {
   ['v','b','a'].forEach(sec => {
@@ -2945,6 +2914,8 @@ registerModule({
   keys: FIN_KEYS,
   buildPayload: () => finBuildBackupPayload(),
   applyBackup: (t) => finApplyBackup(t),
+  restoreInfo: p => finRestoreInfo(p),
+  migrate: () => finMigrate(),
   detect: p => !!(p && p.sections),
   init: () => { try { finInit(); } catch(e){} },
   onOpen: () => { try { renderAll(); } catch(e){} },

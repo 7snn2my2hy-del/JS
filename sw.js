@@ -20,6 +20,22 @@ self.addEventListener('activate', (event) => {
     .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
     .then(() => self.clients.claim()));
 });
+
+/* Jede neue ?v=-Fassung einer Datei liegt unter einer eigenen URL im Cache. Ohne
+   Aufräumen bleibt jede jemals ausgelieferte Version dort für immer liegen – der Cache
+   wächst mit jedem Deploy weiter, obwohl immer nur die neueste gebraucht wird. Beim
+   Ablegen einer Datei werden deshalb alle Einträge mit demselben Pfad, aber anderem
+   Query-String entfernt. Das kommt ohne Kenntnis der aktuellen Versionsnummer aus,
+   die Datei bleibt dadurch weiterhin fix. */
+async function ablegen(cache, req, res) {
+  await cache.put(req, res);
+  const pfad = new URL(req.url).pathname;
+  for (const alt of await cache.keys()) {
+    const u = new URL(alt.url);
+    if (u.pathname === pfad && alt.url !== req.url) await cache.delete(alt);
+  }
+}
+
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
@@ -27,7 +43,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(req).then((res) => {
       const copy = res.clone();
-      caches.open(CACHE).then((c) => c.put(req, copy));
+      event.waitUntil(caches.open(CACHE).then((c) => ablegen(c, req, copy)));
       return res;
     }).catch(() => caches.match(req).then((hit) => hit || caches.match('./index.html')))
   );
