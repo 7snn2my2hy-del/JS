@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607311530">
+<link rel="manifest" href="manifest.json?v=2607311700">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -20,6 +20,11 @@
     --glass:     rgba(28, 28, 32, 0.5);
     --glass-hi:  rgba(44, 44, 50, 0.58);
     --stroke:    rgba(255, 255, 255, 0.08);
+    /* Abstaende rund um Trennlinien. Oberhalb und unterhalb einer Linie immer derselbe
+       Wert - vorher standen dort ungleiche Paare (16/14 bzw. 34/28), was sich in der
+       Ansicht als schiefe Abstaende gezeigt hat. */
+    --gap-sec:   16px;   /* Trennlinie zwischen zwei Abschnitten */
+    --gap-head:  10px;   /* Trennlinie direkt unter einer Ueberschrift */
     --stroke-hi: rgba(255, 255, 255, 0.16);
     --text:      #f5f5f7;
     --muted:     rgba(235, 235, 245, 0.55);
@@ -82,7 +87,6 @@
       0 4px 14px rgba(0,0,0,0.28);
     transition: transform 0.4s var(--spring), color 0.2s, box-shadow 0.2s;
   }
-  .gear-btn:hover { color: #fff; }
   .gear-btn:active { transform: rotate(90deg) scale(0.94); color: var(--accent); }
   .gear-btn svg { width: 18px; height: 18px; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35)); }
 
@@ -201,7 +205,8 @@
   .tile-slider .trip-tile { flex: 0 0 100%; width: 100%; }
   /* Einträge (Hotels, Flüge, Stopps …) nutzen dieselbe Swipe-Mechanik wie die Reisekacheln */
   .tile-slider .entry, .tile-slider .rt-row { flex: 0 0 100%; width: 100%; }
-  .entry-wrap { border-radius: var(--r-entry); }
+  .entry-wrap { border-radius: var(--r-entry); margin-bottom: 10px; }
+  .entry-wrap:last-child { margin-bottom: 0; }
   .list .entry-wrap .entry { margin: 0; }
   /* In der Zeitleiste darf nichts abgeschnitten werden, die Linie läuft durch */
   .rt-list .entry-wrap { border-radius: 0; overflow: visible; }
@@ -268,7 +273,6 @@
   .alert-item::before { content: "\26A0\FE0F"; flex-shrink: 0; }
 
   .add-btn { width: 100%; margin-top: 14px; padding: 12px; font: inherit; font-size: 0.82rem; font-weight: 500; color: var(--muted); cursor: pointer; border-radius: var(--r-pill); border: 1px solid var(--stroke); background: transparent; transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.3s var(--spring); }
-  .add-btn:hover { background: var(--glass); border-color: var(--stroke-hi); color: var(--accent); }
   .add-btn:active { transform: scale(0.97); opacity: 0.85; }
 
   .empty { text-align: center; color: var(--muted-2); font-size: 0.88rem; padding: 40px 16px; line-height: 1.6; }
@@ -402,7 +406,6 @@
 
   .entry { position: relative; padding: 16px 18px; border-radius: var(--r-entry); display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 14px; cursor: pointer; transition: border-color 0.2s ease, background 0.2s ease, transform 0.3s var(--spring); }
   .entry:active { transform: scale(0.98); }
-  .entry:hover { border-color: var(--stroke-hi); background: var(--glass-hi); }
   .entry-main { min-width: 0; }
   .entry-right { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; flex-shrink: 0; gap: 4px; }
   .entry-name { font-weight: 600; font-size: 0.97rem; letter-spacing: -0.01em; }
@@ -485,7 +488,7 @@
   .ov-when-dur { font-size: 0.9rem; font-weight: 600; color: var(--text); }
   .ov-when + .ov-stats { margin-top: 14px; }
   .ov-stats { display: flex; align-items: stretch; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--stroke); }
-  .stat { flex: 1; padding: 4px 6px 10px; text-align: center; position: relative; min-width: 0; }
+  .stat { flex: 1; padding: 10px 8px; text-align: center; position: relative; min-width: 0; }
   .stat + .stat::before { content: ""; position: absolute; left: 0; top: 6%; height: 72%; width: 1px; background: var(--stroke); }
   .stat-label { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted-2); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .stat-ic { display: flex; align-items: center; justify-content: center; height: 22px; margin-bottom: 5px; }
@@ -495,7 +498,7 @@
   .ic-hotel svg { color: var(--orange); }
   .ic-activity svg { color: var(--petrol); }
   .ic-foto svg { color: var(--accent); }
-  .stat-value { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .stat-value { font-size: 0.95rem; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
   .sl-count { color: var(--muted-2); font-weight: 600; }
 
   /* Checkliste im Apple-Notizen-Stil: rahmenlos, direkt eintippbar */
@@ -510,8 +513,6 @@
   .todo-text::placeholder { color: var(--muted-2); }
   .todo-row.checked .todo-text { color: var(--muted-2); text-decoration: line-through; }
   .todo-del { flex: 0 0 28px; width: 28px; height: 28px; border: none; background: transparent; color: transparent; cursor: pointer; font-size: 0.9rem; border-radius: var(--r-pill); transition: color 0.2s; }
-  .todo-row:hover .todo-del { color: var(--muted-2); }
-  .todo-del:hover { color: var(--danger); }
 
   .checkbox { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--stroke-hi); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s var(--spring); }
   .checkbox.checked { background: var(--green); border-color: var(--green); }
@@ -704,10 +705,10 @@
   .hero{ text-align: center; padding: 32px 0 34px; cursor: pointer; }
 #mod-finanzen /* Detail-Sheet (öffnet über Hero/Bento) */
   .detail-sheet{ position: fixed; inset: 0; z-index: 380; background: var(--bg); overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom)); visibility: hidden; }
-#mod-finanzen .detail-sheet.open{ transform: translateX(0); visibility: visible; transition: transform 0.4s var(--ease-ios), visibility 0s; }
-#mod-finanzen .detail-panel{ display: none; }
+.detail-sheet.open{ transform: translateX(0); visibility: visible; transition: transform 0.4s var(--ease-ios), visibility 0s; }
+.detail-panel{ display: none; }
 #mod-finanzen .detail-panel .dashboard, #mod-finanzen .detail-panel .av-dash{ margin: 0 0 14px; }
-#mod-finanzen .detail-panel.on{ display: block; }
+.detail-panel.on{ display: block; }
 #mod-finanzen .hero-label{ font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--petrol); font-weight: 700; }
 #mod-finanzen .hero-val{ font-size: 3rem; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; margin-top: 12px; line-height: 1; }
 #mod-finanzen .hero-delta{ display: inline-block; margin-top: 12px; font-size: 0.88rem; font-weight: 700; padding: 5px 12px; border-radius: var(--r-pill); }
@@ -774,7 +775,10 @@
 #mod-finanzen .donut-center{ position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; padding: 0 4px; }
 #mod-finanzen .donut-center-label{ font-size: 0.52rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted-2); }
 #mod-finanzen .donut-center-val{ font-size: 0.75rem; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; margin-top: 2px; max-width: 72px; text-align: center; line-height: 1.15; }
-#mod-finanzen .dash-sub-label{ font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--petrol); font-weight: 700; display: block; margin-bottom: 4px; }
+/* Abschnittsueberschrift: darunter immer eine Trennlinie, davor und danach derselbe
+   Abstand. Gilt fuer alle Bereiche, nicht nur fuer Finanzen. */
+.dash-sub-label{ font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--petrol); font-weight: 700; display: block;
+                 padding-bottom: var(--gap-head); border-bottom: 1px solid var(--stroke); margin-bottom: var(--gap-head); }
 #mod-finanzen .uy-konto-head .wealth-sub-row{ display: flex; align-items: center; gap: 7px; margin-top: 2px; flex-wrap: nowrap; text-transform: none; min-height: 18px; }
 #mod-finanzen .uy-konto-head .wealth-sub-row .saverate-eur{ margin-top: 0; margin-bottom: 0; display: inline; flex: 0 1 auto; min-width: 0; }
 #mod-finanzen .uy-konto-head span.saverate-eur{ font-size: 0.68rem; color: var(--muted); display: block; margin-top: 2px; font-weight: 600; text-transform: none; letter-spacing: 0; min-height: 18px; line-height: 18px; }
@@ -791,7 +795,10 @@
 #mod-finanzen .legend-name{ color: var(--text); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #mod-finanzen .legend-val{ color: var(--muted); font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; flex-shrink: 0; }
 #mod-finanzen .legend-pct{ display: none; }
-#mod-finanzen .dash-accounts{ margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--stroke); }
+/* Abschnitt im Detailblatt. Abstand ueber und unter der Trennlinie identisch. */
+.dash-accounts{ margin-top: var(--gap-sec); padding-top: var(--gap-sec); border-top: 1px solid var(--stroke); }
+/* Erster Abschnitt direkt unter dem Kopfbereich - dort trennt schon der Kopf. */
+.dash-accounts.first{ margin-top: 0; padding-top: 0; border-top: none; }
 #mod-finanzen .acct-row{ display: flex; align-items: center; gap: 8px; font-size: 0.82rem; line-height: 1.4; }
 #mod-finanzen .acct-row-name{ flex: 1; min-width: 0; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #mod-finanzen .acct-row-val{ color: var(--muted); font-variant-numeric: tabular-nums; font-weight: 600; width: 92px; text-align: right; flex-shrink: 0; }
@@ -827,9 +834,6 @@
 #mod-finanzen .sub-header.collapsed .section-chevron{ transform: rotate(-90deg); }
 #mod-finanzen .section-body{ overflow: hidden; }
 #mod-finanzen .section-body.collapsed{ display: none; }
-#mod-finanzen .backup-btn:hover{ background: var(--glass-hi); border-color: var(--stroke-hi); }
-#mod-finanzen .entry-wrap{ margin-bottom: 10px; }
-#mod-finanzen .entry-wrap:last-child{ margin-bottom: 0; }
 #mod-finanzen .entry-name-prov{ font-weight: 500; font-size: 0.8rem; color: var(--muted); letter-spacing: 0; }
 #mod-finanzen .entry-paysched{ font-size: 0.74rem; color: var(--muted-2); margin-top: 2px; font-variant-numeric: tabular-nums; }
 #mod-finanzen .cat-Abonnement{ background: rgba(176,110,235,0.16); color: #c39bf0; }
@@ -842,7 +846,7 @@
 #mod-finanzen .cat-Gesetzlich{ background: rgba(200,160,100,0.16); color: #c9a46a; }
 #mod-finanzen .cat-Betrieblich{ background: rgba(45,195,175,0.16);  color: #34c8b4; }
 #mod-finanzen .cat-Privat{ background: rgba(255,125,160,0.16); color: #ff8fae; }
-#mod-finanzen .entry-pills{flex-wrap: nowrap}
+.entry-pills{ flex-wrap: nowrap; }
 #mod-finanzen .acct-pill{ display: inline-block; font-size: 0.6rem; font-weight: 600; padding: 2px 7px; border-radius: var(--r-pill); letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; }
 #mod-finanzen .acct-DBGiro{ background: rgba(90,200,250,0.16);  color: #5ac8fa; }
 #mod-finanzen .acct-DBSpar{ background: rgba(120,140,255,0.16); color: #8a9cff; }
@@ -871,7 +875,7 @@
 #mod-finanzen .av-group-cur{ font-size: 0.7rem; color: var(--muted-2); font-variant-numeric: tabular-nums; }
 #mod-finanzen .av-card{ background: rgba(255,255,255,0.04); border: 1px solid var(--stroke); border-radius: var(--r-control); padding: 14px 16px; }
 #mod-finanzen .vd-group{ margin-top: 18px; }
-#mod-finanzen .vd-group .dash-sub-label{ margin-bottom: 10px; }
+/* .vd-group erbt jetzt denselben Abstand wie jede andere Ueberschrift. */
 #mod-finanzen .vd-card{ background: rgba(255,255,255,0.04); border: 1px solid var(--stroke); border-radius: 14px; padding: 11px 14px; margin-bottom: 8px; }
 #mod-finanzen .vd-card:last-child{ margin-bottom: 0; }
 #mod-finanzen .vd-head{ display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 7px; }
@@ -905,13 +909,19 @@
 #mod-finanzen .hist-axis{ display: flex; flex-direction: column; justify-content: space-between; padding: 4px 0 1px; font-size: 0.58rem; color: var(--muted-2); font-variant-numeric: tabular-nums; text-align: right; flex-shrink: 0; }
 #mod-finanzen .hist-empty{ font-size: 0.74rem; color: var(--muted-2); line-height: 1.4; padding: 8px 0; }
 #mod-finanzen .hist-range{ font-size: 0.6rem; color: var(--muted-2); text-align: center; margin-top: 4px; }
+/* Hinweis auf Vertraege, die sich mangels Monatsangabe nicht einordnen lassen. */
+.due-hint{ font-size: 0.72rem; color: var(--muted-2); line-height: 1.45; margin-top: 10px; }
 #mod-finanzen .due-list{ display: flex; flex-direction: column; gap: 7px; margin-top: 10px; }
 #mod-finanzen .due-row{ display: flex; align-items: baseline; gap: 8px; font-size: 0.78rem; }
 #mod-finanzen .due-date{ color: var(--muted-2); font-variant-numeric: tabular-nums; flex-shrink: 0; }
 #mod-finanzen .due-name{ color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 #mod-finanzen .due-prov{ color: var(--muted-2); }
 #mod-finanzen .due-amount{ color: var(--muted); font-weight: 600; font-variant-numeric: tabular-nums; flex-shrink: 0; }
-#mod-finanzen .hist-head{ display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+/* Ueberschriftzeile mit Bedienelementen rechts: die Trennlinie gehoert an die ganze
+   Zeile, nicht nur unter den Text - sonst reicht sie nur ueber die halbe Breite. */
+.hist-head{ display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            padding-bottom: var(--gap-head); border-bottom: 1px solid var(--stroke); margin-bottom: var(--gap-head); }
+.hist-head .dash-sub-label{ padding-bottom: 0; border-bottom: none; margin-bottom: 0; }
 #mod-finanzen .hist-range-ctl{ display: flex; gap: 3px; background: rgba(0,0,0,0.25); border-radius: var(--r-pill); padding: 2px; }
 #mod-finanzen .hist-range-btn{ border: none; background: transparent; color: var(--muted-2); font: inherit; font-size: 0.6rem; font-weight: 600; padding: 3px 9px; border-radius: var(--r-pill); cursor: pointer; transition: all 0.2s var(--ease-ios); }
 #mod-finanzen .hist-range-btn.active{ background: var(--accent); color: #fff; }
@@ -927,7 +937,11 @@
 #mod-finanzen .uy-konto-head{ margin-bottom: 0; padding-bottom: 0; }
 #mod-finanzen .uy-konto-head span{ font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--petrol); font-weight: 700; display: block; margin-bottom: 4px; }
 #mod-finanzen .uy-konto-head b{ font-size: 1.2rem; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; display: block; }
-#mod-finanzen .uy-section-label{ font-size: 1.05rem; letter-spacing: -0.01em; color: var(--text); font-weight: 700; margin: 34px 0 16px; padding-top: 28px; border-top: 1px solid var(--stroke); }
+/* Grosse Abschnittsueberschrift ("Budget", "Kontostand"): Trennlinie darueber mit
+   gleichem Abstand auf beiden Seiten, und eine zweite direkt darunter. */
+.uy-section-label{ font-size: 1.05rem; letter-spacing: -0.01em; color: var(--text); font-weight: 700;
+                   margin-top: var(--gap-sec); padding-top: var(--gap-sec); border-top: 1px solid var(--stroke);
+                   padding-bottom: var(--gap-head); border-bottom: 1px solid var(--stroke); margin-bottom: var(--gap-head); }
 #mod-finanzen .uy-meta-pair{ display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 2px; }
 #mod-finanzen .uy-meta-pair .uy-mc{ display: inline-flex; align-items: baseline; gap: 6px; font-size: 0.72rem; line-height: 1.3; }
 #mod-finanzen .uy-meta-pair .uy-ml::after{ content: ' |'; }
@@ -987,13 +1001,10 @@
 #mod-finanzen .urlaub-year-label:first-child{ margin-top: 2px; }
 #mod-finanzen .btn-icon{ background: none; border: none; cursor: pointer; color: var(--muted-2); width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; transition: color 0.15s, background 0.15s; }
 #mod-finanzen .btn-icon svg{ width: 17px; height: 17px; }
-#mod-finanzen .btn-icon.edit:hover{ color: var(--accent); background: rgba(10,132,255,0.14); }
-#mod-finanzen .btn-icon.del:hover{ color: var(--danger); background: rgba(255,69,58,0.14); }
-#mod-finanzen .field{ margin-bottom: 0; }
-#mod-finanzen .field input[type="date"]::-webkit-date-and-time-value{ text-align: left; margin: 0; }
+.field{ margin-bottom: 0; }
 #mod-finanzen .f-dyn-group{ display: flex; flex-direction: column; gap: 14px; }
 #mod-finanzen .f-dyn-group:empty{ display: none; }
-#mod-finanzen .f-toggle .f-toggle-lab{white-space: nowrap}
+.f-toggle .f-toggle-lab{ white-space: nowrap; }
 #mod-finanzen #urlaub-payments{ display: flex; flex-direction: column; gap: 8px; }
 #mod-finanzen .pay-row{ display: flex; gap: 8px; align-items: center; }
 #mod-finanzen .pay-row input{ padding: 10px 10px; font-size: 0.95rem; }
@@ -1001,17 +1012,12 @@
 #mod-finanzen .pay-row .pay-year{ flex: 0 0 64px; width: 64px; text-align: center; }
 #mod-finanzen .pay-row .pay-amount{ flex: 1 1 auto; min-width: 0; text-align: right; font-variant-numeric: tabular-nums; }
 #mod-finanzen .pay-del{ flex: 0 0 auto; background: none; border: none; color: var(--muted-2); padding: 6px; cursor: pointer; border-radius: 8px; line-height: 0; }
-#mod-finanzen .pay-del:hover{ color: var(--danger); }
 #mod-finanzen .pay-del svg{ width: 18px; height: 18px; display: block; }
 #mod-finanzen .btn-add-pay{ background: none; border: none; color: var(--accent); font: inherit; font-size: 0.85rem; font-weight: 600; padding: 8px 2px; cursor: pointer; }
 #mod-finanzen .pay-hint{ font-size: 0.8rem; color: var(--muted); margin-top: 6px; font-variant-numeric: tabular-nums; }
 #mod-finanzen .pay-hint b{ color: var(--text); font-weight: 600; }
 #mod-finanzen .pay-hint.over b{ color: var(--danger); }
-#mod-finanzen .btn-primary:hover{ opacity: 0.9; }
-#mod-finanzen .btn-secondary:hover{ background: rgba(255,255,255,0.12); }
 @media (max-width: 520px){
-#mod-finanzen .stat{ padding: 10px 8px; }
-#mod-finanzen .stat-value{ font-size: 0.95rem; }
 }
 @media (prefers-reduced-motion: reduce){
 #mod-finanzen *{ animation: none !important; transition: none !important; }
@@ -1548,7 +1554,13 @@ function bindMoneyInput(input) {
   input.addEventListener('blur', () => formatMoneyField(input));
 }
 
-function todayISO(){ return new Date().toISOString().slice(0,10); }
+/* Tagesdatum als ISO-Zeichenkette. Bewusst aus den lokalen Feldern gebaut:
+   toISOString() rechnet in UTC und liefert in Deutschland zwischen 00:00 und 02:00
+   den Vortag – daysUntil() daneben rechnet lokal, die beiden widersprachen sich. */
+function isoVon(d){
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function todayISO(){ return isoVon(new Date()); }
 
 function daysUntil(iso){ if(!iso) return null; const d=new Date(iso+'T00:00:00'); const n=new Date(); n.setHours(0,0,0,0); return Math.round((d-n)/86400000); }
 
@@ -2312,10 +2324,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607311530"></script>
-<script src="mod-reisen.js?v=2607311530"></script>
-<script src="mod-finanzen.js?v=2607311530"></script>
-<script src="mod-impfpass.js?v=2607311530"></script>
+<script src="data-laender.js?v=2607311700"></script>
+<script src="mod-reisen.js?v=2607311700"></script>
+<script src="mod-finanzen.js?v=2607311700"></script>
+<script src="mod-impfpass.js?v=2607311700"></script>
 
 <!-- ===== Start ===== -->
 <script>
