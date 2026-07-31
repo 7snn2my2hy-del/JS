@@ -253,9 +253,8 @@
   .hero-plot svg { flex: 1; min-width: 0; height: 64px; display: block; }
 
   /* Kompakte Jahreszeile in einer Kachel (z.B. Resturlaub) */
-  /* Abstand kommt allein aus dem Flex-Gap des umschliessenden .bento-foot-col –
-     eine zusaetzliche Margin wuerde ihn verdoppeln. */
-  .ru-mini + .ru-mini { margin-top: 0; }
+  /* Der Abstand zwischen den Balken gehoert dem Flex-Gap des umschliessenden
+     .bento-foot-col. Hier bewusst keine eigene Margin – sonst gaebe es zwei Quellen. */
   .ru-mini-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.68rem; color: var(--muted); margin-bottom: 4px; font-variant-numeric: tabular-nums; }
 
   /* Jahresuebersicht mit Fortschrittsbalken (z.B. Resturlaub) */
@@ -927,7 +926,7 @@
 #mod-finanzen .field-group-label{ font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-2); margin: 0 0 -4px; font-weight: 600; }
 #mod-finanzen .urlaub-year-head{ margin-top: 22px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.045); }
 #mod-finanzen .urlaub-year-head.first-year{ border-top: none; margin-top: 4px; padding-top: 0; }
-#mod-finanzen .uy-konto-head{ margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--stroke); }
+#mod-finanzen .uy-konto-head{ margin-bottom: 0; padding-bottom: 0; }
 #mod-finanzen .uy-konto-head span{ font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--petrol); font-weight: 700; display: block; margin-bottom: 4px; }
 #mod-finanzen .uy-konto-head b{ font-size: 1.2rem; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; display: block; }
 #mod-finanzen .uy-konto-sub{ display: flex; justify-content: space-between; align-items: baseline; font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
@@ -942,8 +941,6 @@
 #mod-finanzen .kv-input{ width: 128px; max-width: 70%; text-align: right; }
 #mod-finanzen .kv-saldo.manuell{ text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
 #mod-finanzen .kv-manual{ color: var(--accent); margin-left: 5px; font-size: 0.9em; }
-#mod-finanzen .uy-konto-head + .uy-section-label{ margin-top: 0; padding-top: 0; border-top: none; }
-#mod-finanzen .kv-yearend + .kv-year{ margin-top: 0; }
 #mod-finanzen .kv-year{ font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted-2); margin: 16px 0 6px; }
 #mod-finanzen .kv-month{ padding: 9px 0; border-top: 1px solid rgba(255,255,255,0.045); }
 #mod-finanzen .kv-head{ display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
