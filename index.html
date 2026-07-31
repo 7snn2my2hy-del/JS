@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607311700">
+<link rel="manifest" href="manifest.json?v=2607312145">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -701,9 +701,9 @@
 #mod-finanzen .income-avail{ font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--green); }
 #mod-finanzen .income-avail.negative{ color: var(--danger); }
 #mod-finanzen .income-divider{ height: 1px; background: var(--stroke); margin: 40px 0 4px; }
-#mod-finanzen /* Hero: Gesamtvermögen */
-  .hero{ text-align: center; padding: 32px 0 34px; cursor: pointer; }
-#mod-finanzen /* Detail-Sheet (öffnet über Hero/Bento) */
+/* Hero: Gesamtvermögen */
+  #mod-finanzen .hero{ text-align: center; padding: 32px 0 34px; cursor: pointer; }
+/* Detail-Sheet (öffnet über Hero/Bento) */
   .detail-sheet{ position: fixed; inset: 0; z-index: 380; background: var(--bg); overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom)); visibility: hidden; }
 .detail-sheet.open{ transform: translateX(0); visibility: visible; transition: transform 0.4s var(--ease-ios), visibility 0s; }
 .detail-panel{ display: none; }
@@ -728,8 +728,8 @@
 #mod-finanzen .bento-unit{ font-size: 0.78rem; color: var(--muted); font-weight: 600; margin-left: 3px; letter-spacing: 0; }
 #mod-finanzen .bento-caption{ font-size: 0.74rem; color: var(--muted); line-height: 1.3; }
 #mod-finanzen .bento-foot{ margin-top: 14px; }
-#mod-finanzen /* Konten */
-  .bento-foot{ display: flex; align-items: center; gap: 8px; }
+/* Konten */
+  #mod-finanzen .bento-foot{ display: flex; align-items: center; gap: 8px; }
 #mod-finanzen .bento-foot-col{ flex-direction: column; align-items: stretch; }
 #mod-finanzen .bento-segbar{ display: flex; height: 6px; border-radius: var(--r-pill); overflow: hidden; gap: 2px; }
 #mod-finanzen .bento-seg{ border-radius: var(--r-pill); min-width: 4px; }
@@ -740,24 +740,24 @@
 #mod-finanzen .bento-break-row span:last-child{ font-variant-numeric: tabular-nums; white-space: nowrap; padding-left: 8px; }
 #mod-finanzen .bento-leg-dot{ display: inline-block; width: 6px; height: 6px; border-radius: var(--r-pill); margin-right: 5px; vertical-align: middle; }
 #mod-finanzen .bento-mini{ font-size: 0.72rem; color: var(--muted-2); }
-#mod-finanzen /* Listen-Zeilen (Verträge/Urlaube/AV) */
-  .bento-list{ display: flex; flex-direction: column; gap: 5px; width: 100%; }
+/* Listen-Zeilen (Verträge/Urlaube/AV) */
+  #mod-finanzen .bento-list{ display: flex; flex-direction: column; gap: 5px; width: 100%; }
 #mod-finanzen .bento-list-row{ display: flex; justify-content: space-between; align-items: baseline; font-size: 0.74rem; }
 #mod-finanzen .bento-list-row .bl{ color: var(--text); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 #mod-finanzen .bento-list-row .bl.warn{ color: var(--danger); }
 #mod-finanzen .bento-list-row.av .bl{ flex-shrink: 0; }
 #mod-finanzen .bento-list-row .bv{ color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0; padding-left: 10px; }
-#mod-finanzen /* Urlaubs-Weltkarte */
-  .bento-map-wrap{ width: 100%; }
+/* Urlaubs-Weltkarte */
+  #mod-finanzen .bento-map-wrap{ width: 100%; }
 #mod-finanzen .bento-map{ width: 100%; height: auto; aspect-ratio: 100 / 34; display: block; }
 #mod-finanzen .bento-map-legend{ display: flex; gap: 8px; justify-content: center; margin-top: 9px; font-size: 0.56rem; color: var(--muted-2); }
 #mod-finanzen .bento-map-legend i{ display: inline-block; width: 6px; height: 6px; border-radius: var(--r-pill); margin-right: 4px; }
-#mod-finanzen /* Fortschrittsbalken bis 67 */
-  .bento-progress{ height: 6px; border-radius: var(--r-pill); background: rgba(255,255,255,0.08); overflow: hidden; }
+/* Fortschrittsbalken bis 67 */
+  #mod-finanzen .bento-progress{ height: 6px; border-radius: var(--r-pill); background: rgba(255,255,255,0.08); overflow: hidden; }
 #mod-finanzen .bento-progress-fill{ display: block; height: 100%; border-radius: var(--r-pill); background: var(--green); }
 #mod-finanzen .dash-swipe{ margin: 40px 0 0; position: relative; }
-#mod-finanzen /* Farb-Glow hinter dem Dashboard-Bereich – hebt ihn als eigene Zone ab */
-  .dash-swipe::before{
+/* Farb-Glow hinter dem Dashboard-Bereich – hebt ihn als eigene Zone ab */
+  #mod-finanzen .dash-swipe::before{
     content: ''; position: absolute; z-index: -1;
     inset: -6% 0 -8% 0;
     background:
@@ -2324,10 +2324,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607311700"></script>
-<script src="mod-reisen.js?v=2607311700"></script>
-<script src="mod-finanzen.js?v=2607311700"></script>
-<script src="mod-impfpass.js?v=2607311700"></script>
+<script src="data-laender.js?v=2607312145"></script>
+<script src="mod-reisen.js?v=2607312145"></script>
+<script src="mod-finanzen.js?v=2607312145"></script>
+<script src="mod-impfpass.js?v=2607312145"></script>
 
 <!-- ===== Start ===== -->
 <script>
