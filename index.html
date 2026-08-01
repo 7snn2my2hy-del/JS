@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607312230">
+<link rel="manifest" href="manifest.json?v=2607312330">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -899,8 +899,10 @@
 #mod-finanzen .av-card-metric.s1 .av-card-metric-val{ color: var(--text); }
 #mod-finanzen .av-card-metric.s2 .av-card-metric-val{ color: var(--text); }
 #mod-finanzen .av-card-metric.s3 .av-card-metric-val{ color: var(--text); }
-/* Summenzeile mit Linie oben und unten - Abstand innen wie aussen gleich. */
-#mod-finanzen .av-card-total{ background: transparent; border: none; border-radius: 0; padding: var(--gap-sec) 0; border-top: 1px solid var(--stroke); border-bottom: 1px solid var(--stroke); margin-top: var(--gap-sec); margin-bottom: var(--gap-sec); }
+/* Summenzeile mit Linie oben und unten - Abstand innen wie aussen gleich. Ohne die
+   negativen Raender wuerde der 10px-Abstand des umgebenden .av-cards (flex-gap) zum
+   eigenen 16px-Rand dazukommen und die Luecke groesser als ueberall sonst wirken lassen. */
+#mod-finanzen .av-card-total{ background: transparent; border: none; border-radius: 0; padding: var(--gap-sec) 0; border-top: 1px solid var(--stroke); border-bottom: 1px solid var(--stroke); margin-top: calc(var(--gap-sec) - 10px); margin-bottom: calc(var(--gap-sec) - 10px); }
 #mod-finanzen .av-hist-block{ margin-top: var(--gap-sec); padding-top: var(--gap-sec); border-top: 1px solid var(--stroke); }
 #mod-finanzen .av-cards > .av-hist-block:first-child{ border-top: none; margin-top: 0; padding-top: 0; }
 #mod-finanzen .av-legend{ font-size: 0.62rem; color: var(--muted-2); text-align: center; margin-top: 10px; }
@@ -939,6 +941,10 @@
    Ansichten auf derselben Hoehe sitzt - unabhaengig davon, ob die graue Unterzeile kurz,
    lang oder leer ist. Sie darf dafuer nicht umbrechen. */
 #mod-finanzen .uy-konto-head{ min-height: 58px; padding-bottom: var(--gap-sec); border-bottom: 1px solid var(--stroke); margin-bottom: var(--gap-sec); }
+/* Folgt direkt eine grosse Abschnittsueberschrift (z.B. "Budget" im Urlaube-Dashboard),
+   bringt die schon ihre eigene Linie mit - sonst standen zwei Linien mit doppeltem
+   Abstand dazwischen. Die vom Kopfblock trennt in diesem Fall nichts mehr, sie faellt weg. */
+#mod-finanzen .uy-konto-head:has(+ .uy-section-label){ border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
 #mod-finanzen .uy-konto-head span{ font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--petrol); font-weight: 700; display: block; margin-bottom: 4px; }
 #mod-finanzen .uy-konto-head b{ font-size: 1.2rem; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; display: block; }
 /* Grosse Abschnittsueberschrift ("Budget", "Kontostand"). Die Linie darueber trennt sie
@@ -954,7 +960,12 @@
 #mod-finanzen .kv-saldo.manuell{ text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
 #mod-finanzen .kv-manual{ color: var(--accent); margin-left: 5px; font-size: 0.9em; }
 #mod-finanzen .kv-year{ font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted-2); margin: 16px 0 6px; }
-#mod-finanzen .kv-month{ padding: 9px 0; border-top: 1px solid var(--stroke); }
+/* Zeilen einer dichten, sich wiederholenden Liste (ein Eintrag pro Monat) - bewusst
+   OHNE Linie wie bei echten Abschnittstrennern, sonst sind auf einen Blick zehn
+   Monatszeilen kaum noch von den wenigen echten Bloecken zu unterscheiden. Der
+   Abstand allein reicht als Trennung; die naechste Zeile beginnt zusaetzlich fett. */
+#mod-finanzen .kv-month{ padding: 9px 0; }
+#mod-finanzen .kv-month + .kv-month{ margin-top: 5px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
 #mod-finanzen .kv-head{ display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
 #mod-finanzen .kv-mon{ font-size: 0.85rem; color: var(--text); font-weight: 600; }
 #mod-finanzen .kv-saldo{ font-size: 0.85rem; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
@@ -2330,10 +2341,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607312230"></script>
-<script src="mod-reisen.js?v=2607312230"></script>
-<script src="mod-finanzen.js?v=2607312230"></script>
-<script src="mod-impfpass.js?v=2607312230"></script>
+<script src="data-laender.js?v=2607312330"></script>
+<script src="mod-reisen.js?v=2607312330"></script>
+<script src="mod-finanzen.js?v=2607312330"></script>
+<script src="mod-impfpass.js?v=2607312330"></script>
 
 <!-- ===== Start ===== -->
 <script>

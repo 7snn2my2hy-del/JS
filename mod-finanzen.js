@@ -1472,9 +1472,10 @@ function tripRealYear(u) {
    rekonstruiert, da dafuer keine historischen Kontodaten vorliegen. */
 function urlaubKontoVerlauf(startSaldo) {
   const now = new Date();
-  // Der laufende Monat ist in der Regel bereits gebucht - der Verlauf beginnt daher
-  // mit dem Folgemonat, ausgehend vom heutigen Kontostand.
-  const ymNow = now.getFullYear() * 12 + now.getMonth() + 1;
+  // Der Verlauf beginnt beim laufenden Monat, nicht erst beim Folgemonat - sonst fehlt
+  // z.B. am 1. eines Monats dessen Zeile komplett, obwohl noch nichts gebucht sein kann.
+  // Er faellt erst raus, sobald der Monat vorbei ist.
+  const ymNow = now.getFullYear() * 12 + now.getMonth();
   const buckets = {};
   const bucket = ym => (buckets[ym] = buckets[ym] || { ym, zu: [], ab: [] });
 
