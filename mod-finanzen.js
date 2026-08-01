@@ -1521,7 +1521,11 @@ function urlaubKontoVerlauf(startSaldo) {
   let saldo = startSaldo;
   for (let ym = ymNow; ym <= ymEnd; ym++) {
     const b = buckets[ym] || { ym, zu: [], ab: [] };
-    const rate = rateAtYm(ym);
+    // Der Startsaldo ist der heutige, echte Kontostand - die Sparrate des laufenden
+    // Monats steckt darin bereits drin (oder ist noch offen, aber nicht diese Funktion
+    // sagt das). Sie hier nochmal aufzuaddieren wuerde den Monat doppelt zaehlen.
+    // Erst ab dem Folgemonat ist die Rate eine echte zukuenftige Bewegung.
+    const rate = ym === ymNow ? 0 : rateAtYm(ym);
     const zu = (rate > 0 ? [{ label: 'Monatliche Sparrate', amount: rate }] : []).concat(b.zu);
     const summeZu = zu.reduce((s,x) => s + x.amount, 0);
     const summeAb = b.ab.reduce((s,x) => s + x.amount, 0);
