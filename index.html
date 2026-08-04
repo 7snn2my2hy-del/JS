@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2608010545">
+<link rel="manifest" href="manifest.json?v=2608010615">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -1016,6 +1016,12 @@
 #mod-finanzen .uy-top{ display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 9px; }
 #mod-finanzen .uy-year{ font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--petrol); }
 #mod-finanzen .uy-remaining{ font-size: 0.95rem; font-weight: 600; color: var(--green); font-variant-numeric: tabular-nums; }
+/* Kontingent-Zeile: editierbare Zahl oben, Status (uebrig/fehlen) als kleinere
+   Unterzeile darunter statt in derselben Zeile zusammengedraengt. */
+#mod-finanzen .ru-kontingent-block{ margin-bottom: 14px; }
+#mod-finanzen .ru-kontingent-block:last-child{ margin-bottom: 0; }
+#mod-finanzen .ru-kontingent-block .uy-top{ margin-bottom: 0; }
+#mod-finanzen .ru-kontingent-sub{ text-align: right; font-size: 0.68rem; font-weight: 600; margin-top: 2px; }
 #mod-finanzen .uy-remaining.negative{ color: var(--danger); }
 #mod-finanzen .uy-bar{ height: 4px; background: rgba(255,255,255,0.06); border-radius: var(--r-pill); overflow: hidden; margin-bottom: 6px; }
 #mod-finanzen .uy-bar-fill{ height: 100%; border-radius: var(--r-pill); background: var(--green); transition: width 0.45s var(--ease-ios); }
@@ -2356,10 +2362,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2608010545"></script>
-<script src="mod-reisen.js?v=2608010545"></script>
-<script src="mod-finanzen.js?v=2608010545"></script>
-<script src="mod-impfpass.js?v=2608010545"></script>
+<script src="data-laender.js?v=2608010615"></script>
+<script src="mod-reisen.js?v=2608010615"></script>
+<script src="mod-finanzen.js?v=2608010615"></script>
+<script src="mod-impfpass.js?v=2608010615"></script>
 
 <!-- ===== Start ===== -->
 <script>

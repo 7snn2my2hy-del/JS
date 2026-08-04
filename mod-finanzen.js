@@ -1865,13 +1865,20 @@ function renderUrlaubeDash() {
   // antippbare Zahl auf der Bento-Kachel, dort aber im Konflikt mit dem Tap auf die
   // ganze Kachel (oeffnet diese Ansicht hier) - auf dem Geraet nicht zuverlaessig
   // trennbar. Hier im Detailbereich konkurriert kein uebergeordneter Tap damit.
+  // "Urlaubskontingent" statt "Resturlaub": die editierbare Zahl selbst ist die zur
+  // Verfuegung stehende Gesamtsumme (das Kontingent), nicht der Rest - der steht als
+  // Nebeninfo darunter.
   if (numYears.length) {
-    html += `<div class="uy-section-label">Resturlaub</div>`;
+    html += `<div class="uy-section-label">Urlaubskontingent</div>`;
     numYears.forEach(y => {
       const ru = resturlaubJahr(y);
-      html += `<div class="uy-top">
-          <span class="uy-year">${y}</span>
-          <span class="uy-remaining" style="color:${ruTextFarbe(ru.rest)}">${ruZahl(ru.rest)} / <span class="kv-editable" onclick="startInlineUrlaubAnspruch(${y}, this)">${ruZahl(ru.anspruch)}</span> Tage</span>
+      const subTxt = ru.rest >= 0 ? `${ruZahl(ru.rest)} Tage übrig` : `${ruZahl(Math.abs(ru.rest))} Tage fehlen`;
+      html += `<div class="ru-kontingent-block">
+          <div class="uy-top">
+            <span class="uy-year">${y}</span>
+            <span class="uy-remaining" style="color:var(--text)"><span class="kv-editable" onclick="startInlineUrlaubAnspruch(${y}, this)">${ruZahl(ru.anspruch)}</span> Tage</span>
+          </div>
+          <div class="ru-kontingent-sub" style="color:${ruTextFarbe(ru.rest)}">${subTxt}</div>
         </div>`;
     });
   }
