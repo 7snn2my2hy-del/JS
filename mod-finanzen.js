@@ -982,6 +982,44 @@ function finMigrate(){
   if (changed.b) store.set(SECTIONS.b.storageKey, JSON.stringify(data.b));
   if (changed.a) store.set(SECTIONS.a.storageKey, JSON.stringify(data.a));
   if (changed.bonus) store.set(BONUS_KEY, JSON.stringify(bonus));
+  finVerknuepfeAltEintraege();
+}
+
+/* Einmaliger Abgleich fuer Alteintraege, die vor dem Automatismus zwischen Finanzen und
+   Reisen angelegt wurden (also schon vorhandene Urlaube in Finanzen, zu denen der
+   Automatismus noch keine Reise erzeugt hat):
+   - Gibt es zu einem Namen bereits GENAU EINE unverknuepfte Reise, wird verknuepft.
+   - Gibt es MEHRERE gleich benannte Reisen, bleibt der Eintrag unangetastet, statt eine
+     falsche Zuordnung zu raten - dafuer muesste von Hand nachgeholfen werden.
+   - Gibt es GAR KEINE passende Reise, wird - wie beim Neuanlegen - eine neue Huelle
+     angelegt. Ohne diesen dritten Fall blieben Alteintraege ohne Gegenstueck in Reisen
+     fuer immer unsichtbar, weil sie ja nie ueber saveUrlaub() neu angelegt werden.
+   Laeuft bei jedem Start und nach jedem Wiederherstellen mit, tut aber nichts mehr,
+   sobald einmal alles verknuepft bzw. angelegt ist. */
+function finVerknuepfeAltEintraege() {
+  if (typeof trips === 'undefined' || typeof urlaube === 'undefined') return;
+  const normal = s => (s || '').trim().toLowerCase();
+  const offen = urlaube.filter(u => !u.reiseId);
+  if (!offen.length) return;
+  let n = 0;
+  for (const u of offen) {
+    const name = normal(u.name);
+    if (!name) continue;
+    const kandidaten = trips.filter(t => !t.finId && normal(t.name) === name);
+    if (kandidaten.length === 1) {
+      u.reiseId = kandidaten[0].id;
+      kandidaten[0].finId = u.id;
+      n++;
+    } else if (kandidaten.length === 0 && typeof rpCreateShellTrip === 'function') {
+      u.reiseId = rpCreateShellTrip({ name: u.name, start: u.from, end: u.to, country: u.country || '' }, u.id);
+      n++;
+    }
+    // kandidaten.length > 1 -> mehrdeutig, bewusst unangetastet lassen
+  }
+  if (n) {
+    store.set(URLAUB_KEY, JSON.stringify(urlaube));
+    if (typeof persist === 'function') persist('trip');
+  }
 }
 
 // Parst Kündigungsfrist-Freitext ("4 Monate", "6 Wochen", "30 Tage") -> Tage (oder null)

@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2608010030">
+<link rel="manifest" href="manifest.json?v=2608010230">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -237,13 +237,16 @@
             -webkit-mask-image: radial-gradient(125% 125% at 50% 50%, #000 58%, transparent 100%);
             mask-image: radial-gradient(125% 125% at 50% 50%, #000 58%, transparent 100%); }
   .tt-map svg { width: 100%; height: 100%; display: block; transform: scale(0.92); transform-origin: center; }
-  /* Laendersilhouetten (tripMapSVG) auf einen Bereich unten rechts begrenzt, statt die
-     ganze Kachel zu ueberziehen - Name und Land oben links bleiben so immer auf freiem
+  /* Laendersilhouetten (tripMapSVG) auf einen Bereich der Kachel begrenzt, statt die
+     ganze Flaeche zu ueberziehen - Name und Land oben links bleiben so immer auf freiem
      Grund. Betrifft nur SVGs mit dieser Klasse, nicht den Finanzen-Chart oder das
      Impfpass-Icon, die weiterhin die volle Flaeche brauchen. */
-  .tt-map svg.tt-country-shape { position: absolute; right: -6%; bottom: -8%; width: 72%; height: 72%; transform: none; }
-  .tt-map:has(svg.tt-country-shape) { -webkit-mask-image: radial-gradient(closest-side at 68% 68%, #000 55%, transparent 100%);
-                                       mask-image: radial-gradient(closest-side at 68% 68%, #000 55%, transparent 100%); }
+  .tt-map svg.tt-country-shape { position: absolute; left: 28%; top: 18%; width: 76%; height: 68%; transform: none; }
+  /* Keine Maske auf dem Umriss selbst - sonst zeichnet die Farbe zur Mitte hin heller
+     und zum Rand hin ausgeblendet ("heller Kreis"-Effekt). Der Umriss bleibt ueberall
+     scharf und einfarbig; die Grundregel .tt-map davor blendet sonst weich zu den
+     Kachelraendern hin aus - das gilt hier bewusst nicht mehr. */
+  .tt-map:has(svg.tt-country-shape) { -webkit-mask-image: none; mask-image: none; }
   .tt-cd { margin-top: auto; display: flex; align-items: baseline; gap: 5px; white-space: nowrap; position: relative; z-index: 1; }
   .tt-cd-val { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1; }
   /* "accent" war identisch mit der Kartenfarbe dahinter (beide var(--accent)) und ist
@@ -487,7 +490,11 @@
   .ov-cd-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--petrol); font-weight: 700; }
   .ov-cd-val { font-size: 2.6rem; font-weight: 800; letter-spacing: -0.03em; margin-top: 6px; line-height: 1; }
   .ov-cd-sub { font-size: 0.8rem; color: var(--muted-2); margin-top: 8px; }
-  .ov-map { flex: 0 0 40%; max-width: 150px; height: 104px; opacity: 0.9; pointer-events: none; -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 45%, transparent 100%); mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 45%, transparent 100%); }
+  /* Kein Verlauf/keine Maske mehr auf dem Umriss selbst - der wuerde die Kartenfarbe zur
+     Mitte hin heller und zum Rand hin ausgeblendet zeichnen ("heller Kreis"-Effekt).
+     Umriss bleibt ueberall scharf und einfarbig, nur die Deckkraft ist je Kachel
+     unterschiedlich (hier 0.9, auf den kleinen Kacheln deutlich blasser). */
+  .ov-map { flex: 0 0 40%; max-width: 150px; height: 104px; opacity: 0.9; pointer-events: none; }
   .ov-map svg { width: 100%; height: 100%; display: block; }
   /* Zeitraum + Dauer: eigene Zeile zwischen Countdown und Zahlen */
   .ov-when { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 7px; margin-top: var(--gap-sec); padding-top: var(--gap-sec); border-top: 1px solid var(--stroke); font-variant-numeric: tabular-nums; }
@@ -2349,10 +2356,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2608010030"></script>
-<script src="mod-reisen.js?v=2608010030"></script>
-<script src="mod-finanzen.js?v=2608010030"></script>
-<script src="mod-impfpass.js?v=2608010030"></script>
+<script src="data-laender.js?v=2608010230"></script>
+<script src="mod-reisen.js?v=2608010230"></script>
+<script src="mod-finanzen.js?v=2608010230"></script>
+<script src="mod-impfpass.js?v=2608010230"></script>
 
 <!-- ===== Start ===== -->
 <script>
