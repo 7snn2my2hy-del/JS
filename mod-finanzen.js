@@ -689,24 +689,19 @@ function renderHeroBento() {
   {
     const j0 = new Date().getFullYear();
     const a0 = resturlaubJahr(j0), a1 = resturlaubJahr(j0 + 1);
-    // Balkenfarbe bleibt gruen/orange/rot als Signal, die Zahlen selbst sind weiss –
-    // eine Warnfarbe erscheint dort nur bei knappem oder aufgebrauchtem Resturlaub.
-    const farbe = r => r < 0 ? 'var(--danger)' : r <= 5 ? 'var(--orange)' : 'var(--green)';
-    const textFarbe = r => r < 0 ? 'var(--danger)' : r <= 5 ? 'var(--orange)' : 'var(--text)';
-    const zahl = r => Number.isInteger(r) ? String(r) : r.toFixed(1).replace('.', ',');
     const zeile = a => {
       const pct = Math.max(0, Math.min(100, (a.rest / (a.anspruch || 1)) * 100));
-      // Der Nenner ("/ 30") ist antippbar und setzt den Jahresanspruch manuell - z.B. wenn
-      // ein paar Tage aus dem Vorjahr mit ins neue Jahr genommen werden. stopPropagation,
-      // weil die ganze Kachel selbst auch anklickbar ist (oeffnet die Urlaube-Ansicht).
+      // Nicht mehr antippbar - stand mit dem Tap auf die ganze Kachel (oeffnet die
+      // Urlaube-Ansicht) in Konflikt und liess sich auf dem Geraet nicht zuverlaessig
+      // davon trennen. Bearbeitbar ist der Anspruch jetzt in der Detailansicht selbst.
       return `<div class="ru-mini">
-        <div class="ru-mini-top"><span>${a.jahr}</span><span style="color:${textFarbe(a.rest)}">${zahl(a.rest)} / <span class="ru-anspruch" onclick="event.stopPropagation();startInlineUrlaubAnspruch(${a.jahr}, this)">${zahl(a.anspruch)}</span></span></div>
-        <div class="bento-progress"><span class="bento-progress-fill" style="width:${pct}%;background:${farbe(a.rest)}"></span></div>
+        <div class="ru-mini-top"><span>${a.jahr}</span><span style="color:${ruTextFarbe(a.rest)}">${ruZahl(a.rest)} / ${ruZahl(a.anspruch)}</span></div>
+        <div class="bento-progress"><span class="bento-progress-fill" style="width:${pct}%;background:${ruFarbe(a.rest)}"></span></div>
       </div>`;
     };
     tiles.push(`<div class="bento-tile" onclick="openDetail('urlaub')">
       <div class="bento-head"><span class="bento-title">Resturlaub ${j0}</span></div>
-      <div class="bento-primary" style="color:${textFarbe(a0.rest)}">${zahl(a0.rest)}<span class="bento-unit">Tage</span></div>
+      <div class="bento-primary" style="color:${ruTextFarbe(a0.rest)}">${ruZahl(a0.rest)}<span class="bento-unit">Tage</span></div>
       <div class="bento-foot bento-foot-col">${zeile(a0)}${zeile(a1)}</div>
     </div>`);
   }
@@ -1608,7 +1603,10 @@ function startInlineUrlaubAnspruch(jahr, el) {
     if (!roh || v == null || v < 0 || v === URLAUB_ANSPRUCH) delete urlaubAnspruchOverride[jahr];
     else urlaubAnspruchOverride[jahr] = v;
     store.set(URLAUB_ANSPRUCH_KEY, JSON.stringify(urlaubAnspruchOverride));
-    renderHeroBento();
+    // renderUrlaubeAll() statt nur renderHeroBento(): die Eingabe liegt jetzt in dieser
+    // Detailansicht selbst, die muss sich nach dem Bestaetigen mit neu zeichnen (baut
+    // dabei auch die Kachel mit - siehe renderUrlaubeAll()).
+    renderUrlaubeAll();
   };
   inp.addEventListener('blur', commit);
   inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); inp.blur(); } });
@@ -1850,6 +1848,7 @@ function renderUrlaubeDash() {
   }
   const yearlyBudget = urlaubBudget;
   const { groups, years } = urlaubGroups();
+  const numYears = years.filter(y => y !== 'ohne').map(Number).filter(Boolean).sort((a,b) => a - b);
 
   // Aktueller Kontostand (Ist, global einmal oben) - reales Guthaben auf dem Sparkonto
   // "Urlaub I", manuell gepflegt. Getrennt von der Budget-Planung je Jahr weiter unten:
@@ -1859,6 +1858,23 @@ function renderUrlaubeDash() {
   const konto = sparE ? (sparE.balance || 0) : 0;
   const rate = urlaubMonthlyRate();
   let html = `<div class="uy-konto-head"><span>Kontostand</span><b class="kv-editable" onclick="startInlineKontoStart(this)">${fmt(konto)}</b><span class="saverate-eur">${rate > 0 ? fmt(rate) + ' mtl. Sparrate' : 'Keine Sparrate hinterlegt'}</span></div>`;
+
+  // --- RESTURLAUB (Tage, nicht Geld) ---
+  // Eigener Bereich statt Teil von "Budget" darunter - andere Einheit (Tage statt Euro)
+  // und der Ort, an dem der Jahresanspruch bearbeitet werden kann. Lag vorher als
+  // antippbare Zahl auf der Bento-Kachel, dort aber im Konflikt mit dem Tap auf die
+  // ganze Kachel (oeffnet diese Ansicht hier) - auf dem Geraet nicht zuverlaessig
+  // trennbar. Hier im Detailbereich konkurriert kein uebergeordneter Tap damit.
+  if (numYears.length) {
+    html += `<div class="uy-section-label">Resturlaub</div>`;
+    numYears.forEach(y => {
+      const ru = resturlaubJahr(y);
+      html += `<div class="uy-top">
+          <span class="uy-year">${y}</span>
+          <span class="uy-remaining" style="color:${ruTextFarbe(ru.rest)}">${ruZahl(ru.rest)} / <span class="kv-editable" onclick="startInlineUrlaubAnspruch(${y}, this)">${ruZahl(ru.anspruch)}</span> Tage</span>
+        </div>`;
+    });
+  }
 
   // --- BUDGET (Soll/Planung) ---
   // Bewusst reine Jahresplanung: Budget = 12 x Sparrate. Einmaleinzahlungen zaehlen NICHT
@@ -1870,8 +1886,6 @@ function renderUrlaubeDash() {
     const ry = parseInt(finTripYear(u), 10);
     if (ry) expByYear[ry] = (expByYear[ry] || 0) + tripCost(u);
   });
-
-  const numYears = years.filter(y => y !== 'ohne').map(Number).filter(Boolean).sort((a,b) => a - b);
 
   if (yearlyBudget > 0 && numYears.length) {
     html += `<div class="uy-section-label">Budget</div>`;
@@ -1983,6 +1997,14 @@ function resturlaubJahr(j){
   const anspruch = urlaubAnspruchJahr(j);
   return { jahr: j, reisen, verplant: verplant + manuell, manuell, anspruch, rest: anspruch - verplant - manuell };
 }
+
+/* Formatierung fuer Resturlaub-Tage, geteilt zwischen der Bento-Kachel und der
+   Detailansicht - vorher zweimal wortgleich lokal definiert. */
+// Balkenfarbe bleibt gruen/orange/rot als Signal, die Zahlen selbst sind weiss/Textfarbe –
+// eine Warnfarbe erscheint dort nur bei knappem oder aufgebrauchtem Resturlaub.
+function ruFarbe(r){ return r < 0 ? 'var(--danger)' : r <= 5 ? 'var(--orange)' : 'var(--green)'; }
+function ruTextFarbe(r){ return r < 0 ? 'var(--danger)' : r <= 5 ? 'var(--orange)' : 'var(--text)'; }
+function ruZahl(r){ return Number.isInteger(r) ? String(r) : r.toFixed(1).replace('.', ','); }
 
 function renderUrlaube() {
   const wrap = $('urlaub-years');
