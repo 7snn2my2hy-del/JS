@@ -110,6 +110,7 @@ const URLAUB_BUDGET_KEY = 'fin_urlaub_budget_v1';
 const URLAUB_DEPOSITS_KEY = 'fin_urlaub_deposits_v1';
 const URLAUB_MANUAL_DAYS_KEY = 'fin_urlaub_manual_days_v1';
 const URLAUB_KONTO_OVERRIDE_KEY = 'fin_urlaub_konto_override_v1';
+const URLAUB_ANSPRUCH_KEY = 'fin_urlaub_anspruch_v1';
 
 // Sicheres Parsen: korrupte Storage-Daten crashen nicht die App, sondern fallen auf den Default zurück
 
@@ -131,6 +132,15 @@ if (!Array.isArray(manuelleUrlaubstage)) manuelleUrlaubstage = [];
    Ein Eintrag wirkt als Ankerpunkt: ab dort rechnet die Automatik wieder normal weiter. */
 let urlaubKontoOverrides = safeParse(store.get(URLAUB_KONTO_OVERRIDE_KEY), {});
 if (!urlaubKontoOverrides || typeof urlaubKontoOverrides !== 'object' || Array.isArray(urlaubKontoOverrides)) urlaubKontoOverrides = {};
+/* Urlaubsanspruch pro Jahr, manuell gesetzt (z.B. 2 Tage aus dem Vorjahr mitgenommen).
+   Kein Jahr angelegt -> Standardanspruch (URLAUB_ANSPRUCH). Absichtlich keine automatische
+   Uebertragsrechnung und kein Verfallsdatum - Joerg traegt den Starttag des Jahres selbst ein. */
+let urlaubAnspruchOverride = safeParse(store.get(URLAUB_ANSPRUCH_KEY), {});
+if (!urlaubAnspruchOverride || typeof urlaubAnspruchOverride !== 'object' || Array.isArray(urlaubAnspruchOverride)) urlaubAnspruchOverride = {};
+function urlaubAnspruchJahr(j) {
+  const v = urlaubAnspruchOverride[j];
+  return (typeof v === 'number' && !isNaN(v) && v >= 0) ? v : URLAUB_ANSPRUCH;
+}
 let editManualDayId = null;
 /* Manuell erfasste Urlaubstage ohne Reise (z.B. Brueckentage), summiert nach Jahr. */
 function manuelleTageJahr(j) {
@@ -416,8 +426,7 @@ function renderSection(sec) {
             ${valuesHtml}`,
       `<div class="entry-amount">${fmt(e.amount)}</div>
             <div class="entry-period">${esc(e.period)}</div>
-            ${yearly}`,
-      `finOpenModal('${sec}','${e.id}')`
+            ${yearly}`
     ));
     list.appendChild(div);
     attachSwipe(div, sec, e.id);
@@ -680,9 +689,12 @@ function renderHeroBento() {
     const textFarbe = r => r < 0 ? 'var(--danger)' : r <= 5 ? 'var(--orange)' : 'var(--text)';
     const zahl = r => Number.isInteger(r) ? String(r) : r.toFixed(1).replace('.', ',');
     const zeile = a => {
-      const pct = Math.max(0, Math.min(100, (a.rest / URLAUB_ANSPRUCH) * 100));
+      const pct = Math.max(0, Math.min(100, (a.rest / (a.anspruch || 1)) * 100));
+      // Der Nenner ("/ 30") ist antippbar und setzt den Jahresanspruch manuell - z.B. wenn
+      // ein paar Tage aus dem Vorjahr mit ins neue Jahr genommen werden. stopPropagation,
+      // weil die ganze Kachel selbst auch anklickbar ist (oeffnet die Urlaube-Ansicht).
       return `<div class="ru-mini">
-        <div class="ru-mini-top"><span>${a.jahr}</span><span style="color:${textFarbe(a.rest)}">${zahl(a.rest)} / ${URLAUB_ANSPRUCH}</span></div>
+        <div class="ru-mini-top"><span>${a.jahr}</span><span style="color:${textFarbe(a.rest)}">${zahl(a.rest)} / <span class="ru-anspruch" onclick="event.stopPropagation();startInlineUrlaubAnspruch(${a.jahr}, this)">${zahl(a.anspruch)}</span></span></div>
         <div class="bento-progress"><span class="bento-progress-fill" style="width:${pct}%;background:${farbe(a.rest)}"></span></div>
       </div>`;
     };
@@ -1340,8 +1352,7 @@ function renderBonus() {
     const div = swipeWrapEl('bonus', e.id, entryCardHTML(
       `<div class="entry-name">${esc(e.name)}</div>
             ${subLinesHtml}`,
-      e.points ? `<div class="entry-amount">${esc(e.points)}</div>` : '',
-      `openBonusModal('${e.id}')`
+      e.points ? `<div class="entry-amount">${esc(e.points)}</div>` : ''
     ));
     list.appendChild(div);
     attachSwipeBonus(div, e.id);
@@ -1536,6 +1547,27 @@ function urlaubKontoVerlauf(startSaldo) {
     zeilen.push({ ym, jahr: Math.floor(ym/12), monat: (ym % 12) + 1, zu, ab: b.ab, saldo, manuell });
   }
   return zeilen;
+}
+
+/* Jahresanspruch manuell setzen bzw. (bei leerer Eingabe) wieder auf den Standard
+   zurueckfallen. Gleiches Muster wie startInlineKontoSaldo. */
+function startInlineUrlaubAnspruch(jahr, el) {
+  if (el.querySelector('input')) return;
+  const angezeigt = urlaubAnspruchJahr(jahr);
+  const inp = buildSignedInput(el, String(angezeigt).replace('.', ','), { inputClass: 'balance-inline kv-input' });
+  inp.focus(); inp.select && inp.select();
+  let done = false;
+  const commit = () => {
+    if (done) return; done = true;
+    const roh = inp.value.trim();
+    const v = parseMoney(roh);
+    if (!roh || v == null || v < 0 || v === URLAUB_ANSPRUCH) delete urlaubAnspruchOverride[jahr];
+    else urlaubAnspruchOverride[jahr] = v;
+    store.set(URLAUB_ANSPRUCH_KEY, JSON.stringify(urlaubAnspruchOverride));
+    renderHeroBento();
+  };
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); inp.blur(); } });
 }
 
 /* Monats-Endsaldo manuell setzen bzw. (bei leerer Eingabe) wieder freigeben. */
@@ -1904,7 +1936,8 @@ function resturlaubJahr(j){
     .sort((a, b) => tripFrom(a.u).localeCompare(tripFrom(b.u)));
   const verplant = reisen.reduce((s, x) => s + x.tage, 0);
   const manuell = manuelleTageJahr(j);
-  return { jahr: j, reisen, verplant: verplant + manuell, manuell, rest: URLAUB_ANSPRUCH - verplant - manuell };
+  const anspruch = urlaubAnspruchJahr(j);
+  return { jahr: j, reisen, verplant: verplant + manuell, manuell, anspruch, rest: anspruch - verplant - manuell };
 }
 
 function renderUrlaube() {
@@ -1941,8 +1974,7 @@ function renderUrlaube() {
         `<div class="entry-name">${esc(u.name)}</div>
               <div class="entry-sub">${esc(zeitraum)}</div>
               ${sched ? `<div class="entry-paysched">${sched}</div>` : ''}`,
-        `<div class="entry-amount">${fmt(tripCost(u))}</div>`,
-        `openUrlaubModal('${u.id}')`
+        `<div class="entry-amount">${fmt(tripCost(u))}</div>`
       ));
       list.appendChild(div);
       attachSwipeGeneric(div, () => deleteUrlaub(u.id), () => openUrlaubModal(u.id));
@@ -2340,8 +2372,21 @@ function saveUrlaub() {
     const i = urlaube.findIndex(x => x.id === editUrlaubId);
     const { payments: _old, month: _m, daysByYear: _dby, budgetYear: _by, dueM: _dm, dueY: _dy, ...rest } = urlaube[i];
     urlaube[i] = { ...rest, ...obj };
+    // Verknuepfte Reise nachziehen (Name/Zeitraum/Land). rest enthaelt reiseId, falls
+    // gesetzt - der Destrukturierungs-Ausschluss oben betrifft nur die dort genannten
+    // Felder, reiseId bleibt also automatisch erhalten.
+    if (urlaube[i].reiseId && typeof rpSyncFromFinanzen === 'function') {
+      rpSyncFromFinanzen(urlaube[i].reiseId, { name, start: from, end: to, country: country || '' });
+    }
   } else {
-    urlaube.push({ id: neueId(), ...obj });
+    const neuId = neueId();
+    const neuerEintrag = { id: neuId, ...obj };
+    // Automatisch eine Huelle in Reisen anlegen (nur Name/Zeitraum/Land) - alles
+    // Weitere traegt man dort selbst nach.
+    if (typeof rpCreateShellTrip === 'function') {
+      neuerEintrag.reiseId = rpCreateShellTrip({ name, start: from, end: to, country: country || '' }, neuId);
+    }
+    urlaube.push(neuerEintrag);
   }
   store.set(URLAUB_KEY, JSON.stringify(urlaube));
   closeUrlaubModal();
@@ -2352,9 +2397,51 @@ function saveUrlaub() {
 async function deleteUrlaub(id) {
   await loeschenMitRueckfrage({
     liste: urlaube, id,
+    // Verknuepfte Reise wird VOR dem Entfernen behandelt (gleiches Prinzip wie das
+    // Aufraeumen der Bilder in Reisen beim Loeschen dort): eine noch bevorstehende oder
+    // laufende Reise wird automatisch mitgeloescht, ohne weitere Rueckfrage - die
+    // Rueckfrage fuer diesen Eintrag ist gerade schon beantwortet. Eine bereits
+    // abgeschlossene Reise bleibt unter "Vergangene Reisen" stehen, nur die
+    // Verknuepfung faellt weg.
+    vorher: async (e) => {
+      if (!e.reiseId || typeof trips === 'undefined') return;
+      const t = trips.find(x => x.id === e.reiseId);
+      if (!t) return;
+      const vorbei = t.end && t.end < todayISO();
+      if (vorbei) {
+        delete t.finId;
+        persist('trip');
+      } else if (typeof rpDeleteTripSilently === 'function') {
+        await rpDeleteTripSilently(e.reiseId);
+        if (typeof renderHome === 'function') renderHome();
+      }
+    },
     speichern: () => store.set(URLAUB_KEY, JSON.stringify(urlaube)),
     zeichnen: () => renderUrlaubeAll()
   });
+}
+
+/* Verknuepfung aufloesen, wenn die Reise direkt in Reisen geloescht wurde (nicht ueber
+   diesen Bereich). Der Finanzen-Eintrag bleibt bestehen - Geld-Daten werden hier nie
+   automatisch geloescht, nur der Verweis auf die nicht mehr existierende Reise faellt weg. */
+function finUnlinkReise(finId) {
+  const e = urlaube.find(x => x.id === finId);
+  if (!e || !e.reiseId) return;
+  delete e.reiseId;
+  store.set(URLAUB_KEY, JSON.stringify(urlaube));
+}
+
+/* Name/Zeitraum/Land nachziehen, wenn die verknuepfte Reise in Reisen bearbeitet wurde.
+   Schreibt direkt, ohne ueber saveUrlaub() zu gehen - sonst wuerde das einen Ruecksync
+   nach Reisen ausloesen und beide Seiten wechselseitig anstossen. */
+function finSyncFromReisen(finId, daten) {
+  const e = urlaube.find(x => x.id === finId); if (!e) return;
+  e.name = daten.name || e.name;
+  if (daten.start) { e.from = daten.start; e.year = daten.start.slice(0, 4); e.month = parseInt(daten.start.slice(5, 7), 10); }
+  e.to = daten.end || daten.start || e.to;
+  if (daten.country) e.country = daten.country; else delete e.country;
+  store.set(URLAUB_KEY, JSON.stringify(urlaube));
+  renderUrlaubeAll();
 }
 
 function buildValueFields(sec, vEntry) {

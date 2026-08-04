@@ -135,15 +135,15 @@ function tripMapSVG(country){
     // Positions-Punkt). Statt eines Punkts eine große, eingefärbte Insel-Silhouette
     // (Hauptinsel + Nebeninseln) im Kachel-Seitenverhältnis, damit sie die Kachel füllt.
     const island = "M40,30 C46,20 62,16 76,20 C86,14 100,18 104,28 C114,30 118,42 112,52 C118,62 110,74 98,76 C92,86 76,86 68,80 C56,84 42,78 40,68 C30,64 28,48 36,42 C34,36 36,32 40,30 Z M112,64 C118,62 122,68 118,73 C114,78 107,74 109,68 C109,66 110,64 112,64 Z M31,20 C35,18 39,21 37,25 C35,28 29,26 30,22 C30,21 30,20 31,20 Z";
-    return `<svg viewBox="0 0 144 100" preserveAspectRatio="xMidYMid slice"><path d="${island}" fill="var(--accent)"/></svg>`;
+    return `<svg class="tt-country-shape" viewBox="0 0 144 100" preserveAspectRatio="xMidYMid slice"><path d="${island}" fill="var(--accent)"/></svg>`;
   }
   const eng = tightCountryView(key);
   if (eng) {
-    return `<svg viewBox="${eng.map(v => v.toFixed(2)).join(' ')}" preserveAspectRatio="xMidYMid meet"><path d="${COUNTRY_PATHS[key]}" fill="var(--accent)"/></svg>`;
+    return `<svg class="tt-country-shape" viewBox="${eng.map(v => v.toFixed(2)).join(' ')}" preserveAspectRatio="xMidYMid meet"><path d="${COUNTRY_PATHS[key]}" fill="var(--accent)"/></svg>`;
   }
   const box=COUNTRY_VIEW[key];
   if(!box) return '';
-  return `<svg viewBox="${box.join(' ')}" preserveAspectRatio="xMidYMid slice"><path d="${COUNTRY_PATHS[key]}" fill="var(--accent)"/></svg>`;
+  return `<svg class="tt-country-shape" viewBox="${box.join(' ')}" preserveAspectRatio="xMidYMid slice"><path d="${COUNTRY_PATHS[key]}" fill="var(--accent)"/></svg>`;
 }
 
 /* ===== DATENMODELL ===== */
@@ -630,16 +630,59 @@ function renderTripCards(){
 /* Bewusst nicht ueber loeschenMitRueckfrage: hier haengen sieben weitere Listen dran.
    Ein Rueckgaengig muesste all diese Eintraege wiederherstellen – das waere eine andere,
    deutlich groessere Mechanik als das Zurueckholen eines einzelnen Eintrags. */
-async function deleteTripById(id){
+/* Der eigentliche Aufraeumvorgang, ohne Rueckfrage - wiederverwendbar fuer den Fall, dass
+   eine verknuepfte Reise automatisch aus Finanzen heraus geloescht wird (dort wurde die
+   Rueckfrage fuer den Finanzen-Eintrag bereits gestellt; eine zweite waere doppelt). */
+async function rpDeleteTripSilently(id){
   const t = trips.find(x=>x.id===id); if(!t) return;
-  const ok = await showDialog('Die Reise inkl. aller Stopps, Flüge, Hotels, Aktivitäten und Listen wird unwiderruflich gelöscht.', { title:'Löschen?', okText:'Löschen' });
-  if(!ok) return;
   if (idbReady) { for (const a of activities.filter(x=>x.tripId===id)) for (const ref of (a.images||[])) if(!isDataUri(ref)) await idbDelete(ref); }
   setArr('trip', trips.filter(x=>x.id!==id)); persist('trip');
   ['stop','hotel','flight','car','activity','pack','todo'].forEach(tp=>{ setArr(tp, arr(tp).filter(x=>x.tripId!==id)); persist(tp); });
   // Merkliste aufräumen; besuchte Länder bleiben erhalten
   if (autoTrips.includes(id)) { autoTrips = autoTrips.filter(x=>x!==id); store.set(KEYS.autoTrips, JSON.stringify(autoTrips)); }
+}
+/* ===== Verknuepfung mit Finanzen-Urlauben =====
+   finId auf einer Reise markiert, dass sie aus einem Finanzen-Eintrag entstanden ist.
+   Bestehende, vor dieser Funktion angelegte Reisen haben kein finId und bleiben
+   unverknuepft - eine rueckwirkende automatische Zuordnung waere bei mehrdeutigen
+   Namen (zwei Mal "Namibia") riskant. */
+
+/* Legt beim Anlegen eines Finanzen-Urlaubs automatisch eine Huelle in Reisen an - nur
+   Name, Zeitraum und Land. Hotels, Packliste, Fotos etc. traegt man dort selbst nach. */
+function rpCreateShellTrip(daten, finId){
+  const t = { id: neueId(), name: daten.name, start: daten.start, end: daten.end, finId };
+  if (daten.country) t.country = daten.country;
+  trips.push(t);
+  persist('trip');
+  renderHome();
+  return t.id;
+}
+
+/* Name/Zeitraum/Land eines verknuepften Eintrags nachziehen, wenn er in Finanzen
+   bearbeitet wurde. Schreibt direkt, ohne ueber saveModal() zu gehen - sonst wuerde das
+   einen Ruecksync nach Finanzen ausloesen und beide Seiten wechselseitig anstossen. */
+function rpSyncFromFinanzen(reiseId, daten){
+  const t = trips.find(x => x.id === reiseId); if (!t) return;
+  t.name = daten.name || t.name;
+  if (daten.start) t.start = daten.start;
+  t.end = daten.end || daten.start || t.end;
+  if (daten.country) t.country = daten.country; else delete t.country;
+  persist('trip');
+  renderHome();
+  if (currentTripId === reiseId) renderTripScreen();
+}
+
+async function deleteTripById(id){
+  const t = trips.find(x=>x.id===id); if(!t) return;
+  const ok = await showDialog('Die Reise inkl. aller Stopps, Flüge, Hotels, Aktivitäten und Listen wird unwiderruflich gelöscht.', { title:'Löschen?', okText:'Löschen' });
+  if(!ok) return;
+  // Ein verknuepfter Finanzen-Eintrag wird hier NICHT mitgeloescht (Geld-Daten sind
+  // sensibler als Reise-Logistik) - nur die Verknuepfung faellt weg, damit er nicht auf
+  // eine nicht mehr existierende Reise zeigt.
+  if (t.finId && typeof finUnlinkReise === 'function') finUnlinkReise(t.finId);
+  await rpDeleteTripSilently(id);
   renderHome(); showToast('Gelöscht');
+
 }
 
 /* ===== REISE-DETAIL ===== */
@@ -1336,6 +1379,15 @@ async function saveModal(){
   if (modalId){ Object.assign(arr(type).find(x=>x.id===modalId), obj); }
   else { obj.id=neueId(); if(type==='pack'||type==='todo') obj.checked=false; arr(type).push(obj); }
   persist(type);
+  // Wurde diese Reise aus Finanzen heraus angelegt, ziehen Name/Zeitraum/Land dort nach.
+  // Ruft finSyncFromReisen() direkt auf statt saveUrlaub(), damit kein Ruecksync nach
+  // Reisen entsteht - jede Seite schreibt nur einmal, nicht wechselseitig endlos.
+  if (type==='trip' && modalId){
+    const t = trips.find(x=>x.id===modalId);
+    if (t && t.finId && typeof finSyncFromReisen === 'function'){
+      finSyncFromReisen(t.finId, { name:t.name, start:t.start, end:t.end, country:t.country||'' });
+    }
+  }
   rpCloseModal();
   if (type==='trip'){ renderHome(); if(currentTripId) renderTripScreen(); }
   else renderTabContent();

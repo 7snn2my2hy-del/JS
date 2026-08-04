@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2607312355">
+<link rel="manifest" href="manifest.json?v=2608010030">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -228,19 +228,27 @@
   .tt-name { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; z-index: 1; }
   .tt-country { font-size: 0.72rem; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: relative; z-index: 1; }
   /* Grafik als Wasserzeichen: gross ueber die ganze Kachel, stark transparent und
-     hinter dem Text (der liegt auf z-index 1). Ueberlappung ist hier gewollt – dadurch
-     entfaellt die Platzrechnerei, und die Grafik kann so gross wie moeglich sein.
-     Gilt einheitlich fuer alle Kacheln, auch fuer den Vermoegensverlauf.
-     Die Ausblendung ist bewusst rundum symmetrisch: die Grafiken sind mittig
-     ausgerichtet, eine einseitige Blende wuerde sie schief wirken lassen. */
+     hinter dem Text (der liegt auf z-index 1). Gilt einheitlich fuer alle Kacheln mit
+     Kachel-Grafik (auch Vermoegensverlauf in Finanzen, Icon in Impfpass) - deshalb bleibt
+     dies die neutrale Grundregel; die Laendersilhouetten bekommen unten eine eigene,
+     zusaetzliche Positionierung ueber ihre eigene SVG-Klasse. */
   .tt-map { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 0; display: flex;
             opacity: 0.2; pointer-events: none;
             -webkit-mask-image: radial-gradient(125% 125% at 50% 50%, #000 58%, transparent 100%);
             mask-image: radial-gradient(125% 125% at 50% 50%, #000 58%, transparent 100%); }
   .tt-map svg { width: 100%; height: 100%; display: block; transform: scale(0.92); transform-origin: center; }
+  /* Laendersilhouetten (tripMapSVG) auf einen Bereich unten rechts begrenzt, statt die
+     ganze Kachel zu ueberziehen - Name und Land oben links bleiben so immer auf freiem
+     Grund. Betrifft nur SVGs mit dieser Klasse, nicht den Finanzen-Chart oder das
+     Impfpass-Icon, die weiterhin die volle Flaeche brauchen. */
+  .tt-map svg.tt-country-shape { position: absolute; right: -6%; bottom: -8%; width: 72%; height: 72%; transform: none; }
+  .tt-map:has(svg.tt-country-shape) { -webkit-mask-image: radial-gradient(closest-side at 68% 68%, #000 55%, transparent 100%);
+                                       mask-image: radial-gradient(closest-side at 68% 68%, #000 55%, transparent 100%); }
   .tt-cd { margin-top: auto; display: flex; align-items: baseline; gap: 5px; white-space: nowrap; position: relative; z-index: 1; }
   .tt-cd-val { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1; }
-  .tt-cd-val.accent { color: var(--accent); }
+  /* "accent" war identisch mit der Kartenfarbe dahinter (beide var(--accent)) und ist
+     auf farbigen Ländern kaum noch lesbar. Petrol kommt in der Kachel sonst nicht vor. */
+  .tt-cd-val.accent { color: var(--petrol); }
   .tt-cd-val.green { color: var(--green); }
   .tt-cd-val.muted { color: var(--muted); }
   .tt-cd-unit { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
@@ -2341,10 +2349,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2607312355"></script>
-<script src="mod-reisen.js?v=2607312355"></script>
-<script src="mod-finanzen.js?v=2607312355"></script>
-<script src="mod-impfpass.js?v=2607312355"></script>
+<script src="data-laender.js?v=2608010030"></script>
+<script src="mod-reisen.js?v=2608010030"></script>
+<script src="mod-finanzen.js?v=2608010030"></script>
+<script src="mod-impfpass.js?v=2608010030"></script>
 
 <!-- ===== Start ===== -->
 <script>
