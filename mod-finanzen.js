@@ -653,22 +653,28 @@ function renderHeroBento() {
       } else {
         timeline = `<div class="bento-mini">Keine Reisen geplant</div>`;
       }
-      // Weltkarte: Reisen mit Land als Punkte, Jahr farblich (26 violett, 27 petrol)
+      // Weltkarte: dieselbe Basis wie in Reisen (jedes Land einzeln, korrekter
+      // Kartenausschnitt 0 11.8 1000 406.5 statt eines nur groben Kontinent-Umrisses) -
+      // hier aber weiterhin nach Jahr eingefaerbt statt nach "besucht/nicht besucht".
       const yearNow = jahr, yearNext = jahr + 1;
       const mapTrips = urlaube.map(u => ({ u, y: parseInt(finTripYear(u),10) }))
         .filter(t => (t.y === yearNow || t.y === yearNext) && t.u.country && (COUNTRY_PATHS[t.u.country] || ORT_PUNKTE[t.u.country]));
       let map = '';
       if (mapTrips.length) {
-        const dots = mapTrips.map(t => {
+        // Kommt ein Land in beiden Jahren vor, gewinnt das zuletzt gesetzte (yearNext) -
+        // seltener Sonderfall, kein eigener Regelbedarf dafuer.
+        const farbe = {};
+        const punkte = [];
+        mapTrips.forEach(t => {
           const col = t.y === yearNow ? 'var(--violet)' : 'var(--petrol)';
-          const cp = COUNTRY_PATHS[t.u.country];
-          if (cp) return `<path d="${cp}" fill="${col}" opacity="0.9"/>`;
-          const [x,y] = ORT_PUNKTE[t.u.country];
-          return `<circle cx="${x}" cy="${y}" r="13" fill="${col}"/><circle cx="${x}" cy="${y}" r="24" fill="${col}" opacity="0.25"/>`;
-        }).join('');
-        map = `<div class="bento-map-wrap"><svg class="bento-map" viewBox="0 60 1000 340" preserveAspectRatio="xMidYMid meet">
-          <path fill="rgba(255,255,255,0.10)" d="${WELT_UMRISS}"/>
-          ${dots}
+          if (COUNTRY_PATHS[t.u.country]) farbe[t.u.country] = col;
+          else punkte.push({ col, xy: ORT_PUNKTE[t.u.country] });
+        });
+        const rest = COUNTRY_LIST.filter(c => !farbe[c]).map(c => COUNTRY_PATHS[c]).join('');
+        const laender = Object.entries(farbe).map(([land, col]) => `<path d="${COUNTRY_PATHS[land]}" fill="${col}"/>`).join('');
+        const dots = punkte.map(p => `<circle cx="${p.xy[0]}" cy="${p.xy[1]}" r="13" fill="${p.col}"/><circle cx="${p.xy[0]}" cy="${p.xy[1]}" r="24" fill="${p.col}" opacity="0.25"/>`).join('');
+        map = `<div class="bento-map-wrap"><svg class="bento-map" viewBox="0 11.8 1000 406.5" preserveAspectRatio="xMidYMid meet">
+          <path d="${rest}" fill="rgba(255,255,255,0.12)"/>${laender}${dots}
         </svg><div class="bento-map-legend"><span><i style="background:var(--violet)"></i>${String(yearNow).slice(2)}</span><span><i style="background:var(--petrol)"></i>${String(yearNext).slice(2)}</span></div></div>`;
       }
       tiles.push(`<div class="bento-tile" onclick="openDetail('urlaub')">

@@ -88,6 +88,64 @@ function resolveCountry(name){
   return hit||null;
 }
 /* Karte für eine Reise: Land hervorgehoben, eng gezoomt */
+/* Breitengrad aus der internen y-Einheit zurückrechnen. Skalierung und Nullpunkt an
+   fünf Referenzländern (Deutschland, Italien, Schweden, Namibia, Ägypten) abgeglichen -
+   die Rohdaten sind eine unkorrigierte Plate-Carrée-Projektion (1 Einheit Länge und
+   1 Einheit Breite haben überall dieselbe Kartengröße), ohne die übliche Stauchung
+   nach den Polen hin. Wird nur für die Proportionskorrektur unten gebraucht. */
+function breitengradVon(y){ return (249 - y) / 2.75; }
+
+/* Zerlegt einen Pfad in seine "M...Z"-Teilstücke (Land + alle Nebeninseln einzeln). */
+function teilpfade(d){ return d.split(/(?=M)/).filter(Boolean); }
+function teilBBox(t){
+  const nums = (t.match(/-?\d+(?:\.\d+)?/g) || []).map(Number);
+  let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+  for (let i=0; i+1<nums.length; i+=2){
+    const x=nums[i], y=nums[i+1];
+    if (x<minX) minX=x; if (x>maxX) maxX=x;
+    if (y<minY) minY=y; if (y>maxY) maxY=y;
+  }
+  return { minX, minY, maxX, maxY };
+}
+
+/* Nur die größte zusammenhängende Fläche eines Landes - weit entfernte Nebeninseln
+   (Hawaii bei den USA, Kanaren bei Spanien) ziehen sonst den Rahmen beim Zuschneiden so
+   weit auf, dass vom eigentlichen Land nur ein Bruchteil sichtbar bleibt. */
+function groessteFlaeche(d){
+  const teile = teilpfade(d);
+  if (teile.length <= 1) return d;
+  let bester = teile[0], besteFlaeche = -1;
+  for (const t of teile){
+    const b = teilBBox(t);
+    const f = (b.maxX-b.minX) * (b.maxY-b.minY);
+    if (f > besteFlaeche){ besteFlaeche = f; bester = t; }
+  }
+  return bester;
+}
+
+/* Bekannte Inseln/Regionen, bei denen der Reisename genauer ist als das Land (z.B.
+   "Lanzarote" bei Land "Spanien") - dort wird nicht die groesste Flaeche gezeigt
+   (das waere hier das spanische Festland), sondern gezielt das passende Teilstueck.
+   Die bbox waehlt es anhand seiner eigenen Koordinaten aus COUNTRY_PATHS aus.
+   Zuordnung anhand der Insel-Koordinaten ermittelt, ohne visuelle Kontrolle moeglich -
+   bei neuen Orten oder falls eine Insel falsch aussieht, hier nachtragen/korrigieren. */
+const NAMED_SUBREGION = {
+  'lanzarote':     { country: 'Spanien', bbox: [458, 169, 464, 173] },
+  'fuerteventura': { country: 'Spanien', bbox: [454, 171, 459, 175] },
+};
+function benannteRegion(country, tripName){
+  if (!tripName) return null;
+  const eintrag = NAMED_SUBREGION[tripName.trim().toLowerCase()];
+  if (!eintrag || eintrag.country !== country) return null;
+  const d = COUNTRY_PATHS[country];
+  if (!d) return null;
+  const treffer = teilpfade(d).filter(t => {
+    const b = teilBBox(t), cx = (b.minX+b.maxX)/2, cy = (b.minY+b.maxY)/2;
+    return cx >= eintrag.bbox[0] && cx <= eintrag.bbox[2] && cy >= eintrag.bbox[1] && cy <= eintrag.bbox[3];
+  });
+  return treffer.length ? treffer.join('') : null;
+}
+
 /* Die Werte in COUNTRY_VIEW sind grosszuegig gerahmt – Namibia etwa fuellt seinen
    Rahmen nur zu gut einem Drittel, wodurch die Silhouette auf der Kachel verloren wirkt.
    Statt die hand-justierten Werte zu ersetzen, wird der tatsaechliche Umriss hier
@@ -96,11 +154,18 @@ function resolveCountry(name){
    Wichtig: mit einem engen Rahmen darf NICHT "slice" verwendet werden, sonst schneidet
    das Seitenverhaeltnis der Kachel Teile des Landes ab (genau daran ist ein frueherer
    Versuch gescheitert). Deshalb "meet" – das Land bleibt vollstaendig sichtbar und
-   wird so gross wie moeglich dargestellt. */
+   wird so gross wie moeglich dargestellt.
+   Korrigiert zusaetzlich die Ost-West-Stauchung der Rohdaten: bei einem mittleren
+   Breitengrad von z.B. 51° (Deutschland) ist ein Grad Laenge nur noch cos(51°)=0.63 so
+   breit wie ein Grad Breite - unkorrigiert wirkt das Land dadurch zu breit gezeichnet.
+   Die Korrektur betrifft nur diese Einzelland-Ansicht (Kacheln/Startseite/Reise-Detail),
+   nicht die grosse Weltkarte mit allen Laendern gleichzeitig - dort wuerde eine pro Land
+   unterschiedliche Stauchung benachbarte Laender an ihrer gemeinsamen Grenze auseinander-
+   reissen. Die Kompression laeuft ueber ein SVG-transform um den eigenen Mittelpunkt des
+   Landes, die Rohdaten selbst bleiben unangetastet. */
 const _tightViewCache = {};
-function tightCountryView(key){
-  if (_tightViewCache[key]) return _tightViewCache[key];
-  const d = COUNTRY_PATHS[key];
+function tightCountryView(d, cacheKey){
+  if (cacheKey && _tightViewCache[cacheKey]) return _tightViewCache[cacheKey];
   if (!d) return null;
   const nums = d.match(/-?\d+(?:\.\d+)?/g);
   if (!nums || nums.length < 4) return null;
@@ -115,19 +180,33 @@ function tightCountryView(key){
   }
   let w = maxX - minX, h = maxY - minY;
   if (!(w > 0) || !(h > 0)) return null;
+  const midLat = breitengradVon((minY + maxY) / 2);
+  // Untergrenze 0.15 gegen Extremverzerrung nahe der Pole (dort wuerde cos(lat) sonst
+  // gegen 0 gehen und das Land unbrauchbar schmal zusammenstauchen).
+  const cosFaktor = Math.max(0.15, Math.cos(midLat * Math.PI / 180));
+  const cx = (minX + maxX) / 2;
+  const wKorrigiert = w * cosFaktor;
   // Rundum gleicher Rand: die Silhouette liegt als Wasserzeichen ueber der ganzen
   // Kachel und soll dort mittig sitzen. (Frueher war der Rand oben groesser, um das
   // Land im damals schmalen Streifen tiefer zu setzen – im jetzigen Layout erzeugt
   // das nur einen sichtbar ungleichen Abstand nach oben und unten.)
   // Der Rand bestimmt zugleich die Groesse: je mehr Rand im Rahmen steckt, desto
   // kleiner erscheint das Land in der Kachel. 0.09 laesst rundum etwas Luft.
-  const rand = Math.max(w, h) * 0.09;
-  const box = [minX - rand, minY - rand, w + rand * 2, h + rand * 2];
-  _tightViewCache[key] = box;
-  return box;
+  const rand = Math.max(wKorrigiert, h) * 0.09;
+  const box = [cx - wKorrigiert/2 - rand, minY - rand, wKorrigiert + rand*2, h + rand*2];
+  const transform = `matrix(${cosFaktor.toFixed(4)},0,0,1,${(cx*(1-cosFaktor)).toFixed(2)},0)`;
+  const result = { box, transform };
+  if (cacheKey) _tightViewCache[cacheKey] = result;
+  return result;
 }
 
-function tripMapSVG(country){
+/* begrenzt=true positioniert den Umriss auf einen Bereich der Kachel (fuer die
+   Reise-Kacheln in "Meine Reisen"). Ohne den Parameter (Startseiten-Kachel des
+   Bereichs) bleibt es beim alten, grossflaechigen Wasserzeichen ueber die ganze
+   Kachel - das wollte Joerg dort ausdruecklich unveraendert.
+   tripName ermoeglicht den Namensabgleich fuer bekannte Inseln/Regionen (s.o.). */
+function tripMapSVG(country, begrenzt, tripName){
+  const cls = begrenzt ? ' class="tt-country-shape"' : '';
   const key=resolveCountry(country);
   if(!key) return '';
   if(COUNTRY_DOT.has(key)){
@@ -135,15 +214,18 @@ function tripMapSVG(country){
     // Positions-Punkt). Statt eines Punkts eine große, eingefärbte Insel-Silhouette
     // (Hauptinsel + Nebeninseln) im Kachel-Seitenverhältnis, damit sie die Kachel füllt.
     const island = "M40,30 C46,20 62,16 76,20 C86,14 100,18 104,28 C114,30 118,42 112,52 C118,62 110,74 98,76 C92,86 76,86 68,80 C56,84 42,78 40,68 C30,64 28,48 36,42 C34,36 36,32 40,30 Z M112,64 C118,62 122,68 118,73 C114,78 107,74 109,68 C109,66 110,64 112,64 Z M31,20 C35,18 39,21 37,25 C35,28 29,26 30,22 C30,21 30,20 31,20 Z";
-    return `<svg class="tt-country-shape" viewBox="0 0 144 100" preserveAspectRatio="xMidYMid slice"><path d="${island}" fill="var(--accent)"/></svg>`;
+    return `<svg${cls} viewBox="0 0 144 100" preserveAspectRatio="xMidYMid slice"><path d="${island}" fill="var(--accent)"/></svg>`;
   }
-  const eng = tightCountryView(key);
+  const region = benannteRegion(key, tripName);
+  const d = region || groessteFlaeche(COUNTRY_PATHS[key]);
+  const cacheKey = key + '::' + (region ? tripName.trim().toLowerCase() : 'groesste');
+  const eng = tightCountryView(d, cacheKey);
   if (eng) {
-    return `<svg class="tt-country-shape" viewBox="${eng.map(v => v.toFixed(2)).join(' ')}" preserveAspectRatio="xMidYMid meet"><path d="${COUNTRY_PATHS[key]}" fill="var(--accent)"/></svg>`;
+    return `<svg${cls} viewBox="${eng.box.map(v => v.toFixed(2)).join(' ')}" preserveAspectRatio="xMidYMid meet"><path d="${d}" fill="var(--accent)" transform="${eng.transform}"/></svg>`;
   }
   const box=COUNTRY_VIEW[key];
   if(!box) return '';
-  return `<svg class="tt-country-shape" viewBox="${box.join(' ')}" preserveAspectRatio="xMidYMid slice"><path d="${COUNTRY_PATHS[key]}" fill="var(--accent)"/></svg>`;
+  return `<svg${cls} viewBox="${box.join(' ')}" preserveAspectRatio="xMidYMid slice"><path d="${d}" fill="var(--accent)"/></svg>`;
 }
 
 /* ===== DATENMODELL ===== */
@@ -545,7 +627,7 @@ const ICON_CAMERA = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 3l
 
 /* Baut eine Reise-Kachel. Bei abgeschlossenen Reisen steht statt des Countdowns Jahr + Dauer. */
 function tripTileHTML(t, done){
-  const map = t.country ? tripMapSVG(t.country) : '';
+  const map = t.country ? tripMapSVG(t.country, true, t.name) : '';
   let big, unit, label, cls;
   if (done) {
     big = tripYear(t) || '—'; unit = ''; cls = 'muted';
@@ -739,7 +821,7 @@ function renderOverviewTab(t){
     else if (du===0){ big='Heute'; sub='Die Reise beginnt!'; }
     else { big='Unterwegs'; sub=(t.end&&todayISO()>t.end)?'Reise abgeschlossen':'Reise läuft'; }
   }
-  const map = t.country ? tripMapSVG(t.country) : '';
+  const map = t.country ? tripMapSVG(t.country, false, t.name) : '';
   const range = (t.start || t.end) ? `${displayDate(t.start)||'?'} – ${displayDate(t.end)||'?'}` : '';
   const dur = tripDuration(t);
   // Eine Karte: Countdown + Weltkarte oben, Zeitraum darunter, dann die Zahlen
@@ -1501,7 +1583,7 @@ registerModule({
         const tage = Math.round((kommend.d - heute) / 86400000);
         const ziel = kommend.t.name || '';
         return { sub: ziel, value: tage, unit: 'Tage', note: 'bis zur Abreise',
-                 art: (kommend.t.country ? tripMapSVG(kommend.t.country) : '') };
+                 art: (kommend.t.country ? tripMapSVG(kommend.t.country, false, kommend.t.name) : '') };
       }
       return { sub: trips.length ? 'Keine kommende Reise' : 'Noch keine Reise',
                value: trips.length, unit: trips.length === 1 ? 'Reise' : 'Reisen', note: 'gespeichert' };
