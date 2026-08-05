@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2608010730">
+<link rel="manifest" href="manifest.json?v=2608010745">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -1002,6 +1002,9 @@
 #mod-finanzen .kv-out{ color: var(--muted); font-variant-numeric: tabular-nums; flex-shrink: 0; }
 #mod-finanzen .urlaub-combined{ padding: 16px 18px; margin-bottom: 12px; }
 #mod-finanzen .uc-budget-row{ display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+/* Abstand zwischen mehreren gestapelten Kontingent-Zeilen (2026, 2027, ...) - die Zeile
+   war bisher immer allein, jetzt koennen mehrere direkt untereinander stehen. */
+#urlaub-kontingent-rows .uc-budget-row + .uc-budget-row{ margin-top: 4px; }
 /* Handgesetzte Trennlinie zwischen zwei Bloecken - gleicher Abstand wie ueberall. */
 #mod-finanzen .uc-divider{ height: 1px; background: var(--stroke); margin: var(--gap-sec) 0; }
 #mod-finanzen .ub-auto-val{ font-size: 0.95rem; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
@@ -2359,10 +2362,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2608010730"></script>
-<script src="mod-reisen.js?v=2608010730"></script>
-<script src="mod-finanzen.js?v=2608010730"></script>
-<script src="mod-impfpass.js?v=2608010730"></script>
+<script src="data-laender.js?v=2608010745"></script>
+<script src="mod-reisen.js?v=2608010745"></script>
+<script src="mod-finanzen.js?v=2608010745"></script>
+<script src="mod-impfpass.js?v=2608010745"></script>
 
 <!-- ===== Start ===== -->
 <script>
