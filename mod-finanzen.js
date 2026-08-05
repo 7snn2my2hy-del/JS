@@ -2079,13 +2079,13 @@ function renderUrlaubKontingentRows() {
   const { years } = urlaubGroups();
   const numYears = years.filter(y => y !== 'ohne').map(Number).filter(Boolean).sort((a, b) => a - b);
   if (!numYears.length) { wrap.innerHTML = '<div class="ub-label" style="padding:2px 0">Noch keine Reisejahre angelegt.</div>'; return; }
-  wrap.innerHTML = numYears.map(y => {
+  // Eine gemeinsame Zeile fuer alle Jahre statt einer je Jahr - "Kontingent" steht schon
+  // in der Ueberschrift darueber, muss hier nicht nochmal wiederholt werden. Jahr und
+  // Wert in Weiss (.ub-auto-val) statt im gedeckten Grau der Beschriftung (.ub-label).
+  wrap.innerHTML = `<div class="uc-budget-row">` + numYears.map(y => {
     const anspruch = urlaubAnspruchJahr(y);
-    return `<div class="uc-budget-row">
-        <span class="ub-label">Kontingent ${y}</span>
-        <span class="ub-auto-val"><span class="kv-editable" onclick="startInlineUrlaubAnspruch(${y}, this)">${ruZahl(anspruch)}</span> Tage</span>
-      </div>`;
-  }).join('');
+    return `<span class="ub-auto-val">${y} <span class="kv-editable" onclick="startInlineUrlaubAnspruch(${y}, this)">${ruZahl(anspruch)}</span> Tage</span>`;
+  }).join('') + `</div>`;
 }
 
 /* Kommt die App aus dem Hintergrund zurueck und es ist inzwischen ein neuer Monat,
