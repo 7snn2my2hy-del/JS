@@ -123,29 +123,6 @@ function groessteFlaeche(d){
   return bester;
 }
 
-/* Bekannte Inseln/Regionen, bei denen der Reisename genauer ist als das Land (z.B.
-   "Lanzarote" bei Land "Spanien") - dort wird nicht die groesste Flaeche gezeigt
-   (das waere hier das spanische Festland), sondern gezielt das passende Teilstueck.
-   Die bbox waehlt es anhand seiner eigenen Koordinaten aus COUNTRY_PATHS aus.
-   Zuordnung anhand der Insel-Koordinaten ermittelt, ohne visuelle Kontrolle moeglich -
-   bei neuen Orten oder falls eine Insel falsch aussieht, hier nachtragen/korrigieren. */
-const NAMED_SUBREGION = {
-  'lanzarote':     { country: 'Spanien', bbox: [458, 169, 464, 173] },
-  'fuerteventura': { country: 'Spanien', bbox: [454, 171, 459, 175] },
-};
-function benannteRegion(country, tripName){
-  if (!tripName) return null;
-  const eintrag = NAMED_SUBREGION[tripName.trim().toLowerCase()];
-  if (!eintrag || eintrag.country !== country) return null;
-  const d = COUNTRY_PATHS[country];
-  if (!d) return null;
-  const treffer = teilpfade(d).filter(t => {
-    const b = teilBBox(t), cx = (b.minX+b.maxX)/2, cy = (b.minY+b.maxY)/2;
-    return cx >= eintrag.bbox[0] && cx <= eintrag.bbox[2] && cy >= eintrag.bbox[1] && cy <= eintrag.bbox[3];
-  });
-  return treffer.length ? treffer.join('') : null;
-}
-
 /* Die Werte in COUNTRY_VIEW sind grosszuegig gerahmt – Namibia etwa fuellt seinen
    Rahmen nur zu gut einem Drittel, wodurch die Silhouette auf der Kachel verloren wirkt.
    Statt die hand-justierten Werte zu ersetzen, wird der tatsaechliche Umriss hier
@@ -204,8 +181,13 @@ function tightCountryView(d, cacheKey){
    Reise-Kacheln in "Meine Reisen"). Ohne den Parameter (Startseiten-Kachel des
    Bereichs) bleibt es beim alten, grossflaechigen Wasserzeichen ueber die ganze
    Kachel - das wollte Joerg dort ausdruecklich unveraendert.
-   tripName ermoeglicht den Namensabgleich fuer bekannte Inseln/Regionen (s.o.). */
-function tripMapSVG(country, begrenzt, tripName){
+   Zeigt immer nur die groesste zusammenhaengende Flaeche eines Landes - auch bei
+   Reisen zu einer einzelnen kleinen Insel (z.B. "Lanzarote", Land "Spanien"). Ein
+   Versuch, dort gezielt nur die Insel zu zeigen, ist an der Kartenaufloesung
+   gescheitert: einzelne Kanareninseln sind im Datensatz nur mit 3-5 Punkten hinterlegt
+   und damit als Form nicht erkennbar (Dreiecke/Vierecke statt Kuestenlinie). Das
+   Festland zu zeigen ist die bewusst gewaehlte, einheitliche Regel fuer alle Faelle. */
+function tripMapSVG(country, begrenzt){
   const cls = begrenzt ? ' class="tt-country-shape"' : '';
   const key=resolveCountry(country);
   if(!key) return '';
@@ -216,10 +198,8 @@ function tripMapSVG(country, begrenzt, tripName){
     const island = "M40,30 C46,20 62,16 76,20 C86,14 100,18 104,28 C114,30 118,42 112,52 C118,62 110,74 98,76 C92,86 76,86 68,80 C56,84 42,78 40,68 C30,64 28,48 36,42 C34,36 36,32 40,30 Z M112,64 C118,62 122,68 118,73 C114,78 107,74 109,68 C109,66 110,64 112,64 Z M31,20 C35,18 39,21 37,25 C35,28 29,26 30,22 C30,21 30,20 31,20 Z";
     return `<svg${cls} viewBox="0 0 144 100" preserveAspectRatio="xMidYMid slice"><path d="${island}" fill="var(--accent)"/></svg>`;
   }
-  const region = benannteRegion(key, tripName);
-  const d = region || groessteFlaeche(COUNTRY_PATHS[key]);
-  const cacheKey = key + '::' + (region ? tripName.trim().toLowerCase() : 'groesste');
-  const eng = tightCountryView(d, cacheKey);
+  const d = groessteFlaeche(COUNTRY_PATHS[key]);
+  const eng = tightCountryView(d, key);
   if (eng) {
     return `<svg${cls} viewBox="${eng.box.map(v => v.toFixed(2)).join(' ')}" preserveAspectRatio="xMidYMid meet"><path d="${d}" fill="var(--accent)" transform="${eng.transform}"/></svg>`;
   }
@@ -627,7 +607,7 @@ const ICON_CAMERA = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 3l
 
 /* Baut eine Reise-Kachel. Bei abgeschlossenen Reisen steht statt des Countdowns Jahr + Dauer. */
 function tripTileHTML(t, done){
-  const map = t.country ? tripMapSVG(t.country, true, t.name) : '';
+  const map = t.country ? tripMapSVG(t.country, true) : '';
   let big, unit, label, cls;
   if (done) {
     big = tripYear(t) || '—'; unit = ''; cls = 'muted';
@@ -821,7 +801,7 @@ function renderOverviewTab(t){
     else if (du===0){ big='Heute'; sub='Die Reise beginnt!'; }
     else { big='Unterwegs'; sub=(t.end&&todayISO()>t.end)?'Reise abgeschlossen':'Reise läuft'; }
   }
-  const map = t.country ? tripMapSVG(t.country, false, t.name) : '';
+  const map = t.country ? tripMapSVG(t.country) : '';
   const range = (t.start || t.end) ? `${displayDate(t.start)||'?'} – ${displayDate(t.end)||'?'}` : '';
   const dur = tripDuration(t);
   // Eine Karte: Countdown + Weltkarte oben, Zeitraum darunter, dann die Zahlen
@@ -1583,7 +1563,7 @@ registerModule({
         const tage = Math.round((kommend.d - heute) / 86400000);
         const ziel = kommend.t.name || '';
         return { sub: ziel, value: tage, unit: 'Tage', note: 'bis zur Abreise',
-                 art: (kommend.t.country ? tripMapSVG(kommend.t.country, false, kommend.t.name) : '') };
+                 art: (kommend.t.country ? tripMapSVG(kommend.t.country) : '') };
       }
       return { sub: trips.length ? 'Keine kommende Reise' : 'Noch keine Reise',
                value: trips.length, unit: trips.length === 1 ? 'Reise' : 'Reisen', note: 'gespeichert' };
