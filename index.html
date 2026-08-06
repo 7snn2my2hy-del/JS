@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2608010845">
+<link rel="manifest" href="manifest.json?v=2608011000">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -277,11 +277,16 @@
 
   /* Jahresuebersicht mit Fortschrittsbalken (z.B. Resturlaub) */
 
-  .alert-card { padding: 14px 18px; border-radius: var(--r-entry); background: rgba(255,159,10,0.08); border: 1px solid rgba(255,159,10,0.22); }
-  .alert-title { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--orange); font-weight: 700; margin-bottom: 7px; }
+  /* "Handlungsbedarf" (ueberfaellig/unvollstaendig) ist dringlicher als "Bald faellig" -
+     Rot statt Orange, passend zu den pill-red-Markierungen an denselben Eintraegen. */
+  .alert-card { padding: 14px 18px; border-radius: var(--r-entry); background: rgba(255,69,58,0.08); border: 1px solid rgba(255,69,58,0.22); }
+  .alert-title { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--danger); font-weight: 700; margin-bottom: 7px; }
   .alert-item { display: flex; gap: 8px; font-size: 0.82rem; line-height: 1.5; color: var(--text); }
   .alert-item + .alert-item { margin-top: 4px; }
   .alert-item::before { content: "\26A0\FE0F"; flex-shrink: 0; }
+  .alert-card + .alert-card { margin-top: 10px; }
+  .alert-card-soon { background: rgba(255,159,10,0.08); border-color: rgba(255,159,10,0.22); }
+  .alert-card-soon .alert-title { color: var(--orange); }
 
   .add-btn { width: 100%; margin-top: 14px; padding: 12px; font: inherit; font-size: 0.82rem; font-weight: 500; color: var(--muted); cursor: pointer; border-radius: var(--r-pill); border: 1px solid var(--stroke); background: transparent; transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.3s var(--spring); }
   .add-btn:active { transform: scale(0.97); opacity: 0.85; }
@@ -2362,10 +2367,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2608010845"></script>
-<script src="mod-reisen.js?v=2608010845"></script>
-<script src="mod-finanzen.js?v=2608010845"></script>
-<script src="mod-impfpass.js?v=2608010845"></script>
+<script src="data-laender.js?v=2608011000"></script>
+<script src="mod-reisen.js?v=2608011000"></script>
+<script src="mod-finanzen.js?v=2608011000"></script>
+<script src="mod-impfpass.js?v=2608011000"></script>
 
 <!-- ===== Start ===== -->
 <script>

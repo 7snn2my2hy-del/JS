@@ -11,8 +11,7 @@ document.getElementById('mod-impfpass').insertAdjacentHTML('beforeend', `
 
   <div id="imp-alert-wrap"></div>
 
-  <div class="section-label">Impfungen</div>
-  <div class="list" id="imp-list"></div>
+  <div id="imp-list"></div>
   <div class="empty" id="imp-empty" style="display:none"><b>Noch keine Impfung erfasst</b>Tippe unten, um die erste anzulegen.</div>
 
   <button class="add-btn" onclick="impOpenModal()">＋ Impfung hinzufügen</button>
@@ -29,10 +28,18 @@ document.getElementById('mod-impfpass').insertAdjacentHTML('beforeend', `
         <label>Impfung</label>
         <input type="text" id="imp-f-name" placeholder="z.B. Tetanus / Diphtherie" autocomplete="off">
       </div>
+      <div class="field">
+        <label>Kategorie</label>
+        <select id="imp-f-kategorie">
+          <option value="standard">Standardimpfung</option>
+          <option value="indikation">Indikationsimpfung</option>
+          <option value="reise">Reiseimpfung</option>
+        </select>
+      </div>
       <div class="field field-row">
         <div>
           <label>Zuletzt geimpft</label>
-          <input type="text" id="imp-f-last" placeholder="TT.MM.JJJJ" inputmode="decimal" autocomplete="off" oninput="autoDate(this)" onblur="fixDate(this)">
+          <input type="text" id="imp-f-last" placeholder="TT.MM.JJJJ" inputmode="decimal" autocomplete="off" oninput="autoDate(this)" onblur="fixDate(this);impAutoSuggestNext()">
         </div>
         <div>
           <label>Nächste Auffrischung</label>
@@ -69,19 +76,31 @@ document.getElementById('mod-impfpass').insertAdjacentHTML('beforeend', `
 /* ---------------- Daten ---------------- */
 const IMP_KEYS = { impfungen: 'imp_impfungen_v1' };
 
+/* Kategorien wie im STIKO-Kalender selbst: Standard-, Indikations- und Reiseimpfungen.
+   Kein Alters-Clustering - bei einer Einzelperson nicht sinnvoll, STIKO trennt intern
+   ohnehin primaer nach dieser Kategorie. */
+const IMP_KATEGORIEN = [
+  { key: 'standard',   label: 'Standardimpfungen' },
+  { key: 'indikation', label: 'Indikationsimpfungen' },
+  { key: 'reise',      label: 'Reiseimpfungen' }
+];
+function impKategorie(e){ return e.kategorie || 'standard'; }
+
 /* Startbestand aus dem bisherigen statischen Impfpass – wird nur einmalig
-   angelegt, wenn noch nichts gespeichert ist. Danach frei bearbeitbar. */
+   angelegt, wenn noch nichts gespeichert ist. Danach frei bearbeitbar.
+   Kategorie-Zuordnung nach bestem Wissen (Hepatitis A gilt haeufig als Reise- oder
+   Indikationsimpfung, hier als Reise eingeordnet - bei Bedarf im Formular anpassen). */
 const IMP_SEED = [
-  { name: 'Tetanus / Diphtherie',      last: '2023-03-03', next: '2033-03-03' },
-  { name: 'Keuchhusten',               last: '2023-03-03', next: '' },
-  { name: 'Polio',                     last: '2017-11-10', next: '' },
-  { name: 'Masern / Mumps / Röteln',   last: '2018-10-20', next: '' },
-  { name: 'Hepatitis A + B',           last: '2026-04-27', next: '' },
-  { name: 'FSME',                      last: '2024-06-07', next: '2029-06-07' },
-  { name: 'Meningokokken',             last: '2010-08-27', next: '' },
-  { name: 'COVID-19',                  last: '2021-12-12', next: '' },
-  { name: 'Tollwut',                   last: '',           next: '', open: true, doses: '2 von 3', note: 'Dosis 3 steht noch aus' },
-  { name: 'Typhus',                    last: '2013-03-24', next: '2016-03-24' }
+  { name: 'Tetanus / Diphtherie',      last: '2023-03-03', next: '2033-03-03', kategorie: 'standard' },
+  { name: 'Keuchhusten',               last: '2023-03-03', next: '',           kategorie: 'standard' },
+  { name: 'Polio',                     last: '2017-11-10', next: '',           kategorie: 'standard' },
+  { name: 'Masern / Mumps / Röteln',   last: '2018-10-20', next: '',           kategorie: 'standard' },
+  { name: 'Hepatitis A + B',           last: '2026-04-27', next: '',           kategorie: 'reise' },
+  { name: 'FSME',                      last: '2024-06-07', next: '2029-06-07', kategorie: 'indikation' },
+  { name: 'Meningokokken',             last: '2010-08-27', next: '',           kategorie: 'indikation' },
+  { name: 'COVID-19',                  last: '2021-12-12', next: '',           kategorie: 'indikation' },
+  { name: 'Tollwut',                   last: '',           next: '', open: true, doses: '2 von 3', note: 'Dosis 3 steht noch aus', kategorie: 'reise' },
+  { name: 'Typhus',                    last: '2013-03-24', next: '2016-03-24', kategorie: 'reise' }
 ];
 
 let impfungen = safeParse(store.get(IMP_KEYS.impfungen), null);
@@ -93,10 +112,48 @@ if (!Array.isArray(impfungen)) {
 function impPersist(){ store.set(IMP_KEYS.impfungen, JSON.stringify(impfungen)); }
 // Kennungen kommen aus dem Kern (neueId).
 
+/* Alteintraege ohne Kategorie (vor diesem Update angelegt) bekommen "Standardimpfung"
+   als Vorschlag - haeufigster Fall, jederzeit im Formular korrigierbar. Laeuft bei
+   jedem Start mit, tut aber nichts mehr, sobald einmal alles nachgezogen ist. */
+function impMigriere(){
+  let geaendert = false;
+  impfungen.forEach(e => { if (!e.kategorie) { e.kategorie = 'standard'; geaendert = true; } });
+  if (geaendert) impPersist();
+}
+
 /* ---------------- Status ----------------
    Leitet sich ausschließlich aus den eingetragenen Daten ab – es wird nichts
    selbstständig fortgeschrieben. */
 const IMP_SOON_DAYS = 180;
+
+/* Automatischer Auffrisch-Vorschlag NUR fuer die wenigen Impfungen mit einem stabilen,
+   fuer alle Erwachsenen gleichermassen geltenden STIKO-Intervall (Stand Epidemiologisches
+   Bulletin 4/2026: Tetanus/Diphtherie/Keuchhusten alle 10 Jahre, einmalig als Tdap).
+   Bewusst NICHT fuer die anderen Eintraege: Pneumokokken/Herpes Zoster/RSV haengen vom
+   Alter ab statt von einem Kalenderintervall, Tollwut/Typhus sind reise-/anlassbezogen
+   ohne festen Rhythmus, MMR/Polio haben bei Erwachsenen ueblicherweise gar keine
+   periodische Auffrischung. Ein automatischer Vorschlag waere dort falsch praezise. */
+const IMP_STIKO_INTERVALL = [
+  { muster: /tetanus|diphtherie|keuchhusten|pertussis|tdap/i, jahre: 10 }
+];
+function impStikoJahre(name){
+  const treffer = IMP_STIKO_INTERVALL.find(e => e.muster.test(name || ''));
+  return treffer ? treffer.jahre : null;
+}
+/* Fuellt "Naechste Auffrischung" nur, wenn das Feld noch leer ist - eine bereits von
+   Hand eingetragene oder vom Arzt abweichende Angabe wird nie ueberschrieben. */
+function impAutoSuggestNext(){
+  const jahre = impStikoJahre($('imp-f-name').value);
+  if (!jahre) return;
+  const nextEl = $('imp-f-next');
+  if (nextEl.value.trim()) return;
+  const lastIso = deToISO($('imp-f-last').value.trim());
+  if (!lastIso) return;
+  const d = new Date(lastIso + 'T00:00:00');
+  if (isNaN(d)) return;
+  d.setFullYear(d.getFullYear() + jahre);
+  nextEl.value = isoToDE(d.toISOString().slice(0, 10));
+}
 
 function impStatus(e){
   if (e.open) return { key: 'open',    label: 'Unvollständig', pill: 'pill-red' };
@@ -115,6 +172,10 @@ function impAlertText(e){
   if (st.key === 'open') return `${e.name} — ${e.note || 'Impfserie noch unvollständig'}`;
   const jahr = e.next ? e.next.slice(0, 4) : '';
   return `${e.name} — überfällig seit ${jahr || displayDate(e.next)}`;
+}
+function impSoonText(e){
+  const tage = daysUntil(e.next);
+  return `${e.name} — fällig am ${displayDate(e.next)}${tage != null ? ` (in ${tage} Tagen)` : ''}`;
 }
 
 /* Sortierung: Handlungsbedarf zuerst, dann bald fällig, dann alphabetisch */
@@ -140,14 +201,29 @@ function impRenderOverview(){
     </div>`;
 }
 
+/* Zeigt beides direkt im Kopfbereich: was ueberfaellig/unvollstaendig ist
+   (Handlungsbedarf, rot) UND was in den naechsten 180 Tagen ansteht (Bald faellig,
+   orange) - vorher stand nur die ueberfaellige Liste da, die bald faelligen waren nur
+   als Zahl in der Kachel darueber sichtbar, nicht als konkrete Liste. */
 function impRenderAlert(){
   const el = $('imp-alert-wrap'); if(!el) return;
-  const offen = impSorted().filter(impNeedsAction);
-  if (!offen.length){ el.innerHTML = ''; return; }
-  el.innerHTML = `<div class="alert-card">
-    <div class="alert-title">Handlungsbedarf</div>
-    ${offen.map(e => `<div class="alert-item">${esc(impAlertText(e))}</div>`).join('')}
-  </div>`;
+  const sortiert = impSorted();
+  const dringend = sortiert.filter(impNeedsAction);
+  const bald = sortiert.filter(e => impStatus(e).key === 'soon');
+  let html = '';
+  if (dringend.length){
+    html += `<div class="alert-card">
+      <div class="alert-title">Handlungsbedarf</div>
+      ${dringend.map(e => `<div class="alert-item">${esc(impAlertText(e))}</div>`).join('')}
+    </div>`;
+  }
+  if (bald.length){
+    html += `<div class="alert-card alert-card-soon">
+      <div class="alert-title">Bald fällig</div>
+      ${bald.map(e => `<div class="alert-item">${esc(impSoonText(e))}</div>`).join('')}
+    </div>`;
+  }
+  el.innerHTML = html;
 }
 
 function impEntryHTML(e){
@@ -172,8 +248,16 @@ function impEntryHTML(e){
 function impRenderList(){
   const el = $('imp-list'), leer = $('imp-empty'); if(!el) return;
   const liste = impSorted();
-  el.innerHTML = liste.map(e => swipeWrap('impf', e.id, impEntryHTML(e))).join('');
   if (leer) leer.style.display = liste.length ? 'none' : '';
+  if (!liste.length){ el.innerHTML = ''; return; }
+  let html = '';
+  IMP_KATEGORIEN.forEach((kat, i) => {
+    const gruppe = liste.filter(e => impKategorie(e) === kat.key);
+    if (!gruppe.length) return;
+    html += `<div class="section-label${i === 0 ? '' : ' spaced'}">${kat.label}</div>`;
+    html += `<div class="list">${gruppe.map(e => swipeWrap('impf', e.id, impEntryHTML(e))).join('')}</div>`;
+  });
+  el.innerHTML = html;
   el.querySelectorAll('.entry-wrap').forEach(wrap => {
     const id = wrap.dataset.id;
     attachSwipeGeneric(wrap, () => impDelete(id), () => impOpenModal(id));
@@ -189,7 +273,8 @@ function impOpenModal(id){
   impEditId = id || null;
   const e = id ? impfungen.find(x => x.id === id) : null;
   $('imp-form-title').textContent = e ? 'Impfung bearbeiten' : 'Neue Impfung';
-  $('imp-f-name').value     = e ? (e.name || '') : '';
+  $('imp-f-name').value      = e ? (e.name || '') : '';
+  $('imp-f-kategorie').value = e ? impKategorie(e) : 'standard';
   $('imp-f-last').value     = e ? isoToDE(e.last) : '';
   $('imp-f-next').value     = e ? isoToDE(e.next) : '';
   $('imp-f-doses').value    = e ? (e.doses || '') : '';
@@ -206,6 +291,7 @@ async function impSave(){
   if (!name){ await notify('Bitte einen Namen für die Impfung eintragen.'); return; }
   const daten = {
     name,
+    kategorie: $('imp-f-kategorie').value,
     last:     deToISO($('imp-f-last').value.trim()),
     next:     deToISO($('imp-f-next').value.trim()),
     doses:    $('imp-f-doses').value.trim(),
@@ -311,6 +397,7 @@ registerModule({
   buildPayload: () => impBuildBackupPayload(),
   applyBackup: (t) => impApplyBackup(t),
   restoreInfo: p => ((p && p.impfungen || []).length) + ' Impfung(en)',
+  migrate: () => impMigriere(),
   detect: p => !!(p && Array.isArray(p.impfungen)),
   init: () => { try { impRender(); } catch(e){} },
   onOpen: () => { try { impRender(); } catch(e){} },
