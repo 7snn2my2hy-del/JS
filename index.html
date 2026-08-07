@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2608011500">
+<link rel="manifest" href="manifest.json?v=2608011630">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -578,10 +578,11 @@
      ein bekanntes Schema hat (siehe impZeigeStikoHinweis). */
   .imp-hinweis { font-size: 0.78rem; color: var(--muted); line-height: 1.5; background: rgba(0,179,184,0.08); border: 1px solid rgba(0,179,184,0.25); border-radius: var(--r-control); padding: 10px 12px; margin: -6px 0 4px; }
   /* Dynamische Dosen-Liste ("Impfung 1", "Impfung 2", ...) - je Zeile ein Datumsfeld,
-     ab der zweiten Zeile zusaetzlich ein Entfernen-Knopf. Abstand zwischen den Zeilen
-     bewusst identisch zu .field-stack (14px) statt eines eigenen Werts - sonst wirkt
-     der Rhythmus innerhalb desselben Formulars uneinheitlich. */
-  .imp-dose-row { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 14px; }
+     ab der zweiten Zeile zusaetzlich ein Entfernen-Knopf. Der Abstand zwischen zwei
+     Zeilen muss deutlich groesser sein als der zwischen Label und zugehoerigem Feld
+     (6px, siehe .field label) - sonst wirkt jedes Label als gehoere es zum Feld
+     darueber statt zum eigenen darunter. */
+  .imp-dose-row { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 16px; }
   .imp-dose-row:last-child { margin-bottom: 0; }
   .imp-dose-input-wrap { flex: 1; min-width: 0; }
   .imp-dose-remove { flex-shrink: 0; width: 44px; height: 44px; border-radius: var(--r-control); border: 1px solid var(--stroke); background: rgba(255,255,255,0.06); color: var(--muted); font-size: 1rem; cursor: pointer; }
@@ -2378,10 +2379,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2608011500"></script>
-<script src="mod-reisen.js?v=2608011500"></script>
-<script src="mod-finanzen.js?v=2608011500"></script>
-<script src="mod-impfpass.js?v=2608011500"></script>
+<script src="data-laender.js?v=2608011630"></script>
+<script src="mod-reisen.js?v=2608011630"></script>
+<script src="mod-finanzen.js?v=2608011630"></script>
+<script src="mod-impfpass.js?v=2608011630"></script>
 
 <!-- ===== Start ===== -->
 <script>

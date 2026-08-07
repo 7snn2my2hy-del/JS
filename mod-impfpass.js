@@ -102,9 +102,27 @@ const IMP_STIKO_SCHEMA = [
   { muster: /tetanus|diphtherie|keuchhusten|pertussis|tdap/i,
     dosenNoetig: 1, auffrischJahre: 10,
     hinweis: 'STIKO: Bei vollständiger Grundimmunisierung genügt 1 Auffrischung, danach alle 10 Jahre erneut auffrischen.' },
+  { muster: /polio|poliomyelitis|kinderlähmung/i,
+    dosenNoetig: 4, auffrischJahre: null,
+    hinweis: 'STIKO: Grundimmunisierung (3 Dosen) plus einmalige Auffrischung. Danach gilt der Schutz als vollständig – eine routinemäßige Auffrischung alle 10 Jahre ist für Erwachsene in Deutschland nicht vorgesehen. Vor Reisen in Risikogebiete kann eine Auffrischung nach 10 Jahren sinnvoll sein.' },
+  { muster: /masern|mumps|röteln|mmr/i,
+    dosenNoetig: 2, auffrischJahre: null,
+    hinweis: 'STIKO: Nach 1970 Geborene gelten mit 2 Dosen als vollständig geschützt (im Kindesalter Standard, im Erwachsenenalter als Nachholimpfung). Danach lebenslanger Schutz, keine Auffrischung nötig.' },
   { muster: /hepatitis\s*a\s*\+?\s*b|hepatitis\s*b\s*\+?\s*a|twinrix/i,
     dosenNoetig: 3, auffrischJahre: null,
-    hinweis: 'STIKO: 3 Dosen für die Grundimmunisierung (Monat 0, 1, 6), danach in der Regel keine routinemäßige Auffrischung.' }
+    hinweis: 'STIKO: 3 Dosen für die Grundimmunisierung (Monat 0, 1, 6), danach in der Regel keine routinemäßige Auffrischung.' },
+  { muster: /fsme|zeckenschutzimpfung|frühsommer/i,
+    dosenNoetig: 3, auffrischJahre: 5,
+    hinweis: 'STIKO: 3 Dosen für die Grundimmunisierung. Erste Auffrischung nach 3 Jahren, danach alle 5 Jahre (ab 50–60 Jahren ggf. alle 3 Jahre) – aber nur solange ein Zeckenrisiko besteht, also bei Aufenthalt in Risikogebieten.' },
+  { muster: /tollwut|rabies|rabipur/i,
+    dosenNoetig: 3, auffrischJahre: null,
+    hinweis: 'STIKO: 3 Dosen für die Grundimmunisierung vor einer Reise (Tag 0, 7, 21/28). Danach hält die Boosterfähigkeit Jahrzehnte, teils lebenslang – routinemäßige Auffrischungen sind für Normalexponierte nicht nötig. Nach Tierkontakt trotzdem immer sofort zum Arzt.' },
+  { muster: /typhus|typhim/i,
+    dosenNoetig: 1, auffrischJahre: 3,
+    hinweis: 'STIKO: 1 Dosis schützt etwa 3 Jahre. Eine Auffrischung ist nur nötig, wenn erneut eine Reise in ein Endemiegebiet ansteht – ohne Reise besteht kein Handlungsbedarf.' },
+  { muster: /meningokokken|menactra|menveo|nimenrix/i,
+    dosenNoetig: 1, auffrischJahre: null,
+    hinweis: 'STIKO: Für Erwachsene in Deutschland keine Standardimpfung. 1 Dosis MenACWY vor Reisen in Risikogebiete (z.B. Sahelzone, Saudi-Arabien); eine Auffrischung wird nur bei fortbestehendem Risiko empfohlen.' }
 ];
 function impSchemaFuer(name){
   return IMP_STIKO_SCHEMA.find(e => e.muster.test(name || '')) || null;
@@ -118,8 +136,12 @@ function impSchemaFuer(name){
    "standard", dem haeufigsten Fall, und ist im Formular jederzeit korrigierbar. */
 function impKategorieRaten(name){
   const n = (name || '').toLowerCase();
-  if (/tollwut|typhus|gelbfieber|japanische enzephalitis|cholera|hepatitis a/.test(n)) return 'reise';
-  if (/fsme|meningokokken|covid|pneumokokken|zoster|gürtelrose|rsv|grippe|influenza/.test(n)) return 'indikation';
+  // Hepatitis A+B und FSME stehen bewusst NICHT bei "reise"/"indikation": bei Joerg sind
+  // beide als Standardimpfung eingeordnet (FSME wegen Wohnort im Risikogebiet, Hepatitis
+  // als Grundschutz) - siehe IMP_PASS_2026. Wird nur fuer neu angelegte Eintraege und
+  // Alteintraege ohne Kategorie herangezogen, jederzeit im Formular aenderbar.
+  if (/tollwut|typhus|gelbfieber|japanische enzephalitis|cholera/.test(n)) return 'reise';
+  if (/meningokokken|covid|pneumokokken|zoster|gürtelrose|rsv|grippe|influenza/.test(n)) return 'indikation';
   return 'standard';
 }
 
@@ -157,9 +179,9 @@ const IMP_PASS_2026 = [
     dosen: ['2010-08-27'] },
   { name: 'COVID-19', kategorie: 'indikation',
     dosen: ['2021-05-30','2021-07-12','2021-12-12'] },
-  { name: 'FSME', kategorie: 'indikation',
+  { name: 'FSME', kategorie: 'standard',
     dosen: ['2023-03-16','2023-04-20','2024-06-07'] },
-  { name: 'Hepatitis A + B', kategorie: 'reise',
+  { name: 'Hepatitis A + B', kategorie: 'standard',
     dosen: ['2013-07-15','2013-08-12','2014-03-17','2026-04-27'] },
   { name: 'Typhus', kategorie: 'reise',
     dosen: ['2013-07-24'] },
