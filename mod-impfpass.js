@@ -74,7 +74,7 @@ document.getElementById('mod-impfpass').insertAdjacentHTML('beforeend', `
 `);
 
 /* ---------------- Daten ---------------- */
-const IMP_KEYS = { impfungen: 'imp_impfungen_v1' };
+const IMP_KEYS = { impfungen: 'imp_impfungen_v1', kategorieMigration: 'imp_kategorie_migration_v2' };
 
 /* Kategorien wie im STIKO-Kalender selbst: Standard-, Indikations- und Reiseimpfungen.
    Kein Alters-Clustering - bei einer Einzelperson nicht sinnvoll, STIKO trennt intern
@@ -115,9 +115,33 @@ function impPersist(){ store.set(IMP_KEYS.impfungen, JSON.stringify(impfungen));
 /* Alteintraege ohne Kategorie (vor diesem Update angelegt) bekommen "Standardimpfung"
    als Vorschlag - haeufigster Fall, jederzeit im Formular korrigierbar. Laeuft bei
    jedem Start mit, tut aber nichts mehr, sobald einmal alles nachgezogen ist. */
+/* Rät die Kategorie aus dem Namen, nach demselben Muster wie IMP_SEED oben.
+   Nur die eindeutigen Fälle - alles andere (auch unbekannte Namen) landet bei
+   "standard", dem haeufigsten Fall, und ist im Formular jederzeit korrigierbar. */
+function impKategorieRaten(name){
+  const n = (name || '').toLowerCase();
+  if (/tollwut|typhus|gelbfieber|japanische enzephalitis|cholera|hepatitis a/.test(n)) return 'reise';
+  if (/fsme|meningokokken|covid|pneumokokken|zoster|gürtelrose|rsv|grippe|influenza/.test(n)) return 'indikation';
+  return 'standard';
+}
+
+const IMP_KATEGORIE_MIGRATION_KEY = 'imp_kategorie_migration_v2';
 function impMigriere(){
   let geaendert = false;
-  impfungen.forEach(e => { if (!e.kategorie) { e.kategorie = 'standard'; geaendert = true; } });
+  // Alteintraege ganz ohne Kategorie (vor der ersten Version dieser Funktion angelegt).
+  impfungen.forEach(e => { if (!e.kategorie) { e.kategorie = impKategorieRaten(e.name); geaendert = true; } });
+  // Einmalige Nachkorrektur: eine fruehere Fassung dieser Funktion hat Alteintraege
+  // pauschal auf "standard" gesetzt, statt wie hier nach dem Namen zu raten - dadurch
+  // landeten z.B. Tollwut oder FSME faelschlich bei den Standardimpfungen. Laeuft nur
+  // dieses eine Mal (Flag unten), damit spaeter von Hand gewaehltes "Standard" nicht
+  // wieder umgebogen wird.
+  if (!store.get(IMP_KATEGORIE_MIGRATION_KEY)) {
+    impfungen.forEach(e => {
+      const geraten = impKategorieRaten(e.name);
+      if (e.kategorie === 'standard' && geraten !== 'standard') { e.kategorie = geraten; geaendert = true; }
+    });
+    store.set(IMP_KATEGORIE_MIGRATION_KEY, '1');
+  }
   if (geaendert) impPersist();
 }
 
@@ -320,7 +344,7 @@ async function impDelete(id){
 }
 
 /* ---------------- Sicherung ---------------- */
-function impBuildBackupPayload(){ return { impfungen }; }
+function impBuildBackupPayload(){ return { impfungen, kategorieMigration: store.get(IMP_KEYS.kategorieMigration) || null }; }
 /* Uebernimmt nur Daten und meldet zurueck, ob es geklappt hat. Rueckfrage,
    Erfolgsmeldung und Neuzeichnen macht der Kern in applyCombined – so verhaelt sich
    dieser Bereich beim Wiederherstellen genauso wie Reisen und Finanzen. */
@@ -329,6 +353,10 @@ function impApplyBackup(text){
   if (!(p && Array.isArray(p.impfungen))) return false;
   impfungen = p.impfungen;
   impPersist();
+  // Das Migrations-Flag reist mit, damit die einmalige Kategorie-Nachkorrektur nach
+  // einem Wiederherstellen nicht nochmal laeuft und dabei eine inzwischen bewusst auf
+  // "standard" gesetzte Impfung erneut umbiegt.
+  if (p.kategorieMigration) store.set(IMP_KEYS.kategorieMigration, p.kategorieMigration);
   return true;
 }
 
