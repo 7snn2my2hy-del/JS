@@ -40,8 +40,12 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   if (new URL(req.url).origin !== location.origin) return;
+  // reload statt default: erzwingt, dass der Browser seinen EIGENEN HTTP-Cache
+  // umgeht und wirklich bei GitHub nachfragt. Das GitHub-eigene CDN-Cache-Fenster
+  // (bis zu 10 Minuten nach einem Push) bleibt davon unberuehrt - das ist eine
+  // Eigenschaft von GitHub Pages selbst, kein Cache, den der Service Worker steuert.
   event.respondWith(
-    fetch(req).then((res) => {
+    fetch(req, { cache: 'reload' }).then((res) => {
       const copy = res.clone();
       event.waitUntil(caches.open(CACHE).then((c) => ablegen(c, req, copy)));
       return res;
