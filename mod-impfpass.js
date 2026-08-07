@@ -351,7 +351,7 @@ function impRenderAlert(){
   }
 
   const titel = dringlich.length
-    ? (dringlich.length === 1 ? '1 Impfung braucht Aufmerksamkeit' : dringlich.length + ' Impfungen brauchen Aufmerksamkeit')
+    ? (dringlich.length === 1 ? 'Impfung braucht Aufmerksamkeit' : 'Impfungen brauchen Aufmerksamkeit')
     : 'Alles im grünen Bereich';
 
   const zeile = ({ e, st }, warnen) => {
