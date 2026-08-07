@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2608011100">
+<link rel="manifest" href="manifest.json?v=2608011300">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -285,8 +285,6 @@
   .alert-item + .alert-item { margin-top: 4px; }
   .alert-item::before { content: "\26A0\FE0F"; flex-shrink: 0; }
   .alert-card + .alert-card { margin-top: 10px; }
-  .alert-card-soon { background: rgba(255,159,10,0.08); border-color: rgba(255,159,10,0.22); }
-  .alert-card-soon .alert-title { color: var(--orange); }
 
   .add-btn { width: 100%; margin-top: 14px; padding: 12px; font: inherit; font-size: 0.82rem; font-weight: 500; color: var(--muted); cursor: pointer; border-radius: var(--r-pill); border: 1px solid var(--stroke); background: transparent; transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.3s var(--spring); }
   .add-btn:active { transform: scale(0.97); opacity: 0.85; }
@@ -576,6 +574,17 @@
   .balance-inline:focus { border-color: var(--petrol); }
   /* Haken und Beschriftung stehen als Paar mittig in der Zeile. */
   .f-toggle { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; }
+  /* STIKO-Hinweistext im Impfpass-Formular - erscheint nur, wenn der eingetragene Name
+     ein bekanntes Schema hat (siehe impZeigeStikoHinweis). */
+  .imp-hinweis { font-size: 0.78rem; color: var(--muted); line-height: 1.5; background: rgba(0,179,184,0.08); border: 1px solid rgba(0,179,184,0.25); border-radius: var(--r-control); padding: 10px 12px; margin: -6px 0 4px; }
+  /* Dynamische Dosen-Liste ("Impfung 1", "Impfung 2", ...) - je Zeile ein Datumsfeld,
+     ab der zweiten Zeile zusaetzlich ein Entfernen-Knopf. */
+  .imp-dose-row { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 8px; }
+  .imp-dose-row:last-child { margin-bottom: 0; }
+  .imp-dose-input-wrap { flex: 1; min-width: 0; }
+  .imp-dose-remove { flex-shrink: 0; width: 44px; height: 44px; border-radius: var(--r-control); border: 1px solid var(--stroke); background: rgba(255,255,255,0.06); color: var(--muted); font-size: 1rem; cursor: pointer; }
+  .imp-dose-remove:active { background: rgba(255,69,58,0.14); color: var(--danger); }
+  .imp-dose-add { background: none; border: none; color: var(--accent); font: inherit; font-size: 0.85rem; font-weight: 600; padding: 6px 0 0; cursor: pointer; }
   .f-toggle .f-toggle-lab { font-size: 0.78rem; color: var(--text); line-height: 18px; display: block; margin: 0; align-self: center; }
   /* Ohne Akzentfarbe: iOS zeichnet den Kasten dann weiss mit dunklem Haken. */
   /* Haken und Beschriftung bekommen exakt dieselbe Hoehe (18px). Dadurch fallen ihre
@@ -2367,10 +2376,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2608011100"></script>
-<script src="mod-reisen.js?v=2608011100"></script>
-<script src="mod-finanzen.js?v=2608011100"></script>
-<script src="mod-impfpass.js?v=2608011100"></script>
+<script src="data-laender.js?v=2608011300"></script>
+<script src="mod-reisen.js?v=2608011300"></script>
+<script src="mod-finanzen.js?v=2608011300"></script>
+<script src="mod-impfpass.js?v=2608011300"></script>
 
 <!-- ===== Start ===== -->
 <script>
