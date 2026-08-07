@@ -283,9 +283,13 @@ function impStatus(e){
       const tage = daysUntil(naechste);
       if (tage !== null && tage < 0)              return { key: 'over', label: 'Überfällig',  pill: 'pill-red',    next: naechste };
       if (tage !== null && tage <= IMP_SOON_DAYS) return { key: 'soon', label: 'Bald fällig', pill: 'pill-orange', next: naechste };
+      // "Gueltig" heisst hier: der Schutz besteht, aber es kommt wieder eine Auffrischung.
       return { key: 'ok', label: 'Gültig', pill: 'pill-green', next: naechste };
     }
-    return { key: 'ok', label: 'Gültig', pill: 'pill-green', next: null };
+    // Schema ohne Auffrischintervall: nach vollstaendiger Dosenzahl ist dauerhaft nichts
+    // mehr zu tun - deutlicher benannt als "Gueltig", das eine kuenftige Faelligkeit
+    // nahelegen wuerde. next bleibt null, die Zeile "Naechste Impfung" entfaellt.
+    return { key: 'done', label: 'Vollständig immunisiert', pill: 'pill-green', next: null };
   }
   // Kein bekanntes Schema: wie bisher rein manuell, nur falls ein "next"-Datum
   // hinterlegt ist. Ohne Datum keine Dringlichkeitseinstufung moeglich - das ist
@@ -312,7 +316,7 @@ function impRadarText(e, st){
 }
 
 /* Sortierung: Handlungsbedarf zuerst, dann bald fällig, dann alphabetisch */
-const IMP_ORDER = { open: 0, over: 1, soon: 2, ok: 3 };
+const IMP_ORDER = { open: 0, over: 1, soon: 2, ok: 3, done: 4 };
 function impSorted(){
   return [...impfungen].sort((a, b) => {
     const d = IMP_ORDER[impStatus(a).key] - IMP_ORDER[impStatus(b).key];
@@ -354,14 +358,15 @@ function impEntryHTML(e){
   const st = impStatus(e);
   const dosen = impDosenListe(e);
   const letzte = dosen.length ? dosen[dosen.length - 1] : '';
-  const teile = [];
-  teile.push('Letzte Impfung: ' + (letzte ? displayDate(letzte) : '–'));
-  teile.push('Nächste Impfung: ' + (st.next ? displayDate(st.next) : '–'));
+  const zeilen = ['Letzte Impfung: ' + (letzte ? displayDate(letzte) : '–')];
+  // "Naechste Impfung" nur, wenn tatsaechlich noch eine kommt. Bei dauerhaft
+  // vollstaendigem Schutz (Status "done") waere selbst ein "-" irrefuehrend, weil es
+  // eine offene, nur unbekannte Faelligkeit nahelegt.
+  if (st.key !== 'done') zeilen.push('Nächste Impfung: ' + (st.next ? displayDate(st.next) : '–'));
   return `<div class="entry glass">
     <div class="entry-main">
       <div class="entry-name">${esc(e.name)}</div>
-      <div class="entry-sub">${esc(teile[0])}</div>
-      <div class="entry-sub">${esc(teile[1])}</div>
+      ${zeilen.map(z => `<div class="entry-sub">${esc(z)}</div>`).join('')}
     </div>
     <div class="entry-right"><span class="cat-pill ${st.pill}">${st.label}</span></div>
   </div>`;
