@@ -375,7 +375,6 @@ function impRenderAlert(){
     <div class="bento-foot">
       <div class="bento-list">
         ${dringlich.map(x => zeile(x, true)).join('')}
-        ${kommend.length ? `<div class="imp-radar-trenner">Als Nächstes fällig</div>` : ''}
         ${kommend.map(x => zeile(x, false)).join('')}
       </div>
     </div>
