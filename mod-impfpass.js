@@ -54,7 +54,7 @@ document.getElementById('mod-impfpass').insertAdjacentHTML('beforeend', `
 `);
 
 /* ---------------- Daten ---------------- */
-const IMP_KEYS = { impfungen: 'imp_impfungen_v1', kategorieMigration: 'imp_kategorie_migration_v2', dosenMigration: 'imp_dosen_migration_v1' };
+const IMP_KEYS = { impfungen: 'imp_impfungen_v1', kategorieMigration: 'imp_kategorie_migration_v2', dosenMigration: 'imp_dosen_migration_v1', abgleich2026: 'imp_abgleich_2026_v1' };
 
 /* Kategorien wie im STIKO-Kalender selbst: Standard-, Indikations- und Reiseimpfungen.
    Kein Alters-Clustering - bei einer Einzelperson nicht sinnvoll, STIKO trennt intern
@@ -126,6 +126,60 @@ function impKategorieRaten(name){
 
 const IMP_KATEGORIE_MIGRATION_KEY = 'imp_kategorie_migration_v2';
 const IMP_DOSEN_MIGRATION_KEY = 'imp_dosen_migration_v1';
+const IMP_ABGLEICH_2026_KEY = 'imp_abgleich_2026_v1';
+
+/* Einmaliger Abgleich mit dem echten, gelben Impfpass (Fotos vom 11.8.2026) - fest im
+   Code hinterlegt, damit nichts von Hand nachgetragen werden muss. Zwei falsche Daten
+   werden korrigiert, fuenf Eintraege um fehlende Dosen ergaenzt.
+   Greift nur, wenn der jeweils ERWARTETE Ausgangszustand noch vorliegt (falsches Datum
+   noch vorhanden bzw. neues Datum noch nicht vorhanden) - eine zwischenzeitlich von Hand
+   vorgenommene eigene Aenderung wird dadurch nie ueberschrieben. Laeuft nur dieses eine
+   Mal (Flag unten). */
+function impAbgleich2026(){
+  if (store.get(IMP_ABGLEICH_2026_KEY)) return;
+  let geaendert = false;
+  const ersetzeDatum = (muster, alt, neu) => {
+    impfungen.forEach(e => {
+      if (!muster.test(e.name || '')) return;
+      const dosen = Array.isArray(e.dosen) ? e.dosen : (e.dosen = []);
+      const i = dosen.indexOf(alt);
+      if (i !== -1 && !dosen.includes(neu)) { dosen[i] = neu; geaendert = true; }
+    });
+  };
+  const ergaenzeDatum = (muster, neu) => {
+    impfungen.forEach(e => {
+      if (!muster.test(e.name || '')) return;
+      const dosen = Array.isArray(e.dosen) ? e.dosen : (e.dosen = []);
+      if (!dosen.includes(neu)) { dosen.push(neu); geaendert = true; }
+    });
+  };
+  // Typhus: Monat vertauscht (24.03. -> 24.07., TYPHIM Vi, Dr. Blechschmidt).
+  ersetzeDatum(/typhus/i, '2013-03-24', '2013-07-24');
+  // Masern/Mumps/Röteln: Jahr vertippt (2018 -> 2010, US-Format "10-20-2010" im Pass).
+  ersetzeDatum(/masern|mumps|röteln/i, '2018-10-20', '2010-10-20');
+  // Tetanus/Diphtherie/Keuchhusten: neuere gemeinsame Auffrischung per Boostrix, deckt
+  // alle drei Antigene in einer Spritze ab - bei beiden betroffenen Eintraegen ergaenzt.
+  ergaenzeDatum(/tetanus|diphtherie/i, '2026-05-19');
+  ergaenzeDatum(/keuchhusten|pertussis/i, '2026-05-19');
+  // Tollwut: alle drei Dosen der Grundimmunisierung (Rabipur, Tag 0/7/21) nachgetragen -
+  // die Serie ist damit vollstaendig, nicht mehr "2 von 3".
+  ergaenzeDatum(/tollwut/i, '2026-06-01');
+  ergaenzeDatum(/tollwut/i, '2026-06-08');
+  ergaenzeDatum(/tollwut/i, '2026-06-22');
+  // Hepatitis A+B: die drei Dosen der urspruenglichen Grundimmunisierung (Twinrix)
+  // nachgetragen, damit das neue 3-Dosen-Schema die Serie als vollstaendig erkennt.
+  ergaenzeDatum(/hepatitis\s*a/i, '2013-07-15');
+  ergaenzeDatum(/hepatitis\s*a/i, '2013-08-12');
+  ergaenzeDatum(/hepatitis\s*a/i, '2014-03-17');
+  // FSME: beide fruehere Dosen der Grundimmunisierung nachgetragen (kein automatisches
+  // Schema fuer FSME, rein informativ).
+  ergaenzeDatum(/fsme/i, '2023-03-16');
+  ergaenzeDatum(/fsme/i, '2023-04-20');
+  impfungen.forEach(e => { if (Array.isArray(e.dosen)) e.dosen.sort(); });
+  store.set(IMP_ABGLEICH_2026_KEY, '1');
+  if (geaendert) impPersist();
+}
+
 function impMigriere(){
   let geaendert = false;
   // Alteintraege ganz ohne Kategorie (vor der ersten Version dieser Funktion angelegt).
@@ -157,6 +211,8 @@ function impMigriere(){
     store.set(IMP_DOSEN_MIGRATION_KEY, '1');
   }
   if (geaendert) impPersist();
+  // Erst NACH der Dosen-Migration, da hier bereits ein Array vorausgesetzt wird.
+  impAbgleich2026();
 }
 
 /* ---------------- Status ----------------
@@ -377,7 +433,8 @@ function impBuildBackupPayload(){
   return {
     impfungen,
     kategorieMigration: store.get(IMP_KEYS.kategorieMigration) || null,
-    dosenMigration: store.get(IMP_KEYS.dosenMigration) || null
+    dosenMigration: store.get(IMP_KEYS.dosenMigration) || null,
+    abgleich2026: store.get(IMP_KEYS.abgleich2026) || null
   };
 }
 /* Uebernimmt nur Daten und meldet zurueck, ob es geklappt hat. Rueckfrage,
@@ -393,6 +450,7 @@ function impApplyBackup(text){
   // erneut umbiegen.
   if (p.kategorieMigration) store.set(IMP_KEYS.kategorieMigration, p.kategorieMigration);
   if (p.dosenMigration) store.set(IMP_KEYS.dosenMigration, p.dosenMigration);
+  if (p.abgleich2026) store.set(IMP_KEYS.abgleich2026, p.abgleich2026);
   return true;
 }
 
