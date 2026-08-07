@@ -36,7 +36,6 @@ document.getElementById('mod-impfpass').insertAdjacentHTML('beforeend', `
       </div>
       <div class="imp-hinweis" id="imp-stiko-hinweis" style="display:none"></div>
       <div class="field">
-        <label>Impfungen</label>
         <div id="imp-dosen-liste"></div>
         <button type="button" class="imp-dose-add" onclick="impDoseHinzufuegen()">＋ weitere Impfung</button>
       </div>
@@ -54,7 +53,7 @@ document.getElementById('mod-impfpass').insertAdjacentHTML('beforeend', `
 `);
 
 /* ---------------- Daten ---------------- */
-const IMP_KEYS = { impfungen: 'imp_impfungen_v1', kategorieMigration: 'imp_kategorie_migration_v2', dosenMigration: 'imp_dosen_migration_v1', abgleich2026: 'imp_abgleich_2026_v1' };
+const IMP_KEYS = { impfungen: 'imp_impfungen_v1', kategorieMigration: 'imp_kategorie_migration_v2', dosenMigration: 'imp_dosen_migration_v1', abgleich2026: 'imp_abgleich_2026_v2' };
 
 /* Kategorien wie im STIKO-Kalender selbst: Standard-, Indikations- und Reiseimpfungen.
    Kein Alters-Clustering - bei einer Einzelperson nicht sinnvoll, STIKO trennt intern
@@ -126,58 +125,63 @@ function impKategorieRaten(name){
 
 const IMP_KATEGORIE_MIGRATION_KEY = 'imp_kategorie_migration_v2';
 const IMP_DOSEN_MIGRATION_KEY = 'imp_dosen_migration_v1';
-const IMP_ABGLEICH_2026_KEY = 'imp_abgleich_2026_v1';
+const IMP_ABGLEICH_2026_KEY = 'imp_abgleich_2026_v2';
 
-/* Einmaliger Abgleich mit dem echten, gelben Impfpass (Fotos vom 11.8.2026) - fest im
-   Code hinterlegt, damit nichts von Hand nachgetragen werden muss. Zwei falsche Daten
-   werden korrigiert, fuenf Eintraege um fehlende Dosen ergaenzt.
-   Greift nur, wenn der jeweils ERWARTETE Ausgangszustand noch vorliegt (falsches Datum
-   noch vorhanden bzw. neues Datum noch nicht vorhanden) - eine zwischenzeitlich von Hand
-   vorgenommene eigene Aenderung wird dadurch nie ueberschrieben. Laeuft nur dieses eine
-   Mal (Flag unten). */
+/* Vollstaendiger Bestand, 1:1 aus dem gelben Impfpass abgelesen (Fotos vom 11.8.2026,
+   Seiten 7, 8, 10, 11, 15, 17). Ersetzt beim einmaligen Abgleich unten den kompletten
+   bisherigen Bestand - alles, was NICHT im Impfpass steht, faellt dabei raus (z.B. ein
+   frueher vorhandenes Datum 03.03.2023 bei Tetanus/Keuchhusten, das auf keiner Seite
+   des Passes zu finden ist).
+
+   Kombinationsimpfstoffe sind bei JEDER enthaltenen Komponente eingetragen, weil eine
+   Spritze mehrere Antigene abdeckt - dasselbe Datum taucht daher mehrfach auf:
+     Td-Virelon (02.03.2007) = Tetanus + Diphtherie + Polio
+     Repevax    (10.11.2017) = Tetanus + Diphtherie + Pertussis + Polio
+     Boostrix   (19.05.2026) = Tetanus + Diphtherie + Pertussis
+     Twinrix    (4x)         = Hepatitis A + Hepatitis B
+
+   Keuchhusten/Pertussis: In der Kindertabelle auf Seite 7 ist die Pertussis-Spalte in
+   allen Zeilen leer (nur Diphtherie und Tetanus sind angekreuzt) - in den 1980ern war
+   die Keuchhustenimpfung zeitweise nicht allgemein empfohlen. Die erste dokumentierte
+   Pertussis-Komponente kommt daher erst 2017 ueber Repevax. */
+const IMP_PASS_2026 = [
+  { name: 'Tetanus / Diphtherie', kategorie: 'standard',
+    dosen: ['1989-01-20','1989-02-21','1990-01-08','1996-06-07','2007-03-02','2017-11-10','2026-05-19'] },
+  { name: 'Keuchhusten', kategorie: 'standard',
+    dosen: ['2017-11-10','2026-05-19'] },
+  { name: 'Polio', kategorie: 'standard',
+    dosen: ['1989-01-31','1989-03-09','1990-02-14','1997-11-12','2007-03-02','2017-11-10'] },
+  { name: 'Masern / Mumps / Röteln', kategorie: 'standard',
+    dosen: ['2010-08-23','2010-10-20'] },
+  { name: 'Meningokokken', kategorie: 'indikation',
+    dosen: ['2010-08-27'] },
+  { name: 'COVID-19', kategorie: 'indikation',
+    dosen: ['2021-05-30','2021-07-12','2021-12-12'] },
+  { name: 'FSME', kategorie: 'indikation',
+    dosen: ['2023-03-16','2023-04-20','2024-06-07'] },
+  { name: 'Hepatitis A + B', kategorie: 'reise',
+    dosen: ['2013-07-15','2013-08-12','2014-03-17','2026-04-27'] },
+  { name: 'Typhus', kategorie: 'reise',
+    dosen: ['2013-07-24'] },
+  { name: 'Tollwut', kategorie: 'reise',
+    dosen: ['2026-06-01','2026-06-08','2026-06-22'] }
+];
+
+/* Einmaliger, vollstaendiger Abgleich mit dem Impfpass. Bewusst ein harter Ersatz statt
+   eines schrittweisen Zusammenfuehrens: Joerg will exakt den Papierstand in der App,
+   ohne Reste aus dem urspruenglichen Startbestand. Laeuft nur dieses eine Mal (Flag),
+   danach sind alle spaeteren Aenderungen wieder allein seine. */
 function impAbgleich2026(){
   if (store.get(IMP_ABGLEICH_2026_KEY)) return;
-  let geaendert = false;
-  const ersetzeDatum = (muster, alt, neu) => {
-    impfungen.forEach(e => {
-      if (!muster.test(e.name || '')) return;
-      const dosen = Array.isArray(e.dosen) ? e.dosen : (e.dosen = []);
-      const i = dosen.indexOf(alt);
-      if (i !== -1 && !dosen.includes(neu)) { dosen[i] = neu; geaendert = true; }
-    });
-  };
-  const ergaenzeDatum = (muster, neu) => {
-    impfungen.forEach(e => {
-      if (!muster.test(e.name || '')) return;
-      const dosen = Array.isArray(e.dosen) ? e.dosen : (e.dosen = []);
-      if (!dosen.includes(neu)) { dosen.push(neu); geaendert = true; }
-    });
-  };
-  // Typhus: Monat vertauscht (24.03. -> 24.07., TYPHIM Vi, Dr. Blechschmidt).
-  ersetzeDatum(/typhus/i, '2013-03-24', '2013-07-24');
-  // Masern/Mumps/Röteln: Jahr vertippt (2018 -> 2010, US-Format "10-20-2010" im Pass).
-  ersetzeDatum(/masern|mumps|röteln/i, '2018-10-20', '2010-10-20');
-  // Tetanus/Diphtherie/Keuchhusten: neuere gemeinsame Auffrischung per Boostrix, deckt
-  // alle drei Antigene in einer Spritze ab - bei beiden betroffenen Eintraegen ergaenzt.
-  ergaenzeDatum(/tetanus|diphtherie/i, '2026-05-19');
-  ergaenzeDatum(/keuchhusten|pertussis/i, '2026-05-19');
-  // Tollwut: alle drei Dosen der Grundimmunisierung (Rabipur, Tag 0/7/21) nachgetragen -
-  // die Serie ist damit vollstaendig, nicht mehr "2 von 3".
-  ergaenzeDatum(/tollwut/i, '2026-06-01');
-  ergaenzeDatum(/tollwut/i, '2026-06-08');
-  ergaenzeDatum(/tollwut/i, '2026-06-22');
-  // Hepatitis A+B: die drei Dosen der urspruenglichen Grundimmunisierung (Twinrix)
-  // nachgetragen, damit das neue 3-Dosen-Schema die Serie als vollstaendig erkennt.
-  ergaenzeDatum(/hepatitis\s*a/i, '2013-07-15');
-  ergaenzeDatum(/hepatitis\s*a/i, '2013-08-12');
-  ergaenzeDatum(/hepatitis\s*a/i, '2014-03-17');
-  // FSME: beide fruehere Dosen der Grundimmunisierung nachgetragen (kein automatisches
-  // Schema fuer FSME, rein informativ).
-  ergaenzeDatum(/fsme/i, '2023-03-16');
-  ergaenzeDatum(/fsme/i, '2023-04-20');
-  impfungen.forEach(e => { if (Array.isArray(e.dosen)) e.dosen.sort(); });
+  impfungen = IMP_PASS_2026.map((e, i) => ({
+    id: 'pass' + i,
+    name: e.name,
+    kategorie: e.kategorie,
+    dosen: e.dosen.slice().sort(),
+    next: ''
+  }));
   store.set(IMP_ABGLEICH_2026_KEY, '1');
-  if (geaendert) impPersist();
+  impPersist();
 }
 
 function impMigriere(){
