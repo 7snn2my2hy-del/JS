@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2608011630">
+<link rel="manifest" href="manifest.json?v=2608011700">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -578,12 +578,16 @@
      ein bekanntes Schema hat (siehe impZeigeStikoHinweis). */
   .imp-hinweis { font-size: 0.78rem; color: var(--muted); line-height: 1.5; background: rgba(0,179,184,0.08); border: 1px solid rgba(0,179,184,0.25); border-radius: var(--r-control); padding: 10px 12px; margin: -6px 0 4px; }
   /* Dynamische Dosen-Liste ("Impfung 1", "Impfung 2", ...) - je Zeile ein Datumsfeld,
-     ab der zweiten Zeile zusaetzlich ein Entfernen-Knopf. Der Abstand zwischen zwei
-     Zeilen muss deutlich groesser sein als der zwischen Label und zugehoerigem Feld
-     (6px, siehe .field label) - sonst wirkt jedes Label als gehoere es zum Feld
-     darueber statt zum eigenen darunter. */
+     ab der zweiten Zeile zusaetzlich ein Entfernen-Knopf. Die Zeile traegt bewusst NICHT
+     die Klasse .field: die setzt weiter unten im Stylesheet margin-bottom:0 und hat den
+     Zeilenabstand hier komplett ausgehebelt. Label- und Eingabestile daher explizit,
+     identisch zu .field label bzw. .field input. */
   .imp-dose-row { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 16px; }
   .imp-dose-row:last-child { margin-bottom: 0; }
+  .imp-dose-row label { display: block; font-size: 0.76rem; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.01em; }
+  .imp-dose-row input { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid var(--stroke); border-radius: var(--r-control); color: var(--text); font: inherit; font-size: 1rem; padding: 12px 14px; outline: none; transition: border-color 0.15s, background 0.15s; }
+  .imp-dose-row input:focus { border-color: var(--accent); background: rgba(10,132,255,0.08); }
+  .imp-dose-row input::placeholder { color: var(--muted-2); }
   .imp-dose-input-wrap { flex: 1; min-width: 0; }
   .imp-dose-remove { flex-shrink: 0; width: 44px; height: 44px; border-radius: var(--r-control); border: 1px solid var(--stroke); background: rgba(255,255,255,0.06); color: var(--muted); font-size: 1rem; cursor: pointer; }
   .imp-dose-remove:active { background: rgba(255,69,58,0.14); color: var(--danger); }
@@ -2379,10 +2383,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2608011630"></script>
-<script src="mod-reisen.js?v=2608011630"></script>
-<script src="mod-finanzen.js?v=2608011630"></script>
-<script src="mod-impfpass.js?v=2608011630"></script>
+<script src="data-laender.js?v=2608011700"></script>
+<script src="mod-reisen.js?v=2608011700"></script>
+<script src="mod-finanzen.js?v=2608011700"></script>
+<script src="mod-impfpass.js?v=2608011700"></script>
 
 <!-- ===== Start ===== -->
 <script>

@@ -396,7 +396,7 @@ function impRenderDosenListe(){
   const el = $('imp-dosen-liste'); if (!el) return;
   if (!impDosenBearbeitung.length) impDosenBearbeitung = [''];
   el.innerHTML = impDosenBearbeitung.map((datum, i) => `
-    <div class="field imp-dose-row">
+    <div class="imp-dose-row">
       <div class="imp-dose-input-wrap">
         <label>Impfung ${i + 1}</label>
         <input type="text" class="imp-dose-input" placeholder="TT.MM.JJJJ" inputmode="decimal" autocomplete="off"
