@@ -303,18 +303,6 @@ function impStatus(e){
 }
 function impNeedsAction(e){ const k = impStatus(e).key; return k === 'open' || k === 'over'; }
 
-/* Kurztext für die Hinweis-Karte */
-function impRadarText(e, st){
-  if (st.key === 'open') {
-    const schema = impSchemaFuer(e.name);
-    const n = impDosenListe(e).length;
-    return schema ? `${e.name} — ${n} von ${schema.dosenNoetig} Dosen` : `${e.name} — unvollständig`;
-  }
-  if (st.key === 'over') return st.next ? `${e.name} — überfällig seit ${displayDate(st.next)}` : `${e.name} — überfällig`;
-  const tage = st.next ? daysUntil(st.next) : null;
-  return `${e.name} — fällig am ${displayDate(st.next)}${tage != null ? ` (in ${tage} Tagen)` : ''}`;
-}
-
 /* Sortierung: Handlungsbedarf zuerst, dann bald fällig, dann alphabetisch */
 const IMP_ORDER = { open: 0, over: 1, soon: 2, ok: 3, done: 4 };
 function impSorted(){
@@ -340,17 +328,57 @@ function impDringlichkeitsListe(){
   return eintraege.slice(0, 3);
 }
 
+/* Die naechsten anstehenden Auffrischungen - alles, was ein kuenftiges Datum hat und
+   nicht ohnehin schon oben unter "Handlungsbedarf" steht. Chronologisch, maximal drei,
+   damit auch ohne akuten Handlungsbedarf sichtbar ist, was als Naechstes kommt. */
+function impKommendeListe(dringlich){
+  const schonGenannt = new Set(dringlich.map(x => x.e.id));
+  return impfungen.map(e => ({ e, st: impStatus(e) }))
+    .filter(x => x.st.next && !schonGenannt.has(x.e.id) && (daysUntil(x.st.next) || 0) > 0)
+    .sort((a, b) => a.st.next.localeCompare(b.st.next))
+    .slice(0, 3);
+}
+
 /* ---------------- Darstellung ---------------- */
 function impRenderAlert(){
   const el = $('imp-alert-wrap'); if (!el) return;
-  const liste = impDringlichkeitsListe();
-  if (!liste.length) {
+  const dringlich = impDringlichkeitsListe();
+  const kommend = impKommendeListe(dringlich);
+
+  if (!dringlich.length && !kommend.length) {
     el.innerHTML = `<div class="empty"><b>Alles erledigt</b>Keine Impfung ist überfällig, unvollständig oder steht in Kürze an.</div>`;
     return;
   }
-  el.innerHTML = `<div class="alert-card">
-    <div class="alert-title">Als Nächstes fällig</div>
-    ${liste.map(({ e, st }) => `<div class="alert-item">${esc(impRadarText(e, st))}</div>`).join('')}
+
+  const titel = dringlich.length
+    ? (dringlich.length === 1 ? '1 Impfung braucht Aufmerksamkeit' : dringlich.length + ' Impfungen brauchen Aufmerksamkeit')
+    : 'Alles im grünen Bereich';
+
+  const zeile = ({ e, st }, warnen) => {
+    let rechts;
+    if (st.key === 'open') {
+      const schema = impSchemaFuer(e.name);
+      const n = impDosenListe(e).length;
+      rechts = schema ? `${n} von ${schema.dosenNoetig} Dosen` : 'unvollständig';
+    }
+    else if (st.key === 'over') rechts = 'seit ' + displayDate(st.next);
+    else rechts = displayDate(st.next);
+    return `<div class="bento-list-row">
+      <span class="bl${warnen ? ' warn' : ''}">${esc(e.name)}</span>
+      <span class="bv${warnen ? ' warn' : ''}">${esc(rechts)}</span>
+    </div>`;
+  };
+
+  el.innerHTML = `<div class="bento-tile imp-radar">
+    <div class="bento-head"><span class="bento-title">Impfstatus</span></div>
+    <div class="bento-primary" style="color:${dringlich.length ? 'var(--danger)' : 'var(--green)'}">${dringlich.length || '✓'}<span class="bento-unit">${esc(titel)}</span></div>
+    <div class="bento-foot">
+      <div class="bento-list">
+        ${dringlich.map(x => zeile(x, true)).join('')}
+        ${kommend.length ? `<div class="imp-radar-trenner">Als Nächstes fällig</div>` : ''}
+        ${kommend.map(x => zeile(x, false)).join('')}
+      </div>
+    </div>
   </div>`;
 }
 

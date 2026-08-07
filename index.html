@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2608011730">
+<link rel="manifest" href="manifest.json?v=2608011800">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -576,6 +576,17 @@
   .f-toggle { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; }
   /* STIKO-Hinweistext im Impfpass-Formular - erscheint nur, wenn der eingetragene Name
      ein bekanntes Schema hat (siehe impZeigeStikoHinweis). */
+  /* Impfstatus-Kachel im Kopfbereich - eine Bento-Kachel wie in Finanzen, statt der
+     frueheren roten Hinweiskarte. Voll ausgebreitet statt im Kachelraster, deshalb
+     nicht antippbar und ohne :active-Skalierung. */
+  .imp-radar { cursor: default; }
+  .imp-radar:active { transform: none; }
+  .imp-radar .bento-unit { white-space: normal; }
+  /* Trennt "Handlungsbedarf" (oben, rot) von den kommenden Auffrischungen darunter. */
+  .imp-radar-trenner { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em;
+                       color: var(--muted-2); font-weight: 700; margin-top: 9px; padding-top: 9px;
+                       border-top: 1px solid var(--stroke); }
+  .imp-radar-trenner:first-child { margin-top: 0; padding-top: 0; border-top: none; }
   .imp-hinweis { font-size: 0.78rem; color: var(--muted); line-height: 1.5; background: rgba(0,179,184,0.08); border: 1px solid rgba(0,179,184,0.25); border-radius: var(--r-control); padding: 10px 12px; margin: -6px 0 4px; }
   /* Dynamische Dosen-Liste ("Impfung 1", "Impfung 2", ...) - je Zeile ein Datumsfeld,
      ab der zweiten Zeile zusaetzlich ein Entfernen-Knopf. Die Zeile traegt bewusst NICHT
@@ -776,13 +787,16 @@
 #mod-finanzen .bento-break-row span:last-child{ font-variant-numeric: tabular-nums; white-space: nowrap; padding-left: 8px; }
 #mod-finanzen .bento-leg-dot{ display: inline-block; width: 6px; height: 6px; border-radius: var(--r-pill); margin-right: 5px; vertical-align: middle; }
 #mod-finanzen .bento-mini{ font-size: 0.72rem; color: var(--muted-2); }
-/* Listen-Zeilen (Verträge/Urlaube/AV) */
-  #mod-finanzen .bento-list{ display: flex; flex-direction: column; gap: 5px; width: 100%; }
-#mod-finanzen .bento-list-row{ display: flex; justify-content: space-between; align-items: baseline; font-size: 0.74rem; }
-#mod-finanzen .bento-list-row .bl{ color: var(--text); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-#mod-finanzen .bento-list-row .bl.warn{ color: var(--danger); }
-#mod-finanzen .bento-list-row.av .bl{ flex-shrink: 0; }
-#mod-finanzen .bento-list-row .bv{ color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0; padding-left: 10px; }
+/* Listen-Zeilen in Bento-Kacheln (Verträge/Urlaube/AV in Finanzen, Auffrischungen im
+   Impfpass). Bewusst ohne #mod-finanzen-Praefix: die Kachel selbst (.bento-tile) liegt
+   auch im Kern, die Zeilen darin gehoeren zur selben Bausteinfamilie. */
+.bento-list{ display: flex; flex-direction: column; gap: 5px; width: 100%; }
+.bento-list-row{ display: flex; justify-content: space-between; align-items: baseline; font-size: 0.74rem; }
+.bento-list-row .bl{ color: var(--text); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.bento-list-row .bl.warn{ color: var(--danger); }
+.bento-list-row.av .bl{ flex-shrink: 0; }
+.bento-list-row .bv{ color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0; padding-left: 10px; }
+.bento-list-row .bv.warn{ color: var(--danger); }
 /* Urlaubs-Weltkarte */
   #mod-finanzen .bento-map-wrap{ width: 100%; }
 #mod-finanzen .bento-map{ width: 100%; height: auto; display: block; }
@@ -2383,10 +2397,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2608011730"></script>
-<script src="mod-reisen.js?v=2608011730"></script>
-<script src="mod-finanzen.js?v=2608011730"></script>
-<script src="mod-impfpass.js?v=2608011730"></script>
+<script src="data-laender.js?v=2608011800"></script>
+<script src="mod-reisen.js?v=2608011800"></script>
+<script src="mod-finanzen.js?v=2608011800"></script>
+<script src="mod-impfpass.js?v=2608011800"></script>
 
 <!-- ===== Start ===== -->
 <script>
