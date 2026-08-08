@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2608011850">
+<link rel="manifest" href="manifest.json?v=2608012000">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -595,6 +595,11 @@
   .imp-dose-row input:focus { border-color: var(--accent); background: rgba(10,132,255,0.08); }
   .imp-dose-row input::placeholder { color: var(--muted-2); }
   .imp-dose-input-wrap { flex: 1; min-width: 0; }
+  /* Datum ist immer gleich lang ("TT.MM.JJJJ") und braucht weniger Platz als der frei
+     eingetippte Impfstoffname - daher unterschiedliche Gewichtung statt beide gleich
+     breit zu machen. */
+  .imp-dose-input-wrap-datum { flex: 0 0 118px; }
+  .imp-dose-input-wrap-impfstoff { flex: 1; }
   .imp-dose-remove { flex-shrink: 0; width: 44px; height: 44px; border-radius: var(--r-control); border: 1px solid var(--stroke); background: rgba(255,255,255,0.06); color: var(--muted); font-size: 1rem; cursor: pointer; }
   .imp-dose-remove:active { background: rgba(255,69,58,0.14); color: var(--danger); }
   .imp-dose-add { background: none; border: none; color: var(--accent); font: inherit; font-size: 0.85rem; font-weight: 600; padding: 6px 0 0; cursor: pointer; }
@@ -767,6 +772,7 @@
 .bento-primary{ font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.15; margin-top: 5px; white-space: nowrap; }
 .bento-primary.pos{ color: var(--text); }
 .bento-primary.neg{ color: var(--danger); }
+.bento-primary.ok{ color: var(--green); }
 .bento-unit{ font-size: 0.78rem; color: var(--muted); font-weight: 600; margin-left: 3px; letter-spacing: 0; }
 .bento-caption{ font-size: 0.74rem; color: var(--muted); line-height: 1.3; }
 .bento-foot{ margin-top: 14px; }
@@ -791,7 +797,6 @@
 .bento-list-row .bl.warn{ color: var(--danger); }
 .bento-list-row.av .bl{ flex-shrink: 0; }
 .bento-list-row .bv{ color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0; padding-left: 10px; }
-.bento-list-row .bv.warn{ color: var(--danger); }
 /* Urlaubs-Weltkarte */
   #mod-finanzen .bento-map-wrap{ width: 100%; }
 #mod-finanzen .bento-map{ width: 100%; height: auto; display: block; }
@@ -2392,10 +2397,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2608011850"></script>
-<script src="mod-reisen.js?v=2608011850"></script>
-<script src="mod-finanzen.js?v=2608011850"></script>
-<script src="mod-impfpass.js?v=2608011850"></script>
+<script src="data-laender.js?v=2608012000"></script>
+<script src="mod-reisen.js?v=2608012000"></script>
+<script src="mod-finanzen.js?v=2608012000"></script>
+<script src="mod-impfpass.js?v=2608012000"></script>
 
 <!-- ===== Start ===== -->
 <script>

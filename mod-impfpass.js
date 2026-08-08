@@ -53,7 +53,7 @@ document.getElementById('mod-impfpass').insertAdjacentHTML('beforeend', `
 `);
 
 /* ---------------- Daten ---------------- */
-const IMP_KEYS = { impfungen: 'imp_impfungen_v1', kategorieMigration: 'imp_kategorie_migration_v2', dosenMigration: 'imp_dosen_migration_v1', abgleich2026: 'imp_abgleich_2026_v2' };
+const IMP_KEYS = { impfungen: 'imp_impfungen_v1', kategorieMigration: 'imp_kategorie_migration_v2', dosenMigration: 'imp_dosen_migration_v1', abgleich2026: 'imp_abgleich_2026_v3' };
 
 /* Kategorien wie im STIKO-Kalender selbst: Standard-, Indikations- und Reiseimpfungen.
    Kein Alters-Clustering - bei einer Einzelperson nicht sinnvoll, STIKO trennt intern
@@ -147,7 +147,7 @@ function impKategorieRaten(name){
 
 const IMP_KATEGORIE_MIGRATION_KEY = 'imp_kategorie_migration_v2';
 const IMP_DOSEN_MIGRATION_KEY = 'imp_dosen_migration_v1';
-const IMP_ABGLEICH_2026_KEY = 'imp_abgleich_2026_v2';
+const IMP_ABGLEICH_2026_KEY = 'imp_abgleich_2026_v3';
 
 /* Vollstaendiger Bestand, 1:1 aus dem gelben Impfpass abgelesen (Fotos vom 11.8.2026,
    Seiten 7, 8, 10, 11, 15, 17). Ersetzt beim einmaligen Abgleich unten den kompletten
@@ -167,39 +167,74 @@ const IMP_ABGLEICH_2026_KEY = 'imp_abgleich_2026_v2';
    die Keuchhustenimpfung zeitweise nicht allgemein empfohlen. Die erste dokumentierte
    Pertussis-Komponente kommt daher erst 2017 ueber Repevax. */
 const IMP_PASS_2026 = [
-  { name: 'Tetanus / Diphtherie', kategorie: 'standard',
-    dosen: ['1989-01-20','1989-02-21','1990-01-08','1996-06-07','2007-03-02','2017-11-10','2026-05-19'] },
-  { name: 'Keuchhusten', kategorie: 'standard',
-    dosen: ['2017-11-10','2026-05-19'] },
-  { name: 'Polio', kategorie: 'standard',
-    dosen: ['1989-01-31','1989-03-09','1990-02-14','1997-11-12','2007-03-02','2017-11-10'] },
-  { name: 'Masern / Mumps / Röteln', kategorie: 'standard',
-    dosen: ['2010-08-23','2010-10-20'] },
-  { name: 'Meningokokken', kategorie: 'indikation',
-    dosen: ['2010-08-27'] },
-  { name: 'COVID-19', kategorie: 'indikation',
-    dosen: ['2021-05-30','2021-07-12','2021-12-12'] },
-  { name: 'FSME', kategorie: 'standard',
-    dosen: ['2023-03-16','2023-04-20','2024-06-07'] },
-  { name: 'Hepatitis A + B', kategorie: 'standard',
-    dosen: ['2013-07-15','2013-08-12','2014-03-17','2026-04-27'] },
-  { name: 'Typhus', kategorie: 'reise',
-    dosen: ['2013-07-24'] },
-  { name: 'Tollwut', kategorie: 'reise',
-    dosen: ['2026-06-01','2026-06-08','2026-06-22'] }
+  { name: 'Tetanus / Diphtherie', kategorie: 'standard', dosen: [
+    { datum: '1989-01-20', impfstoff: '' },
+    { datum: '1989-02-21', impfstoff: '' },
+    { datum: '1990-01-08', impfstoff: '' },
+    { datum: '1996-06-07', impfstoff: '' },
+    { datum: '2007-03-02', impfstoff: 'Td-Virelon (Td-IPV)' },
+    { datum: '2017-11-10', impfstoff: 'Repevax' },
+    { datum: '2026-05-19', impfstoff: 'Boostrix' }
+  ] },
+  { name: 'Keuchhusten', kategorie: 'standard', dosen: [
+    { datum: '2017-11-10', impfstoff: 'Repevax' },
+    { datum: '2026-05-19', impfstoff: 'Boostrix' }
+  ] },
+  { name: 'Polio', kategorie: 'standard', dosen: [
+    { datum: '1989-01-31', impfstoff: '' },
+    { datum: '1989-03-09', impfstoff: '' },
+    { datum: '1990-02-14', impfstoff: '' },
+    { datum: '1997-11-12', impfstoff: 'Sabin I II III' },
+    { datum: '2007-03-02', impfstoff: 'Td-Virelon (Td-IPV)' },
+    { datum: '2017-11-10', impfstoff: 'Repevax' }
+  ] },
+  { name: 'Masern / Mumps / Röteln', kategorie: 'standard', dosen: [
+    { datum: '2010-08-23', impfstoff: 'M-M-RvaxPro' },
+    { datum: '2010-10-20', impfstoff: 'MMR (Merck & Co)' }
+  ] },
+  { name: 'Meningokokken', kategorie: 'indikation', dosen: [
+    { datum: '2010-08-27', impfstoff: 'Menactra' }
+  ] },
+  { name: 'COVID-19', kategorie: 'indikation', dosen: [
+    { datum: '2021-05-30', impfstoff: 'Comirnaty' },
+    { datum: '2021-07-12', impfstoff: 'Comirnaty' },
+    { datum: '2021-12-12', impfstoff: 'COVID-19 Vaccine Moderna' }
+  ] },
+  { name: 'FSME', kategorie: 'standard', dosen: [
+    { datum: '2023-03-16', impfstoff: 'FSME-IMMUN 0,5 ml Erwachsene (Pfizer)' },
+    { datum: '2023-04-20', impfstoff: 'FSME-IMMUN 0,5 ml Erwachsene (Pfizer)' },
+    { datum: '2024-06-07', impfstoff: 'FSME-IMMUN 0,5 ml Erwachsene (Pfizer)' }
+  ] },
+  { name: 'Hepatitis A + B', kategorie: 'standard', dosen: [
+    { datum: '2013-07-15', impfstoff: 'Twinrix Erwachsene' },
+    { datum: '2013-08-12', impfstoff: 'Twinrix Erwachsene' },
+    { datum: '2014-03-17', impfstoff: 'Twinrix Erwachsene' },
+    { datum: '2026-04-27', impfstoff: 'Twinrix Adult' }
+  ] },
+  { name: 'Typhus', kategorie: 'reise', dosen: [
+    { datum: '2013-07-24', impfstoff: 'Typhim Vi' }
+  ] },
+  { name: 'Tollwut', kategorie: 'reise', dosen: [
+    { datum: '2026-06-01', impfstoff: 'Rabipur' },
+    { datum: '2026-06-08', impfstoff: 'Rabipur' },
+    { datum: '2026-06-22', impfstoff: 'Rabipur' }
+  ] }
 ];
 
 /* Einmaliger, vollstaendiger Abgleich mit dem Impfpass. Bewusst ein harter Ersatz statt
    eines schrittweisen Zusammenfuehrens: Joerg will exakt den Papierstand in der App,
    ohne Reste aus dem urspruenglichen Startbestand. Laeuft nur dieses eine Mal (Flag),
-   danach sind alle spaeteren Aenderungen wieder allein seine. */
+   danach sind alle spaeteren Aenderungen wieder allein seine.
+   v3: Dosen tragen jetzt zusaetzlich den Impfstoffnamen (datum + impfstoff statt nur
+   einem Datumsstring) - bei den alten Kindereintraegen (1989/1990/1996/1997, nur
+   Kreuze in der Tabelle ohne Produktnamen) bleibt impfstoff bewusst leer statt geraten. */
 function impAbgleich2026(){
   if (store.get(IMP_ABGLEICH_2026_KEY)) return;
   impfungen = IMP_PASS_2026.map((e, i) => ({
     id: 'pass' + i,
     name: e.name,
     kategorie: e.kategorie,
-    dosen: e.dosen.slice().sort(),
+    dosen: e.dosen.slice().sort((a, b) => a.datum.localeCompare(b.datum)),
     next: ''
   }));
   store.set(IMP_ABGLEICH_2026_KEY, '1');
@@ -247,7 +282,17 @@ function impMigriere(){
 const IMP_SOON_DAYS = 180;
 
 /* Chronologisch sortierte Liste der erfassten Impfdaten (leere/ungueltige raus). */
-function impDosenListe(e){ return Array.isArray(e.dosen) ? e.dosen.filter(Boolean).sort() : []; }
+/* Liefert die Dosen-Liste normalisiert und chronologisch sortiert. Verarbeitet sowohl
+   das alte Format (nur ein Datumsstring je Dosis) als auch das neue ({datum, impfstoff})
+   - so bricht nichts an bereits gespeicherten Alteintraegen, wenn dieses Update aus dem
+   Hintergrund kommt. Neu gespeichert wird ab jetzt ausschliesslich das neue Format. */
+function impDosenListe(e){
+  if (!Array.isArray(e.dosen)) return [];
+  return e.dosen
+    .map(d => (typeof d === 'string' ? { datum: d, impfstoff: '' } : d))
+    .filter(d => d && d.datum)
+    .sort((a, b) => a.datum.localeCompare(b.datum));
+}
 
 /* Zeigt/versteckt den STIKO-Hinweistext und das manuelle "Naechste Auffrischung"-Feld,
    je nachdem ob der eingetragene Name ein bekanntes Schema hat. Bei bekanntem Schema
@@ -277,7 +322,7 @@ function impStatus(e){
       return { key: 'open', label: 'Unvollständig', pill: 'pill-red', next: null };
     }
     if (schema.auffrischJahre) {
-      const d = new Date(dosen[dosen.length - 1] + 'T00:00:00');
+      const d = new Date(dosen[dosen.length - 1].datum + 'T00:00:00');
       d.setFullYear(d.getFullYear() + schema.auffrischJahre);
       const naechste = d.toISOString().slice(0, 10);
       const tage = daysUntil(naechste);
@@ -365,13 +410,13 @@ function impRenderAlert(){
     else rechts = displayDate(st.next);
     return `<div class="bento-list-row">
       <span class="bl${warnen ? ' warn' : ''}">${esc(e.name)}</span>
-      <span class="bv${warnen ? ' warn' : ''}">${esc(rechts)}</span>
+      <span class="bv">${esc(rechts)}</span>
     </div>`;
   };
 
   el.innerHTML = `<div class="bento-tile imp-radar">
     <div class="bento-head"><span class="bento-title">Impfstatus</span></div>
-    <div class="bento-primary" style="color:${dringlich.length ? 'var(--danger)' : 'var(--green)'}">${dringlich.length || '✓'}<span class="bento-unit">${esc(titel)}</span></div>
+    <div class="bento-primary ${dringlich.length ? 'neg' : 'ok'}">${dringlich.length || '✓'}<span class="bento-unit">${esc(titel)}</span></div>
     <div class="bento-foot">
       <div class="bento-list">
         ${dringlich.map(x => zeile(x, true)).join('')}
@@ -384,8 +429,8 @@ function impRenderAlert(){
 function impEntryHTML(e){
   const st = impStatus(e);
   const dosen = impDosenListe(e);
-  const letzte = dosen.length ? dosen[dosen.length - 1] : '';
-  const zeilen = ['Letzte Impfung: ' + (letzte ? displayDate(letzte) : '–')];
+  const letzte = dosen.length ? dosen[dosen.length - 1] : null;
+  const zeilen = ['Letzte Impfung: ' + (letzte ? displayDate(letzte.datum) : '–') + (letzte && letzte.impfstoff ? ' · ' + letzte.impfstoff : '')];
   // "Naechste Impfung" nur, wenn tatsaechlich noch eine kommt. Bei dauerhaft
   // vollstaendigem Schutz (Status "done") waere selbst ein "-" irrefuehrend, weil es
   // eine offene, nur unbekannte Faelligkeit nahelegt.
@@ -422,23 +467,31 @@ function impRender(){ impRenderAlert(); impRenderList(); }
 
 /* ---------------- Formular ---------------- */
 let impEditId = null;
-let impDosenBearbeitung = [];   // Arbeitskopie der Dosen-Liste, waehrend das Formular offen ist
+let impDosenBearbeitung = [];   // Arbeitskopie der Dosen-Liste ({datum, impfstoff}), waehrend das Formular offen ist
 
 function impRenderDosenListe(){
   const el = $('imp-dosen-liste'); if (!el) return;
-  if (!impDosenBearbeitung.length) impDosenBearbeitung = [''];
-  el.innerHTML = impDosenBearbeitung.map((datum, i) => `
+  if (!impDosenBearbeitung.length) impDosenBearbeitung = [{ datum: '', impfstoff: '' }];
+  el.innerHTML = impDosenBearbeitung.map((d, i) => `
     <div class="imp-dose-row">
-      <div class="imp-dose-input-wrap">
+      <div class="imp-dose-input-wrap imp-dose-input-wrap-datum">
         <label>Impfung ${i + 1}</label>
         <input type="text" class="imp-dose-input" placeholder="TT.MM.JJJJ" inputmode="decimal" autocomplete="off"
-               value="${esc(isoToDE(datum))}" oninput="autoDate(this)" onblur="fixDate(this);impDoseAktualisieren(${i},this.value)">
+               value="${esc(isoToDE(d.datum))}" oninput="autoDate(this)" onblur="fixDate(this);impDoseAktualisieren(${i},'datum',this.value)">
+      </div>
+      <div class="imp-dose-input-wrap imp-dose-input-wrap-impfstoff">
+        <label>Impfstoff</label>
+        <input type="text" class="imp-dose-input" placeholder="z.B. Boostrix" autocomplete="off"
+               value="${esc(d.impfstoff || '')}" onblur="impDoseAktualisieren(${i},'impfstoff',this.value)">
       </div>
       ${impDosenBearbeitung.length > 1 ? `<button type="button" class="imp-dose-remove" onclick="impDoseEntfernen(${i})" aria-label="Impfung ${i + 1} entfernen">✕</button>` : ''}
     </div>`).join('');
 }
-function impDoseAktualisieren(i, deVal){ impDosenBearbeitung[i] = deToISO(deVal.trim()); }
-function impDoseHinzufuegen(){ impDosenBearbeitung.push(''); impRenderDosenListe(); }
+function impDoseAktualisieren(i, feld, wert){
+  if (feld === 'datum') impDosenBearbeitung[i].datum = deToISO(wert.trim());
+  else impDosenBearbeitung[i].impfstoff = wert.trim();
+}
+function impDoseHinzufuegen(){ impDosenBearbeitung.push({ datum: '', impfstoff: '' }); impRenderDosenListe(); }
 function impDoseEntfernen(i){ impDosenBearbeitung.splice(i, 1); impRenderDosenListe(); }
 
 function impOpenModal(id){
@@ -448,7 +501,7 @@ function impOpenModal(id){
   $('imp-f-name').value      = e ? (e.name || '') : '';
   $('imp-f-kategorie').value = e ? impKategorie(e) : 'standard';
   $('imp-f-next').value      = e ? isoToDE(e.next) : '';
-  impDosenBearbeitung = e ? impDosenListe(e).slice() : [];
+  impDosenBearbeitung = e ? impDosenListe(e).map(d => ({ datum: d.datum, impfstoff: d.impfstoff || '' })) : [];
   impRenderDosenListe();
   impZeigeStikoHinweis();
   closeOpenSwipe();
@@ -459,7 +512,7 @@ function impCloseModal(){ schliesseOverlay('imp-overlay'); impEditId = null; }
 async function impSave(){
   const name = $('imp-f-name').value.trim();
   if (!name){ await notify('Bitte einen Namen für die Impfung eintragen.'); return; }
-  const dosen = impDosenBearbeitung.filter(Boolean);
+  const dosen = impDosenBearbeitung.filter(d => d.datum);
   const daten = {
     name,
     kategorie: $('imp-f-kategorie').value,
