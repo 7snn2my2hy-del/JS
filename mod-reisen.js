@@ -51,7 +51,7 @@ async function migrateInlineImages(){
 
 /* ===== WELTKARTE =====
    Quelle: Natural Earth via world-atlas (50m), vereinfacht, Equirectangular auf 1000x500.
-   240 Länder inkl. Kleinstaaten, deutsch benannt. */
+   246 Eintraege inkl. Kleinstaaten und Gebieten, deutsch benannt. */
 /* COUNTRY_PATHS: in data-laender.js */
 
 /* Vorberechneter Zoom-Ausschnitt je Land für die Reisekarten */
@@ -63,7 +63,8 @@ const COUNTRY_LIST = Object.keys(COUNTRY_PATHS).sort((a,b)=>a.localeCompare(b,'d
 const WORLD_TOTAL = 195; // 193 UN-Mitglieder + 2 Beobachter (Vatikan, Palästina)
 /* Abhängige Gebiete, Überseegebiete und nicht (voll) anerkannte Gebiete.
    Die zählen beim Zähler "Länder" mit, aber NICHT in der Prozentzahl –
-   sonst käme man über 100 %, weil die Liste 245 Einträge hat, die Welt aber 195 Staaten. */
+   sonst käme man über 100 %, weil die Liste 246 Einträge hat, die Welt aber 195 Staaten.
+   246 Eintraege minus 51 Gebiete ergibt genau die 195 aus WORLD_TOTAL. */
 const TERRITORIES = new Set(["Åland", "Amerikanisch-Samoa", "Amerikanische Jungferninseln", "Anguilla", "Aruba", "Ashmore- und Cartierinseln", "Australische Territorien im Indischen Ozean", "Bermuda", "Britische Jungferninseln", "Britisches Territorium im Indischen Ozean", "Cookinseln", "Curaçao", "Falklandinseln", "Färöer", "Französisch-Guayana", "Französisch-Polynesien", "Französische Süd- und Antarktisgebiete", "Grönland", "Guadeloupe", "Guam", "Guernsey", "Heard und McDonaldinseln", "Hongkong", "Isle of Man", "Jersey", "Kaimaninseln", "Macau", "Martinique", "Mayotte", "Montserrat", "Neukaledonien", "Niue", "Nördliche Marianen", "Norfolkinsel", "Pitcairninseln", "Puerto Rico", "Réunion", "Sint Maarten", "St. Barthélemy", "St. Helena", "St. Martin", "St. Pierre und Miquelon", "Südgeorgien und die Südlichen Sandwichinseln", "Turks- und Caicosinseln", "Wallis und Futuna", "Kosovo", "Nordzypern", "Somaliland", "Taiwan", "Westsahara", "Siachen-Gletscher"]);
 function isSovereign(c){ return !TERRITORIES.has(c); }
 /* Zuordnung Gebiet -> Hauptland, für die gruppierte Darstellung in der Länderliste.
@@ -616,21 +617,17 @@ function tripTileHTML(t, done){
     const cd = countdownParts(t);
     big = cd.big; unit = cd.unit; label = cd.label; cls = cd.cls;
   }
-  return `<div class="tile-wrap" data-id="${t.id}">
-    <div class="tile-slider">
-      <div class="bento-tile trip-tile${done?' done':''}" onclick="openTripScreen('${t.id}')">
+  /* Huelle und Wisch-Knoepfe kommen aus dem Kern (swipeInnerHTML). Vorher war beides hier
+     von Hand nachgebaut - mit <div> statt <button> und damit leicht abweichend von allen
+     anderen Listen. Eine Aenderung im Kern waere hier stillschweigend nicht angekommen. */
+  const inner = `<div class="bento-tile trip-tile${done?' done':''}" onclick="openTripScreen('${t.id}')">
         <div class="tt-name">${esc(t.name)}</div>
         <div class="tt-country">${t.country ? esc(t.country) : (t.destination ? esc(t.destination) : '\u00A0')}</div>
         ${map ? `<div class="tt-map">${map}</div>` : ''}
         <div class="tt-cd"><span class="tt-cd-val ${cls}">${typeof big==='number'?big:esc(big)}</span>${unit?`<span class="tt-cd-unit">${unit}</span>`:''}</div>
         <div class="tt-cd-label">${esc(label)}</div>
-      </div>
-      <div class="tile-action-bg">
-        <div class="swipe-edit">${ICON_EDIT}<span>Bearb.</span></div>
-        <div class="swipe-del">${ICON_DEL}<span>Lösch.</span></div>
-      </div>
-    </div>
-  </div>`;
+      </div>`;
+  return `<div class="tile-wrap" data-id="${t.id}">${swipeInnerHTML(inner)}</div>`;
 }
 /* swipeWrap liegt im gemeinsamen Kern (index.html). */
 /* Löscht einen Eintrag nach Rückfrage – inkl. Bildern aus der Datenbank */
@@ -845,7 +842,7 @@ function renderPackSection(t){
       <button class="todo-del" onclick="removePack('${i.id}')" aria-label="Löschen">✕</button>
     </div>`).join('');
   const newRow = `
-    <div class="todo-row todo-new">
+    <div class="todo-row">
       <span class="todo-check ghost"></span>
       <input class="todo-text" id="pack-new" placeholder="Neuer Gegenstand …"
              onkeydown="if(event.key==='Enter'){event.preventDefault();addPackInline();}"
@@ -894,9 +891,12 @@ function arrivalDayOffset(f){
 }
 function renderRouteTab(t){
   const inRange = (d, s) => d && s.arrival && s.departure && s.arrival <= d && d <= s.departure;
+  // Reihenfolge beachten: findStop() liest tripStops, deshalb steht die Liste zuerst.
+  // Vorher stand sie darunter und es ging nur deshalb gut, weil der erste Aufruf zufaellig
+  // spaeter kam - ein Verschieben der Zeile haette es lautlos zerbrochen.
+  const tripStops   = stops.filter(s=>s.tripId===t.id);
   // Bei Überlappung (Abreisetag = Ankunftstag des nächsten Stopps) gewinnt der neu beginnende Stopp
   const findStop = (d) => { let best=null; for (const s of tripStops){ if (inRange(d,s) && (!best || s.arrival > best.arrival)) best=s; } return best; };
-  const tripStops   = stops.filter(s=>s.tripId===t.id);
   const tripHotels  = hotels.filter(h=>h.tripId===t.id);
   const tripActs    = activities.filter(a=>a.tripId===t.id && a.type!=='foto');
   const tripFlights = flights.filter(f=>f.tripId===t.id);
@@ -1036,8 +1036,6 @@ function renderPhotosTab(t){
   return body + `<button class="add-btn" onclick="addFotoPlace()">＋ Hinzufügen</button>`;
 }
 function fotoCardHTML(p){
-  const pills = (p.equipment&&p.equipment.length)
-    ? `<div class="foto-pills">${p.equipment.map(e=>`<span class="cat-pill pill-violet">${esc(e)}</span>`).join('')}</div>` : '';
   const imgs = (p.images||[]).map((ref,idx)=>
     `<div class="foto-thumb" data-ref="${esc(ref)}" onclick="viewFotoImage('${p.id}',${idx})">
        <div class="foto-thumb-ph">…</div>
@@ -1158,7 +1156,7 @@ function renderGearManage(){
                onkeydown="if(event.key==='Enter'){event.preventDefault();gearAddManage('${cat}');}"
                onblur="gearAddManage('${cat}', true)">
       </div>`;
-    return `<div class="gear-cat"><div class="gear-cat-label">${cat}</div><div class="gear-cat-items">${rows}${newRow}</div></div>`;
+    return `<div class="gear-cat"><div class="gear-cat-label">${cat}</div><div>${rows}${newRow}</div></div>`;
   }).join('');
 }
 function gearRename(cat,i,val){
@@ -1231,7 +1229,7 @@ function renderTodosSection(t){
       <button class="todo-del" onclick="removeTodo('${i.id}')" aria-label="Löschen">✕</button>
     </div>`).join('');
   const newRow = `
-    <div class="todo-row todo-new">
+    <div class="todo-row">
       <span class="todo-check ghost"></span>
       <input class="todo-text" id="todo-new" placeholder="Neue Aufgabe …"
              onkeydown="if(event.key==='Enter'){event.preventDefault();addTodoInline();}"
@@ -1337,6 +1335,9 @@ let modalType=null, modalId=null, formImages=[];
 function fieldHTML(f, value){
   const v = value ?? '';
   if (f.date) return `<div class="field"><label>${f.label}</label><input type="text" id="f_${f.key}" value="${esc(isoToDE(v))}" placeholder="${esc(f.placeholder||'z.B. 31.12.2026')}" inputmode="decimal" autocomplete="off" oninput="autoDate(this)" onblur="fixDate(this)"></div>`;
+  // Uhrzeit wie in innerField als Textfeld mit Eingabehilfe - fehlte hier und waere bei
+  // einem Zeitfeld ohne pair-Partner still zum iOS-Rad geworden.
+  if (f.type==='time') return `<div class="field"><label>${f.label}</label><input type="text" id="f_${f.key}" value="${esc(v)}" placeholder="${esc(f.placeholder||'z.B. 21:55')}" inputmode="numeric" autocomplete="off" oninput="autoTime(this)" onblur="fixTime(this)"></div>`;
   if (f.type==='textarea') return `<div class="field"><label>${f.label}</label><textarea id="f_${f.key}" placeholder="${esc(f.placeholder||'')}">${esc(v)}</textarea></div>`;
   if (f.type==='select-stop'){ const l=stops.filter(s=>s.tripId===currentTripId); return `<div class="field"><label>${f.label}</label><select id="f_${f.key}"><option value="">Kein Stopp</option>${l.map(s=>`<option value="${s.id}" ${v===s.id?'selected':''}>${esc(s.name)}</option>`).join('')}</select></div>`; }
   if (f.type==='images') return `<div class="field"><label>${f.label}</label><div class="img-grid" id="f_images_grid"></div><input type="file" id="f_images_input" accept="image/*" multiple style="display:none" onchange="handleImageFiles(this.files)"></div>`;
@@ -1556,7 +1557,7 @@ registerModule({
   onOpen: () => { try { renderHome(); } catch(e){} },
   summary: () => {
     try {
-      const heute = new Date(); heute.setHours(0,0,0,0);
+      const heute = heuteBerlin();
       const kommend = trips.filter(t => t.start).map(t => ({ t, d: new Date(t.start + 'T00:00:00') }))
         .filter(x => !isNaN(x.d) && x.d >= heute).sort((a,b) => a.d - b.d)[0];
       if (kommend) {

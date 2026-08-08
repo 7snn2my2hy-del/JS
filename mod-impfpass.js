@@ -65,28 +65,13 @@ const IMP_KATEGORIEN = [
 ];
 function impKategorie(e){ return e.kategorie || 'standard'; }
 
-/* Startbestand aus dem bisherigen statischen Impfpass – wird nur einmalig
-   angelegt, wenn noch nichts gespeichert ist. Danach frei bearbeitbar.
-   Kategorie-Zuordnung nach bestem Wissen (Hepatitis A gilt haeufig als Reise- oder
-   Indikationsimpfung, hier als Reise eingeordnet - bei Bedarf im Formular anpassen). */
-const IMP_SEED = [
-  { name: 'Tetanus / Diphtherie',      dosen: ['2023-03-03'], kategorie: 'standard' },
-  { name: 'Keuchhusten',               dosen: ['2023-03-03'], kategorie: 'standard' },
-  { name: 'Polio',                     dosen: ['2017-11-10'], kategorie: 'standard' },
-  { name: 'Masern / Mumps / Röteln',   dosen: ['2018-10-20'], kategorie: 'standard' },
-  { name: 'Hepatitis A + B',           dosen: ['2026-04-27'], kategorie: 'reise' },
-  { name: 'FSME',                      dosen: ['2024-06-07'], next: '2029-06-07', kategorie: 'indikation' },
-  { name: 'Meningokokken',             dosen: ['2010-08-27'], kategorie: 'indikation' },
-  { name: 'COVID-19',                  dosen: ['2021-12-12'], kategorie: 'indikation' },
-  { name: 'Tollwut',                   dosen: [],             kategorie: 'reise' },
-  { name: 'Typhus',                    dosen: ['2013-03-24'], next: '2016-03-24', kategorie: 'reise' }
-];
-
+/* Der Bestand kommt aus IMP_PASS_2026 (weiter unten, 1:1 aus dem gelben Impfpass).
+   Der frueher hier stehende, grob geschaetzte Startbestand ist entfallen: er wurde vom
+   einmaligen Abgleich in impMigriere() ohnehin sofort und vollstaendig ersetzt und war
+   damit nie sichtbar. Ist noch nichts gespeichert, startet die Liste leer und wird von
+   impAbgleich2026() gefuellt. */
 let impfungen = safeParse(store.get(IMP_KEYS.impfungen), null);
-if (!Array.isArray(impfungen)) {
-  impfungen = IMP_SEED.map((e, i) => Object.assign({ id: 'seed' + i, next: '' }, e));
-  store.set(IMP_KEYS.impfungen, JSON.stringify(impfungen));
-}
+if (!Array.isArray(impfungen)) impfungen = [];
 
 function impPersist(){ store.set(IMP_KEYS.impfungen, JSON.stringify(impfungen)); }
 // Kennungen kommen aus dem Kern (neueId).
@@ -113,7 +98,7 @@ const IMP_STIKO_SCHEMA = [
     hinweis: 'STIKO: 3 Dosen für die Grundimmunisierung (Monat 0, 1, 6), danach in der Regel keine routinemäßige Auffrischung.' },
   { muster: /fsme|zeckenschutzimpfung|frühsommer/i,
     dosenNoetig: 3, auffrischJahre: 5,
-    hinweis: 'STIKO: 3 Dosen für die Grundimmunisierung. Erste Auffrischung nach 3 Jahren, danach alle 5 Jahre (ab 50–60 Jahren ggf. alle 3 Jahre) – aber nur solange ein Zeckenrisiko besteht, also bei Aufenthalt in Risikogebieten.' },
+    hinweis: 'STIKO: 3 Dosen für die Grundimmunisierung. Erste Auffrischung nach 3 Jahren, danach alle 5 Jahre (ab 50–60 Jahren ggf. alle 3 Jahre) – aber nur solange ein Zeckenrisiko besteht, also bei Aufenthalt in Risikogebieten. Die App rechnet durchgehend mit 5 Jahren ab der letzten Dosis; die kuerzere erste Frist ist bei bereits erfolgter Grundimmunisierung nicht mehr relevant.' },
   { muster: /tollwut|rabies|rabipur/i,
     dosenNoetig: 3, auffrischJahre: null,
     hinweis: 'STIKO: 3 Dosen für die Grundimmunisierung vor einer Reise (Tag 0, 7, 21/28). Danach hält die Boosterfähigkeit Jahrzehnte, teils lebenslang – routinemäßige Auffrischungen sind für Normalexponierte nicht nötig. Nach Tierkontakt trotzdem immer sofort zum Arzt.' },
@@ -131,7 +116,7 @@ function impSchemaFuer(name){
 /* Alteintraege ohne Kategorie (vor diesem Update angelegt) bekommen "Standardimpfung"
    als Vorschlag - haeufigster Fall, jederzeit im Formular korrigierbar. Laeuft bei
    jedem Start mit, tut aber nichts mehr, sobald einmal alles nachgezogen ist. */
-/* Rät die Kategorie aus dem Namen, nach demselben Muster wie IMP_SEED oben.
+/* Rät die Kategorie aus dem Namen, nach demselben Muster wie IMP_PASS_2026 unten.
    Nur die eindeutigen Fälle - alles andere (auch unbekannte Namen) landet bei
    "standard", dem haeufigsten Fall, und ist im Formular jederzeit korrigierbar. */
 function impKategorieRaten(name){
@@ -144,10 +129,6 @@ function impKategorieRaten(name){
   if (/meningokokken|covid|pneumokokken|zoster|gürtelrose|rsv|grippe|influenza/.test(n)) return 'indikation';
   return 'standard';
 }
-
-const IMP_KATEGORIE_MIGRATION_KEY = 'imp_kategorie_migration_v2';
-const IMP_DOSEN_MIGRATION_KEY = 'imp_dosen_migration_v1';
-const IMP_ABGLEICH_2026_KEY = 'imp_abgleich_2026_v3';
 
 /* Vollstaendiger Bestand, 1:1 aus dem gelben Impfpass abgelesen (Fotos vom 11.8.2026,
    Seiten 7, 8, 10, 11, 15, 17). Ersetzt beim einmaligen Abgleich unten den kompletten
@@ -229,7 +210,7 @@ const IMP_PASS_2026 = [
    einem Datumsstring) - bei den alten Kindereintraegen (1989/1990/1996/1997, nur
    Kreuze in der Tabelle ohne Produktnamen) bleibt impfstoff bewusst leer statt geraten. */
 function impAbgleich2026(){
-  if (store.get(IMP_ABGLEICH_2026_KEY)) return;
+  if (store.get(IMP_KEYS.abgleich2026)) return;
   impfungen = IMP_PASS_2026.map((e, i) => ({
     id: 'pass' + i,
     name: e.name,
@@ -237,7 +218,7 @@ function impAbgleich2026(){
     dosen: e.dosen.slice().sort((a, b) => a.datum.localeCompare(b.datum)),
     next: ''
   }));
-  store.set(IMP_ABGLEICH_2026_KEY, '1');
+  store.set(IMP_KEYS.abgleich2026, '1');
   impPersist();
 }
 
@@ -250,26 +231,26 @@ function impMigriere(){
   // landeten z.B. Tollwut oder FSME faelschlich bei den Standardimpfungen. Laeuft nur
   // dieses eine Mal (Flag unten), damit spaeter von Hand gewaehltes "Standard" nicht
   // wieder umgebogen wird.
-  if (!store.get(IMP_KATEGORIE_MIGRATION_KEY)) {
+  if (!store.get(IMP_KEYS.kategorieMigration)) {
     impfungen.forEach(e => {
       const geraten = impKategorieRaten(e.name);
       if (e.kategorie === 'standard' && geraten !== 'standard') { e.kategorie = geraten; geaendert = true; }
     });
-    store.set(IMP_KATEGORIE_MIGRATION_KEY, '1');
+    store.set(IMP_KEYS.kategorieMigration, '1');
   }
   // Umstellung vom alten Einzeldatum ("Zuletzt geimpft") auf die neue Dosen-Liste.
   // "last" wird die erste (und meist einzige bekannte) Dosis; "doses"/"open"/"note"/
   // "provider" gab es als freie Textfelder und lassen sich nicht verlustfrei in
   // einzelne Dosis-Daten uebersetzen - sie bleiben unsichtbar am Eintrag haengen statt
   // geloescht zu werden, falls sie spaeter doch noch gebraucht werden. Laeuft nur einmal.
-  if (!store.get(IMP_DOSEN_MIGRATION_KEY)) {
+  if (!store.get(IMP_KEYS.dosenMigration)) {
     impfungen.forEach(e => {
       if (!Array.isArray(e.dosen)) {
         e.dosen = e.last ? [e.last] : [];
         geaendert = true;
       }
     });
-    store.set(IMP_DOSEN_MIGRATION_KEY, '1');
+    store.set(IMP_KEYS.dosenMigration, '1');
   }
   if (geaendert) impPersist();
   // Erst NACH der Dosen-Migration, da hier bereits ein Array vorausgesetzt wird.
@@ -324,7 +305,9 @@ function impStatus(e){
     if (schema.auffrischJahre) {
       const d = new Date(dosen[dosen.length - 1].datum + 'T00:00:00');
       d.setFullYear(d.getFullYear() + schema.auffrischJahre);
-      const naechste = d.toISOString().slice(0, 10);
+      // isoVon() aus dem Kern statt toISOString(): letzteres rechnet in UTC und lieferte
+      // in Deutschland den Vortag - die Auffrischung stand dadurch immer einen Tag zu frueh.
+      const naechste = isoVon(d);
       const tage = daysUntil(naechste);
       if (tage !== null && tage < 0)              return { key: 'over', label: 'Überfällig',  pill: 'pill-red',    next: naechste };
       if (tage !== null && tage <= IMP_SOON_DAYS) return { key: 'soon', label: 'Bald fällig', pill: 'pill-orange', next: naechste };
@@ -474,14 +457,14 @@ function impRenderDosenListe(){
   if (!impDosenBearbeitung.length) impDosenBearbeitung = [{ datum: '', impfstoff: '' }];
   el.innerHTML = impDosenBearbeitung.map((d, i) => `
     <div class="imp-dose-row">
-      <div class="imp-dose-input-wrap imp-dose-input-wrap-datum">
+      <div class="field imp-dose-input-wrap imp-dose-input-wrap-datum">
         <label>Impfung ${i + 1}</label>
-        <input type="text" class="imp-dose-input" placeholder="TT.MM.JJJJ" inputmode="decimal" autocomplete="off"
+        <input type="text" placeholder="TT.MM.JJJJ" inputmode="decimal" autocomplete="off"
                value="${esc(isoToDE(d.datum))}" oninput="autoDate(this)" onblur="fixDate(this);impDoseAktualisieren(${i},'datum',this.value)">
       </div>
-      <div class="imp-dose-input-wrap imp-dose-input-wrap-impfstoff">
+      <div class="field imp-dose-input-wrap imp-dose-input-wrap-impfstoff">
         <label>Impfstoff</label>
-        <input type="text" class="imp-dose-input" placeholder="z.B. Boostrix" autocomplete="off"
+        <input type="text" placeholder="z.B. Boostrix" autocomplete="off"
                value="${esc(d.impfstoff || '')}" onblur="impDoseAktualisieren(${i},'impfstoff',this.value)">
       </div>
       ${impDosenBearbeitung.length > 1 ? `<button type="button" class="imp-dose-remove" onclick="impDoseEntfernen(${i})" aria-label="Impfung ${i + 1} entfernen">✕</button>` : ''}

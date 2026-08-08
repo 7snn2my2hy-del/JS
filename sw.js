@@ -36,6 +36,27 @@ async function ablegen(cache, req, res) {
   }
 }
 
+/* Rückfall, wenn das Netz nicht erreichbar ist.
+   Zuerst der Cache-Eintrag zu genau dieser URL. Fehlt der, darf NUR ein Seitenaufruf
+   (Navigation) auf index.html ausweichen. Vorher bekam jede beliebige Anfrage index.html
+   zurück – eine noch nicht zwischengespeicherte ?v=-Fassung einer .js-Datei lieferte
+   dadurch HTML an eine <script>-Einbindung, was den Start mit einem Syntaxfehler
+   abbrach statt sauber fehlzuschlagen. Bei allen anderen Dateitypen ist ein ehrlicher
+   Netzwerkfehler das bessere Ergebnis: der Browser meldet die fehlende Datei, statt sie
+   scheinbar erfolgreich mit falschem Inhalt zu laden. */
+async function rueckfall(req) {
+  const treffer = await caches.match(req);
+  if (treffer) return treffer;
+  if (req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html')) {
+    const start = await caches.match('./index.html');
+    if (start) return start;
+  }
+  return new Response('Offline und nicht im Cache.', {
+    status: 504, statusText: 'Gateway Timeout',
+    headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+  });
+}
+
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
@@ -49,6 +70,6 @@ self.addEventListener('fetch', (event) => {
       const copy = res.clone();
       event.waitUntil(caches.open(CACHE).then((c) => ablegen(c, req, copy)));
       return res;
-    }).catch(() => caches.match(req).then((hit) => hit || caches.match('./index.html')))
+    }).catch(() => rueckfall(req))
   );
 });

@@ -2,11 +2,12 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2608012000">
+<link rel="manifest" href="manifest.json?v=2608082100">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -50,7 +51,7 @@
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
     font-feature-settings: "ss01", "cv01";
     color: var(--text);
-    min-height: 100vh;
+    min-height: 100dvh;
     padding: max(24px, env(safe-area-inset-top)) 16px calc(48px + env(safe-area-inset-bottom));
     background: transparent;
     overflow-x: hidden;
@@ -264,7 +265,6 @@
   .pill-muted  { background: rgba(255,255,255,0.08); color: var(--muted); }
   .pill-red    { background: rgba(255,69,58,0.16);   color: #ff7a70; }
 
-  /* Hinweis-Karte (z.B. Handlungsbedarf) – steht allen Bereichen zur Verfügung */
   /* Legende an der Hero-Linie: Werteachse links, Zeitraum darunter */
   .hero-plot { display: flex; align-items: stretch; gap: 8px; margin-top: 16px; }
   .hero-axis { display: flex; flex-direction: column; justify-content: space-between; padding: 4px 0 1px; font-size: 0.58rem; color: var(--muted-2); font-variant-numeric: tabular-nums; text-align: right; flex-shrink: 0; }
@@ -276,15 +276,6 @@
   .ru-mini-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.68rem; color: var(--muted); margin-bottom: 4px; font-variant-numeric: tabular-nums; }
 
   /* Jahresuebersicht mit Fortschrittsbalken (z.B. Resturlaub) */
-
-  /* "Handlungsbedarf" (ueberfaellig/unvollstaendig) ist dringlicher als "Bald faellig" -
-     Rot statt Orange, passend zu den pill-red-Markierungen an denselben Eintraegen. */
-  .alert-card { padding: 14px 18px; border-radius: var(--r-entry); background: rgba(255,69,58,0.08); border: 1px solid rgba(255,69,58,0.22); }
-  .alert-title { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--danger); font-weight: 700; margin-bottom: 7px; }
-  .alert-item { display: flex; gap: 8px; font-size: 0.82rem; line-height: 1.5; color: var(--text); }
-  .alert-item + .alert-item { margin-top: 4px; }
-  .alert-item::before { content: "\26A0\FE0F"; flex-shrink: 0; }
-  .alert-card + .alert-card { margin-top: 10px; }
 
   .add-btn { width: 100%; margin-top: 14px; padding: 12px; font: inherit; font-size: 0.82rem; font-weight: 500; color: var(--muted); cursor: pointer; border-radius: var(--r-pill); border: 1px solid var(--stroke); background: transparent; transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.3s var(--spring); }
   .add-btn:active { transform: scale(0.97); opacity: 0.85; }
@@ -362,9 +353,8 @@
   .foto-field { display: flex; flex-direction: column; gap: 8px; }
   .foto-field > label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted-2); }
   .foto-pills { display: flex; flex-wrap: wrap; gap: 6px; }
-  .foto-textarea { background: rgba(255,255,255,0.05); border: 1px solid var(--stroke); border-radius: var(--r-control); padding: 11px 13px; color: var(--text); font: inherit; font-size: 0.92rem; width: 100%; }
+  .foto-textarea { background: rgba(255,255,255,0.05); border: 1px solid var(--stroke); border-radius: var(--r-control); padding: 11px 13px; color: var(--text); font: inherit; font-size: 0.92rem; width: 100%; resize: vertical; min-height: 46px; line-height: 1.45; }
   .foto-textarea:focus { outline: none; border-color: var(--accent); background: rgba(10,132,255,0.08); }
-  .foto-textarea { resize: vertical; min-height: 46px; line-height: 1.45; }
   .foto-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
   .foto-thumb { position: relative; flex: 0 0 auto; width: 92px; height: 92px; border-radius: 14px; overflow: hidden; border: 1px solid var(--stroke); background: rgba(255,255,255,0.04) center/cover no-repeat; cursor: pointer; }
   .foto-thumb-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--muted-2); }
@@ -433,12 +423,12 @@
      position:fixed-Scrollcontainer bringt iOS-Safari beim Momentum-Scrollen zum Haken. */
   .screen.settled { transform: none; }
   /* Zurück-Geste: der Bildschirm folgt dem Finger, darunter wird die vorige Ebene sichtbar */
-  .screen.dragging, .mod-container.dragging { transition: none !important; will-change: transform; }
+  .screen.dragging, .mod-container.dragging, #mod-finanzen .detail-sheet.dragging { transition: none !important; will-change: transform; }
   /* Statt eines grossen weichen Schlagschattens (46px Radius, muesste iOS bei jedem
      Bild neu zeichnen) eine schmale Kante – waehrend der Bewegung optisch kaum zu
      unterscheiden, aber deutlich guenstiger. */
-  .screen.dragging, .mod-container.dragging { box-shadow: -1px 0 0 rgba(255,255,255,0.10), -10px 0 18px rgba(0,0,0,0.45); }
-  .screen.gliding, .mod-container.gliding { transition: transform var(--back-dur, 0.32s) var(--ease-ios) !important; }
+  .screen.dragging, .mod-container.dragging, #mod-finanzen .detail-sheet.dragging { box-shadow: -1px 0 0 rgba(255,255,255,0.10), -10px 0 18px rgba(0,0,0,0.45); }
+  .screen.gliding, .mod-container.gliding, #mod-finanzen .detail-sheet.gliding { transition: transform var(--back-dur, 0.32s) var(--ease-ios) !important; }
   /* Waehrend die Zurueck-Geste den ganzen Bildschirm bewegt, muesste iOS jedes einzelne
      Glas-Element (davon gibt es je Ansicht viele) laufend neu weichzeichnen – das ist die
      Hauptursache fuer das Ruckeln. Fuer die kurze Dauer der Animation reicht ein einfacher,
@@ -584,16 +574,14 @@
   .imp-radar .bento-unit { white-space: normal; }
   .imp-hinweis { font-size: 0.78rem; color: var(--muted); line-height: 1.5; background: rgba(0,179,184,0.08); border: 1px solid rgba(0,179,184,0.25); border-radius: var(--r-control); padding: 10px 12px; margin: -6px 0 4px; }
   /* Dynamische Dosen-Liste ("Impfung 1", "Impfung 2", ...) - je Zeile ein Datumsfeld,
-     ab der zweiten Zeile zusaetzlich ein Entfernen-Knopf. Die Zeile traegt bewusst NICHT
-     die Klasse .field: die setzt weiter unten im Stylesheet margin-bottom:0 und hat den
-     Zeilenabstand hier komplett ausgehebelt. Label- und Eingabestile daher explizit,
-     identisch zu .field label bzw. .field input. */
+     ab der zweiten Zeile zusaetzlich ein Entfernen-Knopf. Die beiden Eingabefelder tragen
+     die normale Klasse .field und erben Label- und Eingabestil damit aus dem Kern. Frueher
+     ging das nicht: eine ungescopte Regel aus dem Finanzen-Abschnitt setzte .field global
+     auf margin-bottom:0 und hat den Zeilenabstand hier ausgehebelt, weshalb saemtliche
+     Stile hier von Hand nachgebaut waren. Die Regel ist jetzt auf #mod-finanzen begrenzt,
+     die Kopie konnte entfallen. */
   .imp-dose-row { display: flex; align-items: flex-end; gap: 8px; margin-bottom: 16px; }
   .imp-dose-row:last-child { margin-bottom: 0; }
-  .imp-dose-row label { display: block; font-size: 0.76rem; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.01em; }
-  .imp-dose-row input { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid var(--stroke); border-radius: var(--r-control); color: var(--text); font: inherit; font-size: 1rem; padding: 12px 14px; outline: none; transition: border-color 0.15s, background 0.15s; }
-  .imp-dose-row input:focus { border-color: var(--accent); background: rgba(10,132,255,0.08); }
-  .imp-dose-row input::placeholder { color: var(--muted-2); }
   .imp-dose-input-wrap { flex: 1; min-width: 0; }
   /* Datum ist immer gleich lang ("TT.MM.JJJJ") und braucht weniger Platz als der frei
      eingetippte Impfstoffname - daher unterschiedliche Gewichtung statt beide gleich
@@ -751,16 +739,13 @@
 /* Hero: Gesamtvermögen */
   #mod-finanzen .hero{ text-align: center; padding: 32px 0 34px; cursor: pointer; }
 /* Detail-Sheet (öffnet über Hero/Bento) */
-  .detail-sheet{ position: fixed; inset: 0; z-index: 380; background: var(--bg); overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom)); visibility: hidden; }
-.detail-sheet.open{ transform: translateX(0); visibility: visible; transition: transform 0.4s var(--ease-ios), visibility 0s; }
-.detail-panel{ display: none; }
+  #mod-finanzen .detail-sheet{ position: fixed; inset: 0; z-index: 380; background: var(--bg); overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom)); visibility: hidden; }
+#mod-finanzen .detail-sheet.open{ transform: translateX(0); visibility: visible; transition: transform 0.4s var(--ease-ios), visibility 0s; }
+#mod-finanzen .detail-panel{ display: none; }
 #mod-finanzen .detail-panel .dashboard, #mod-finanzen .detail-panel .av-dash{ margin: 0 0 14px; }
-.detail-panel.on{ display: block; }
+#mod-finanzen .detail-panel.on{ display: block; }
 #mod-finanzen .hero-label{ font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--petrol); font-weight: 700; }
 #mod-finanzen .hero-val{ font-size: 3rem; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; margin-top: 12px; line-height: 1; }
-#mod-finanzen .hero-delta{ display: inline-block; margin-top: 12px; font-size: 0.88rem; font-weight: 700; padding: 5px 12px; border-radius: var(--r-pill); }
-#mod-finanzen .hero-delta.up{ color: var(--green); background: rgba(48,209,55,0.12); }
-#mod-finanzen .hero-delta.down{ color: var(--danger); background: rgba(255,69,58,0.12); }
 #mod-finanzen .hero-spark, #mod-finanzen #hero-spark{ width: 100%; }
 #mod-finanzen #hero-spark svg{ width: 100%; height: 88px; margin-top: 26px; display: block; }
 #mod-finanzen .hero-sub{ display: block; font-size: 0.76rem; color: var(--muted-2); margin-top: 20px; }
@@ -775,9 +760,7 @@
 .bento-primary.ok{ color: var(--green); }
 .bento-unit{ font-size: 0.78rem; color: var(--muted); font-weight: 600; margin-left: 3px; letter-spacing: 0; }
 .bento-caption{ font-size: 0.74rem; color: var(--muted); line-height: 1.3; }
-.bento-foot{ margin-top: 14px; }
-/* Konten */
-  .bento-foot{ display: flex; align-items: center; gap: 8px; }
+.bento-foot{ margin-top: 14px; display: flex; align-items: center; gap: 8px; }
 .bento-foot-col{ flex-direction: column; align-items: stretch; }
 .bento-segbar{ display: flex; height: 6px; border-radius: var(--r-pill); overflow: hidden; gap: 2px; }
 .bento-seg{ border-radius: var(--r-pill); min-width: 4px; }
@@ -785,7 +768,6 @@
 .bento-break-row{ display: flex; justify-content: space-between; align-items: baseline; font-size: 0.7rem; color: var(--muted); }
 .bento-break-row .bl{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .bento-break-row .bv{ white-space: nowrap; flex-shrink: 0; padding-left: 8px; font-variant-numeric: tabular-nums; }
-.bento-break-row span:last-child{ font-variant-numeric: tabular-nums; white-space: nowrap; padding-left: 8px; }
 .bento-leg-dot{ display: inline-block; width: 6px; height: 6px; border-radius: var(--r-pill); margin-right: 5px; vertical-align: middle; }
 .bento-mini{ font-size: 0.72rem; color: var(--muted-2); }
 /* Listen-Zeilen in Bento-Kacheln (Verträge/Urlaube/AV in Finanzen, Auffrischungen im
@@ -805,17 +787,6 @@
 /* Fortschrittsbalken bis 67 */
   #mod-finanzen .bento-progress{ height: 6px; border-radius: var(--r-pill); background: rgba(255,255,255,0.08); overflow: hidden; }
 #mod-finanzen .bento-progress-fill{ display: block; height: 100%; border-radius: var(--r-pill); background: var(--green); }
-#mod-finanzen .dash-swipe{ margin: 40px 0 0; position: relative; }
-/* Farb-Glow hinter dem Dashboard-Bereich – hebt ihn als eigene Zone ab */
-  #mod-finanzen .dash-swipe::before{
-    content: ''; position: absolute; z-index: -1;
-    inset: -6% 0 -8% 0;
-    background:
-      radial-gradient(55% 50% at 28% 22%, rgba(90,120,255,0.20), transparent 70%),
-      radial-gradient(50% 46% at 82% 82%, rgba(170,90,240,0.16), transparent 72%);
-    filter: blur(28px);
-    pointer-events: none;
-  }
 #mod-finanzen .dashboard{ padding: 22px; margin: 40px 0 0; }
 /* Dashboard-Karten kraeftiger absetzen: tiefere Schatten, deutlichere Glaskante.
    Bewusst OHNE backdrop-filter (solider Hintergrund) - das haelt das Wischen fluessig,
@@ -827,7 +798,7 @@
 #mod-finanzen .donut-center-val{ font-size: 0.75rem; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; margin-top: 2px; max-width: 72px; text-align: center; line-height: 1.15; }
 /* Abschnittsueberschrift. Bewusst OHNE Trennlinie darunter - Linien trennen nur
    Bloecke voneinander, nie Ueberschrift von ihrem eigenen Inhalt. */
-.dash-sub-label{ font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--petrol); font-weight: 700; display: block;
+#mod-finanzen .dash-sub-label{ font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--petrol); font-weight: 700; display: block;
                  margin-bottom: var(--gap-head); }
 #mod-finanzen .uy-konto-head .wealth-sub-row{ display: flex; align-items: center; gap: 7px; margin-top: 2px; flex-wrap: nowrap; text-transform: none; min-height: 18px; }
 #mod-finanzen .uy-konto-head .wealth-sub-row .saverate-eur{ margin-top: 0; margin-bottom: 0; display: inline; flex: 0 1 auto; min-width: 0; }
@@ -846,9 +817,9 @@
 #mod-finanzen .legend-val{ color: var(--muted); font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; flex-shrink: 0; }
 #mod-finanzen .legend-pct{ display: none; }
 /* Abschnitt im Detailblatt. Abstand ueber und unter der Trennlinie identisch. */
-.dash-accounts{ margin-top: var(--gap-sec); padding-top: var(--gap-sec); border-top: 1px solid var(--stroke); }
+#mod-finanzen .dash-accounts{ margin-top: var(--gap-sec); padding-top: var(--gap-sec); border-top: 1px solid var(--stroke); }
 /* Erster Abschnitt direkt unter dem Kopfbereich - dort trennt schon der Kopf. */
-.dash-accounts.first{ margin-top: 0; padding-top: 0; border-top: none; }
+#mod-finanzen .dash-accounts.first{ margin-top: 0; padding-top: 0; border-top: none; }
 #mod-finanzen .acct-row{ display: flex; align-items: center; gap: 8px; font-size: 0.82rem; line-height: 1.4; }
 #mod-finanzen .acct-row-name{ flex: 1; min-width: 0; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #mod-finanzen .acct-row-val{ color: var(--muted); font-variant-numeric: tabular-nums; font-weight: 600; width: 92px; text-align: right; flex-shrink: 0; }
@@ -869,9 +840,7 @@
 #mod-finanzen .bb-name{ color: var(--muted); }
 #mod-finanzen .bb-val{ color: var(--text); font-variant-numeric: tabular-nums; font-weight: 500; }
 #mod-finanzen .dash-empty{ color: var(--muted-2); font-size: 0.82rem; text-align: center; padding: 10px 0; }
-#mod-finanzen .stat-value.year{ color: var(--text); }
-#mod-finanzen .stat-value.count{ color: var(--text); }
-#mod-finanzen .stat-value.month{ color: var(--text); }
+#mod-finanzen .stat-value{ color: var(--text); }
 #mod-finanzen .group-divider{
     height: 1px;
     background: var(--stroke);
@@ -896,7 +865,7 @@
 #mod-finanzen .cat-Gesetzlich{ background: rgba(200,160,100,0.16); color: #c9a46a; }
 #mod-finanzen .cat-Betrieblich{ background: rgba(45,195,175,0.16);  color: #34c8b4; }
 #mod-finanzen .cat-Privat{ background: rgba(255,125,160,0.16); color: #ff8fae; }
-.entry-pills{ flex-wrap: nowrap; }
+#mod-finanzen .entry-pills{ flex-wrap: nowrap; }
 #mod-finanzen .acct-pill{ display: inline-block; font-size: 0.6rem; font-weight: 600; padding: 2px 7px; border-radius: var(--r-pill); letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; }
 #mod-finanzen .acct-DBGiro{ background: rgba(90,200,250,0.16);  color: #5ac8fa; }
 #mod-finanzen .acct-DBSpar{ background: rgba(120,140,255,0.16); color: #8a9cff; }
@@ -945,10 +914,7 @@
 #mod-finanzen .av-card-metric-label{ font-size: 0.56rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted-2); display: block; margin-bottom: 4px; }
 #mod-finanzen .av-card-metric-val{ font-size: 0.8rem; font-weight: 700; font-variant-numeric: tabular-nums; display: block; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 #mod-finanzen .av-card-metric-type{ font-size: 0.58rem; color: var(--muted-2); display: block; margin-top: 2px; }
-#mod-finanzen .av-card-metric.base .av-card-metric-val{ color: var(--text); }
-#mod-finanzen .av-card-metric.s1 .av-card-metric-val{ color: var(--text); }
-#mod-finanzen .av-card-metric.s2 .av-card-metric-val{ color: var(--text); }
-#mod-finanzen .av-card-metric.s3 .av-card-metric-val{ color: var(--text); }
+#mod-finanzen .av-card-metric-val{ color: var(--text); }
 /* Summenzeile mit Linie oben und unten - Abstand innen wie aussen gleich. Ohne die
    negativen Raender wuerde der 10px-Abstand des umgebenden .av-cards (flex-gap) zum
    eigenen 16px-Rand dazukommen und die Luecke groesser als ueberall sonst wirken lassen. */
@@ -963,7 +929,7 @@
 #mod-finanzen .hist-empty{ font-size: 0.74rem; color: var(--muted-2); line-height: 1.4; padding: 8px 0; }
 #mod-finanzen .hist-range{ font-size: 0.6rem; color: var(--muted-2); text-align: center; margin-top: 4px; }
 /* Hinweis auf Vertraege, die sich mangels Monatsangabe nicht einordnen lassen. */
-.due-hint{ font-size: 0.72rem; color: var(--muted-2); line-height: 1.45; margin-top: 10px; }
+#mod-finanzen .due-hint{ font-size: 0.72rem; color: var(--muted-2); line-height: 1.45; margin-top: 10px; }
 #mod-finanzen .due-list{ display: flex; flex-direction: column; gap: 7px; margin-top: 10px; }
 #mod-finanzen .due-row{ display: flex; align-items: baseline; gap: 8px; font-size: 0.78rem; }
 #mod-finanzen .due-date{ color: var(--muted-2); font-variant-numeric: tabular-nums; flex-shrink: 0; }
@@ -971,9 +937,9 @@
 #mod-finanzen .due-prov{ color: var(--muted-2); }
 #mod-finanzen .due-amount{ color: var(--muted); font-weight: 600; font-variant-numeric: tabular-nums; flex-shrink: 0; }
 /* Ueberschriftzeile mit Bedienelementen rechts - ebenfalls ohne Linie darunter. */
-.hist-head{ display: flex; align-items: center; justify-content: space-between; gap: 8px;
+#mod-finanzen .hist-head{ display: flex; align-items: center; justify-content: space-between; gap: 8px;
             margin-bottom: var(--gap-head); }
-.hist-head .dash-sub-label{ margin-bottom: 0; }
+#mod-finanzen .hist-head .dash-sub-label{ margin-bottom: 0; }
 #mod-finanzen .hist-range-ctl{ display: flex; gap: 3px; background: rgba(0,0,0,0.25); border-radius: var(--r-pill); padding: 2px; }
 #mod-finanzen .hist-range-btn{ border: none; background: transparent; color: var(--muted-2); font: inherit; font-size: 0.6rem; font-weight: 600; padding: 3px 9px; border-radius: var(--r-pill); cursor: pointer; transition: all 0.2s var(--ease-ios); }
 #mod-finanzen .hist-range-btn.active{ background: var(--accent); color: #fff; }
@@ -999,7 +965,7 @@
 #mod-finanzen .uy-konto-head b{ font-size: 1.2rem; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; display: block; }
 /* Grosse Abschnittsueberschrift ("Budget", "Kontostand"). Die Linie darueber trennt sie
    vom vorigen Block; darunter kommt keine. */
-.uy-section-label{ font-size: 1.05rem; letter-spacing: -0.01em; color: var(--text); font-weight: 700;
+#mod-finanzen .uy-section-label{ font-size: 1.05rem; letter-spacing: -0.01em; color: var(--text); font-weight: 700;
                    margin-top: var(--gap-sec); padding-top: var(--gap-sec); border-top: 1px solid var(--stroke);
                    margin-bottom: var(--gap-head); }
 #mod-finanzen .uy-meta-pair{ display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 2px; }
@@ -1074,10 +1040,10 @@
 #mod-finanzen .urlaub-year-label:first-child{ margin-top: 2px; }
 #mod-finanzen .btn-icon{ background: none; border: none; cursor: pointer; color: var(--muted-2); width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; transition: color 0.15s, background 0.15s; }
 #mod-finanzen .btn-icon svg{ width: 17px; height: 17px; }
-.field{ margin-bottom: 0; }
+#mod-finanzen .field{ margin-bottom: 0; }
 #mod-finanzen .f-dyn-group{ display: flex; flex-direction: column; gap: 14px; }
 #mod-finanzen .f-dyn-group:empty{ display: none; }
-.f-toggle .f-toggle-lab{ white-space: nowrap; }
+#mod-finanzen .f-toggle .f-toggle-lab{ white-space: nowrap; }
 #mod-finanzen #urlaub-payments{ display: flex; flex-direction: column; gap: 8px; }
 #mod-finanzen .pay-row{ display: flex; gap: 8px; align-items: center; }
 #mod-finanzen .pay-row input{ padding: 10px 10px; font-size: 0.95rem; }
@@ -1090,11 +1056,6 @@
 #mod-finanzen .pay-hint{ font-size: 0.8rem; color: var(--muted); margin-top: 6px; font-variant-numeric: tabular-nums; }
 #mod-finanzen .pay-hint b{ color: var(--text); font-weight: 600; }
 #mod-finanzen .pay-hint.over b{ color: var(--danger); }
-@media (max-width: 520px){
-}
-@media (prefers-reduced-motion: reduce){
-#mod-finanzen *{ animation: none !important; transition: none !important; }
-}
 </style>
 </head>
 <body>
@@ -1182,7 +1143,6 @@
 
   <p class="backup-hint" id="build-stamp" style="text-align:center;margin:22px 6px 0"></p>
 </div>
-</div>
 
 <div class="overlay" id="pass-overlay">
   <div class="modal">
@@ -1240,6 +1200,10 @@ function notify(msg, title){ return showDialog(msg, { title: title||'Hinweis', c
 
 function showDialog(message, { title='Hinweis', okText='OK', cancelText='Abbrechen' } = {}) {
   return new Promise(resolve => {
+    /* Es gibt nur einen Dialog-Platz. Stand noch eine unbeantwortete Frage offen, wurde
+       deren Promise vorher nie aufgeloest - der wartende Aufrufer haette ewig gehangen.
+       Die alte Frage gilt jetzt als abgebrochen (false), bevor die neue uebernimmt. */
+    if (_dialogResolve) { const alt = _dialogResolve; _dialogResolve = null; alt(false); }
     _dialogResolve = resolve;
     $('dialog-title').textContent = title;
     $('dialog-msg').textContent = message;
@@ -1360,7 +1324,7 @@ async function _unwrap(w, key){
 async function decryptEnvelope(env, { pass } = {}){
   if(env.enc === 2){
     let raw = null;
-    if(!raw && env.wraps && env.wraps.pass){
+    if(env.wraps && env.wraps.pass){
       const p = pass !== undefined && pass !== null ? pass : await askPassphrase();
       if(p === null) throw new Error('Abgebrochen');
       raw = await _unwrap(env.wraps.pass, await _deriveKey(p, _unb64(env.wraps.pass.salt)));
@@ -1509,7 +1473,7 @@ async function toggleAppLock(){
   if(!appLockAvailable()) return;
   if(appLock&&appLock.enabled){ const ok=await showDialog('FaceID Sperre wirklich deaktivieren?',{title:'App-Sperre',okText:'Deaktivieren'}); if(!ok) return; appLock=null; store.set(APPLOCK_KEY,JSON.stringify(null)); renderAppLockUI(); return; }
   try {
-    const cred=await navigator.credentials.create({ publicKey:{ challenge:crypto.getRandomValues(new Uint8Array(32)), rp:{name:'Jörg Scheiderer',id:location.hostname}, user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'Jörg Scheiderer',displayName:'Jörg Scheiderer'}, pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}], authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required'}, timeout:60000, attestation:'none', extensions:{ prf:{} } }});
+    const cred=await navigator.credentials.create({ publicKey:{ challenge:crypto.getRandomValues(new Uint8Array(32)), rp:{name:'Jörg Scheiderer',id:location.hostname}, user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'Jörg Scheiderer',displayName:'Jörg Scheiderer'}, pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}], authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required'}, timeout:60000, attestation:'none' }});
     appLock={ credId:_b64(cred.rawId), enabled:true }; store.set(APPLOCK_KEY,JSON.stringify(appLock)); renderAppLockUI();
     notify('FaceID Sperre ist aktiv. Tipp: Richte auch das Cloud Backup ein, damit deine Daten gesichert sind.','App-Sperre');
   } catch(e){ notify('Einrichtung abgebrochen oder nicht unterstützt.','App-Sperre'); }
@@ -1627,15 +1591,45 @@ function bindMoneyInput(input) {
   input.addEventListener('blur', () => formatMoneyField(input));
 }
 
+/* ================= ZEITRECHNUNG =================
+   Die App rechnet grundsaetzlich in der Zeitzone Europe/Berlin – unabhaengig davon, wie
+   das Geraet gerade eingestellt ist. Ohne das verschiebt sich auf Reisen alles, was auf
+   "heute" aufbaut: Countdowns, "Reise abgeschlossen", faellige Abbuchungen, der
+   Monatsstart im Kontoverlauf und die Monats-Schnappschuesse der Finanzen. In Namibia
+   (UTC+2, aber im Winter eine Stunde vor Deutschland) oder in Asien waeren diese Werte
+   sonst um einen Tag versetzt.
+
+   jetztBerlin() liefert ein Date, dessen lokale Felder (getFullYear/getMonth/getDate/
+   getHours) den Berliner Wandkalender zeigen. Damit funktionieren alle vorhandenen
+   Rechnungen unveraendert weiter, sie beziehen sich nur auf den richtigen Tag.
+   Intl kennt Sommer- und Winterzeit selbst – ein fester Stundenversatz waere zweimal im
+   Jahr falsch. */
+const ZEITZONE = 'Europe/Berlin';
+const _berlinFmt = (() => {
+  try {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: ZEITZONE, hour12: false,
+      year:'numeric', month:'2-digit', day:'2-digit',
+      hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  } catch(e){ return null; }   // Rueckfall: Geraetezeit (nur falls Intl fehlt)
+})();
+function jetztBerlin(){
+  if(!_berlinFmt) return new Date();
+  const t = {};
+  for(const p of _berlinFmt.formatToParts(new Date())) t[p.type] = p.value;
+  // "24" statt "00" kommt bei hour12:false je nach Umgebung vor
+  return new Date(+t.year, +t.month - 1, +t.day, (+t.hour) % 24, +t.minute, +t.second);
+}
+/* Heutiges Datum in Berlin, auf Mitternacht gesetzt – Basis fuer alle Tagesvergleiche. */
+function heuteBerlin(){ const d = jetztBerlin(); d.setHours(0,0,0,0); return d; }
+
 /* Tagesdatum als ISO-Zeichenkette. Bewusst aus den lokalen Feldern gebaut:
-   toISOString() rechnet in UTC und liefert in Deutschland zwischen 00:00 und 02:00
-   den Vortag – daysUntil() daneben rechnet lokal, die beiden widersprachen sich. */
+   toISOString() rechnet in UTC und liefert zwischen 00:00 und 02:00 den Vortag. */
 function isoVon(d){
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
-function todayISO(){ return isoVon(new Date()); }
+function todayISO(){ return isoVon(jetztBerlin()); }
 
-function daysUntil(iso){ if(!iso) return null; const d=new Date(iso+'T00:00:00'); const n=new Date(); n.setHours(0,0,0,0); return Math.round((d-n)/86400000); }
+function daysUntil(iso){ if(!iso) return null; const d=new Date(iso+'T00:00:00'); return Math.round((d-heuteBerlin())/86400000); }
 
 
 
@@ -1787,7 +1781,7 @@ function cloudRowTap(){ toggleCloudCfg(); loadCloudCfgUI(); }
 function renderCloudRow(){
   const sub = $('cloud-row-sub');
   if(sub) sub.textContent = cloudReady()
-    ? (cloudCfg.lastOk ? 'Zuletzt gesichert: ' + new Date(cloudCfg.lastOk).toLocaleString('de-DE') : 'Eingerichtet')
+    ? (cloudCfg.lastOk ? 'Zuletzt gesichert: ' + new Date(cloudCfg.lastOk).toLocaleString('de-DE', { timeZone: ZEITZONE }) : 'Eingerichtet')
     : 'Noch nicht eingerichtet';
 }
 /* Der Zeitstempel steht in der Zeile darueber - hier nur, womit verschluesselt wird. */
@@ -2147,7 +2141,7 @@ function swipeWrapEl(type, id, inner){
 /* ---------------- Zur\u00fcck-Geste ----------------
    Vom linken Displayrand nach rechts wischen = eine Ebene zur\u00fcck.
    Gilt f\u00fcr alle Bereiche: oberster offener Screen -> Bereich -> Startseite. */
-const _SCREEN_SEL = '.screen, .detail-sheet, .settings-screen';
+const _SCREEN_SEL = '.screen, .detail-sheet';
 let _screenSeq = 0;
 function initScreenTracking(){
   const obs = new MutationObserver(ms => {
@@ -2223,7 +2217,7 @@ function topOpenScreen(){
   }
   /* Stellen, an denen die Geste stören würde */
   function gesperrt(t){
-    return !!(t.closest && t.closest('input, textarea, select, .tab-bar, .dash-swipe, .picker-list, .img-viewer'));
+    return !!(t.closest && t.closest('input, textarea, select, .tab-bar, .picker-list, .img-viewer'));
   }
 
   /* Das Verschieben wird direkt im touchmove geschrieben. Mit preventDefault liefert iOS
@@ -2397,10 +2391,10 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2608012000"></script>
-<script src="mod-reisen.js?v=2608012000"></script>
-<script src="mod-finanzen.js?v=2608012000"></script>
-<script src="mod-impfpass.js?v=2608012000"></script>
+<script src="data-laender.js?v=2608082100"></script>
+<script src="mod-reisen.js?v=2608082100"></script>
+<script src="mod-finanzen.js?v=2608082100"></script>
+<script src="mod-impfpass.js?v=2608082100"></script>
 
 <!-- ===== Start ===== -->
 <script>
