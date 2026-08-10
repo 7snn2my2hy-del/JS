@@ -58,7 +58,7 @@ const SECTIONS = {
   },
   b: {
     storageKey: 'fin_budgets_v1',
-    cats: ['Urlaub','Konsum','Sparen'],
+    cats: ['Konsum','Urlaub','Sparen'],
     defaultCat: 'Sparen',
     hideProvider: true,
     providerLabel: 'Bezeichnung (optional)',
