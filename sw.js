@@ -10,7 +10,8 @@
 
 const CACHE = 'alles-v1';
 const ASSETS = ['./', './index.html', './data-laender.js', './mod-reisen.js',
-                './mod-finanzen.js', './mod-impfpass.js', './manifest.json', './icon.png'];
+                './mod-finanzen.js', './mod-impfpass.js', './mod-fotografie.js',
+                './manifest.json', './icon.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
