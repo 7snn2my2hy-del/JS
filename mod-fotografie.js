@@ -1,20 +1,23 @@
 /* ================= BEREICH: FOTOGRAFIE =================
    Eigenständiges Modul. Optik und Bausteine kommen aus dem gemeinsamen Kern in
    index.html (.bento/.bento-tile, .screen, .glass, .rt-row-Zeitleiste …) – dieses
-   Modul bringt keine eigene Gestaltung mit, nur eine Handvoll Farbwerte für die
-   Kalender-Punkte, die es aus den vorhandenen CSS-Variablen des Kerns schöpft.
+   Modul bringt keine eigene Gestaltung mit, nur eine Handvoll Farbwerte und kleine
+   selbst gebaute Icons für die Kalender-Marker, die es aus den vorhandenen
+   CSS-Variablen des Kerns schöpft.
 
    Zwei Teile:
-   1) Szenarien (hier "Guides") – kuratierte Aufnahme-Rezepte. Anlegen, Ändern und
-      Löschen passiert bewusst NICHT in der App, sondern hier im Gespräch direkt im
-      Code (fgStartbestand) – die App zeigt sie nur an. Einzige Ausnahme: ein freies
-      Notizen-Feld pro Szenario, das in der App selbst editiert und gespeichert wird.
-      Liste als Bento-Grid (2 pro Zeile), Antippen öffnet eine reine Leseansicht.
+   1) Guides – kuratierte Aufnahme-Rezepte. Anlegen, Ändern und Löschen passiert
+      bewusst NICHT in der App, sondern hier im Gespräch direkt im Code
+      (fgStartbestand) – die App zeigt sie nur an. Einzige Ausnahme: ein freies
+      Notizen-Feld pro Guide, das in der App selbst editiert und gespeichert wird.
+      Liste als Bento-Grid (2 pro Zeile), Antippen öffnet eine reine Leseansicht mit
+      den Kamera-Einstellungen als Zeilenliste (Label links, Wert rechts).
    2) Astro-Kalender – rein berechnete Ereignisse (Neumond, Vollmond/Supermond,
       Meteorschauer, dazu die für 2026 bekannte Mondfinsternis und das
-      Milchstraßenkern-Sichtbarkeitsfenster) bis zum 31.12.2026. Es wird nichts
-      gespeichert oder synchronisiert, nur bei jedem Öffnen ab "heute" neu berechnet –
-      vergangene Termine fallen dadurch von selbst raus. */
+      Milchstraßenkern-Sichtbarkeitsfenster) bis zum 31.12.2026, mit kleinen
+      Icon-Markern statt reinen Farbpunkten (wie Flug/Hotel/Ort bei Reisen). Es wird
+      nichts gespeichert oder synchronisiert, nur bei jedem Öffnen ab "heute" neu
+      berechnet – vergangene Termine fallen dadurch von selbst raus. */
 
 document.getElementById('mod-fotografie').insertAdjacentHTML('beforeend', `
 <div class="wrap">
@@ -53,17 +56,29 @@ const FG_AUSRUESTUNG = {
 const FG_KEYS = { szenarien: 'fg_szenarien_v1' };
 
 /* Kuratierter Bestand – Anlegen/Ändern/Löschen passiert hier im Code, nicht in der App
-   (siehe Kopfkommentar). Inhalte bewusst konkret, basierend auf FG_AUSRUESTUNG und den
-   in früheren Gesprächen ermittelten Einstellungen. "kurzinfo" ist der kurze
-   Beschreibungstext auf der Kachel, unabhängig von den technischen Feldern formuliert. */
+   (siehe Kopfkommentar). "kurzinfo" ist der kurze Beschreibungstext auf der Kachel.
+   "einstellungen" ist die Zeilenliste für den Abschnitt "Kamera-Einstellungen" in der
+   Leseansicht – bewusste Reihenfolge: ISO, Blende, Verschlusszeit zuerst, danach alle
+   weiteren motivrelevanten Einstellungen an Kamera und Objektiv. */
 function fgStartbestand(){
   return [
     {
       id: neueId(), name: 'Milchstraße (Shot)',
       kurzinfo: 'Einzelaufnahme des galaktischen Zentrums mit Vordergrundmotiv',
       equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · Stativ mit L-Bracket · Fernauslöser/Timer',
-      iso: '3200–6400', verschluss: '10–15s (NPF-Regel bei 14mm)',
-      objektiv: 'Sony FE 14mm F1.8 GM', blende: 'f/1.8 (Offenblende)',
+      einstellungen: [
+        { label: 'ISO', wert: '3200–6400' },
+        { label: 'Blende', wert: 'f/1.8 (Offenblende)' },
+        { label: 'Verschlusszeit', wert: '10–15s (NPF-Regel bei 14mm)' },
+        { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
+        { label: 'Fokus', wert: 'Manuell, auf ∞ bzw. hellen Stern per Lupenfunktion' },
+        { label: 'Modus', wert: 'Manuell (M)' },
+        { label: 'Verschluss', wert: 'Elektronisch' },
+        { label: 'SteadyShot', wert: 'Aus' },
+        { label: 'Langzeit-Rauschunterdrückung', wert: 'Aus' },
+        { label: 'Weißabgleich', wert: '3800–4200K (RAW), in Lightroom feinjustieren' },
+        { label: 'Dateiformat', wert: 'RAW' }
+      ],
       ausrichtung: 'Süden bis Südosten, Querformat (weiter Blickwinkel für Kernregion + Horizont)',
       photopills: 'Aufgangszeit & Richtung des galaktischen Zentrums prüfen (Night AR / Planner), nur bei Neumond planen, Lichtverschmutzung am Standort checken (Pollution Map).',
       inspiration: 'Festes Vordergrundmotiv suchen (Baum, Fels, Ruine, Zelt) und mit warmweißem Licht kurz während der Belichtung antippen statt dauerhaft anstrahlen. Milchstraße diagonal statt mittig, Kern über dem Motiv positionieren.',
@@ -74,8 +89,20 @@ function fgStartbestand(){
       id: neueId(), name: 'Milchstraße (Timelapse)',
       kurzinfo: 'Zeitrafferserie der wandernden Milchstraße über die Nacht',
       equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · stabiles Stativ · Intervalltimer · optional Star Tracker/Slider, ausreichend Akku/Speicherkarte',
-      iso: '3200–6400 (über die ganze Serie konstant halten)', verschluss: '10–13s Einzelbelichtung, 1–2s Pause, mehrere hundert Bilder für 2–4 Std. Sequenz',
-      objektiv: 'Sony FE 14mm F1.8 GM', blende: 'f/1.8–2.0 (leicht abgeblendet für gleichmäßigere Schärfe über die Serie)',
+      einstellungen: [
+        { label: 'ISO', wert: '3200–6400 (über die ganze Serie konstant halten)' },
+        { label: 'Blende', wert: 'f/1.8–2.0 (leicht abgeblendet für gleichmäßigere Schärfe)' },
+        { label: 'Verschlusszeit', wert: '10–13s Einzelbelichtung, 1–2s Pause' },
+        { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
+        { label: 'Fokus', wert: 'Manuell, auf ∞, vor Start fixieren und nicht mehr verändern' },
+        { label: 'Modus', wert: 'Manuell (M)' },
+        { label: 'Verschluss', wert: 'Elektronisch' },
+        { label: 'SteadyShot', wert: 'Aus' },
+        { label: 'Langzeit-Rauschunterdrückung', wert: 'Aus' },
+        { label: 'Weißabgleich', wert: 'Fest einstellen (nicht Auto), sonst flackert die Serie' },
+        { label: 'Dateiformat', wert: 'RAW' },
+        { label: 'Bildwiedergabe', wert: 'Aus (spart Akku über die lange Serie)' }
+      ],
       ausrichtung: 'Süden, Querformat – Kern wandert im Bildverlauf von links nach rechts durchs Bild',
       photopills: 'Zeitfenster mit Night AR planen, in dem der Kern gut im Ausschnitt bleibt. Akku-/Speicherkapazität für die Gesamtdauer vorab durchrechnen. Neumond-Nacht wählen.',
       inspiration: 'Ruhiges, unbewegtes Vordergrundmotiv am Bildrand wählen, damit die Bewegung der Milchstraße den Kontrast bildet. Bei Star Tracker den Vordergrund separat unbewegt aufnehmen und später einblenden.',
@@ -83,11 +110,48 @@ function fgStartbestand(){
       notizen: ''
     },
     {
+      id: neueId(), name: 'Milchstraße (Stacking)',
+      kurzinfo: 'Rauschreduzierte Milchstraße aus mehreren gestackten Belichtungen plus separatem Vordergrund',
+      equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · Stativ mit L-Bracket · Fernauslöser/Timer',
+      einstellungen: [
+        { label: 'ISO (Himmel-Serie)', wert: '1600–3200 (niedriger als bei der Einzelaufnahme, das Stacking reduziert Rauschen)' },
+        { label: 'Blende', wert: 'f/1.8–2.0' },
+        { label: 'Verschlusszeit (Himmel)', wert: '8–10 Bilder à 10–15s, identischer Ausschnitt' },
+        { label: 'ISO/Zeit (Vordergrund)', wert: '2–4 Bilder à 20–30s bei ISO 400–800' },
+        { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
+        { label: 'Fokus', wert: 'Manuell, auf ∞ – zwischen den Serien nicht verändern' },
+        { label: 'Modus', wert: 'Manuell (M)' },
+        { label: 'Verschluss', wert: 'Elektronisch' },
+        { label: 'SteadyShot', wert: 'Aus' },
+        { label: 'Langzeit-Rauschunterdrückung', wert: 'Aus' },
+        { label: 'Weißabgleich', wert: 'Fest einstellen (nicht Auto), für konsistentes Stacking' },
+        { label: 'Dateiformat', wert: 'RAW' },
+        { label: 'Bildwiedergabe', wert: 'Aus (Akku für die mehreren Serien schonen)' }
+      ],
+      ausrichtung: 'Süden bis Südosten, Querformat – Kamera zwischen den Serien nicht bewegen (identischer Ausschnitt nötig)',
+      photopills: 'Wie bei der Einzelaufnahme: Position des galaktischen Zentrums, Neumond, Lichtverschmutzung prüfen. Zusätzlich genug Zeit für die mehreren Serien einplanen (ca. 15–20 Min. Gesamtaufnahmezeit).',
+      inspiration: 'Gleiche Bildideen wie bei der Einzelaufnahme (festes Vordergrundmotiv, warmweiß kurz anleuchten, Kern diagonal über dem Motiv) – durch das Stacking bleibt der Himmel dabei deutlich rauschärmer und detailreicher.',
+      bearbeitung: 'Himmel-Serie in Sequator oder Starry Landscape Stacker stacken · Vordergrund-Belichtung separat in Photoshop einblenden/maskieren · danach wie bei der Einzelaufnahme in Lightroom: Weißabgleich, HSL Blau/Lila reduzieren, Radialfilter über dem Kern, Vignette, Dunst/Klarheit.',
+      notizen: ''
+    },
+    {
       id: neueId(), name: 'Star Trails',
       kurzinfo: 'Konzentrische Sternspuren um den Polarstern, gestackt aus vielen Einzelbildern',
       equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · Stativ mit L-Bracket (Hochformat) · Intervalltimer',
-      iso: '400–800', verschluss: '30s Belichtung, 31s Intervall, ca. 77 Bilder / 40 Min',
-      objektiv: 'Sony FE 14mm F1.8 GM', blende: 'f/2.8–4 (abgeblendet für Schärfe)',
+      einstellungen: [
+        { label: 'ISO', wert: '400–800' },
+        { label: 'Blende', wert: 'f/2.8–4 (abgeblendet für Schärfe)' },
+        { label: 'Verschlusszeit', wert: '30s Belichtung, 31s Intervall, ca. 77 Bilder / 40 Min' },
+        { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
+        { label: 'Fokus', wert: 'Manuell, auf ∞' },
+        { label: 'Modus', wert: 'Manuell (M)' },
+        { label: 'Verschluss', wert: 'Elektronisch' },
+        { label: 'SteadyShot', wert: 'Aus' },
+        { label: 'Langzeit-Rauschunterdrückung', wert: 'Zwingend Aus (sonst Lücken zwischen den Trails durch Verarbeitungspause)' },
+        { label: 'Weißabgleich', wert: '3800–4200K, je nach Lichtverschmutzung anpassen' },
+        { label: 'Dateiformat', wert: 'RAW' },
+        { label: 'Bildwiedergabe', wert: 'Aus (Akku für die lange Serie schonen)' }
+      ],
       ausrichtung: 'Norden zum Polarstern, Hochformat (konzentrische Kreise, mehr Himmel im Bild)',
       photopills: 'Polarstern-Position prüfen (Kompass/AR), möglichst neumondnah planen (sonst überstrahlt der Vollmond die Spuren), Wetter/Wolkenfreiheit für die gesamte Sequenz checken.',
       inspiration: 'Silhouette (Baum, Gebäude, Person) unter dem Polarstern platzieren, damit die Kreise einen klaren Mittelpunkt bekommen. Wolkenlücken oder Nebelschwaden geben zusätzliche Struktur.',
@@ -98,8 +162,20 @@ function fgStartbestand(){
       id: neueId(), name: 'Meteoriten',
       kurzinfo: 'Weitwinklige Serienaufnahmen während eines Meteorschauer-Maximums',
       equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · Stativ · Intervalltimer, ausreichend Speicherkarte/Akku für lange Serie',
-      iso: '3200–6400', verschluss: '10–15s Einzelbelichtung, minimale Pause, durchgehende Serie über mehrere Stunden',
-      objektiv: 'Sony FE 14mm F1.8 GM', blende: 'f/1.8 (Offenblende, für möglichst viele/schwache Meteore)',
+      einstellungen: [
+        { label: 'ISO', wert: '3200–6400' },
+        { label: 'Blende', wert: 'f/1.8 (Offenblende, für möglichst viele/schwache Meteore)' },
+        { label: 'Verschlusszeit', wert: '10–15s Einzelbelichtung, minimale Pause' },
+        { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
+        { label: 'Fokus', wert: 'Manuell, auf ∞' },
+        { label: 'Modus', wert: 'Manuell (M)' },
+        { label: 'Verschluss', wert: 'Elektronisch' },
+        { label: 'SteadyShot', wert: 'Aus' },
+        { label: 'Langzeit-Rauschunterdrückung', wert: 'Aus' },
+        { label: 'Weißabgleich', wert: '3800–4200K (RAW), in Lightroom feinjustieren' },
+        { label: 'Dateiformat', wert: 'RAW' },
+        { label: 'Bildwiedergabe', wert: 'Aus (Akku für die durchgehende Serie schonen)' }
+      ],
       ausrichtung: 'Radiant (Ursprungspunkt des Schauers) leicht versetzt im Bild, nicht mittig · Querformat für großes Sichtfeld',
       photopills: 'Maximum-Zeitpunkt & Radiant-Position des Schauers prüfen (z.B. Perseiden Mitte August), Mondphase beachten (bei Vollmond kaum schwache Meteore sichtbar), dunklen Standort mit freiem Horizont wählen.',
       inspiration: 'Landschaft oder markantes Vordergrundmotiv als Kontext mit ins Bild nehmen. Die hellsten Meteore erscheinen selten – Geduld einplanen und komplette Serie durchlaufen lassen, auch wenn einzelne Bilder leer bleiben.',
@@ -111,10 +187,18 @@ function fgStartbestand(){
 
 let szenarien = safeParse(store.get(FG_KEYS.szenarien), null);
 if (!Array.isArray(szenarien)) szenarien = fgStartbestand();
-// Bestehende Speicherstände (vor Einführung von Notizen/Kurzinfo) nachrüsten.
+// Bestehende Speicherstände (vor Einführung von Notizen/Kurzinfo/Einstellungen-Liste) nachrüsten.
 szenarien.forEach(s => {
   if (typeof s.notizen !== 'string') s.notizen = '';
-  if (typeof s.kurzinfo !== 'string') s.kurzinfo = [s.objektiv, s.ausrichtung].filter(Boolean).join(' · ');
+  if (typeof s.kurzinfo !== 'string') s.kurzinfo = s.name || '';
+  if (!Array.isArray(s.einstellungen)) {
+    s.einstellungen = [
+      s.iso ? { label: 'ISO', wert: s.iso } : null,
+      s.blende ? { label: 'Blende', wert: s.blende } : null,
+      s.verschluss ? { label: 'Verschlusszeit', wert: s.verschluss } : null,
+      s.objektiv ? { label: 'Objektiv', wert: s.objektiv } : null
+    ].filter(Boolean);
+  }
 });
 
 function fgPersist(){ store.set(FG_KEYS.szenarien, JSON.stringify(szenarien)); }
@@ -145,16 +229,27 @@ function fgAbschnitt(label, text){
   </div>`;
 }
 
+/* Zeilenliste Label links / Wert rechts (Wert darf bei Bedarf mehrzeilig umbrechen,
+   bleibt dabei aber rechtsbündig) – für den Abschnitt "Kamera-Einstellungen". */
+function fgEinstellungenHTML(liste){
+  if (!liste || !liste.length) return '';
+  const zeilen = liste.map((z, i) => `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:9px 0;${i < liste.length - 1 ? 'border-bottom:1px solid var(--stroke)' : ''}">
+      <span style="font-size:0.82rem;color:var(--text);font-weight:600;flex-shrink:0">${esc(z.label)}</span>
+      <span style="font-size:0.82rem;color:var(--muted);text-align:right">${esc(z.wert)}</span>
+    </div>`).join('');
+  return `<div class="glass" style="padding:16px 18px;margin-bottom:12px">
+    <div class="bento-title" style="margin-bottom:2px">Kamera-Einstellungen</div>
+    ${zeilen}
+  </div>`;
+}
+
 function fgOpenDetail(id){
   const s = szenarien.find(x => x.id === id); if (!s) return;
   fgDetailId = id;
   $('fg-detail-title').textContent = s.name;
-  const kameraEinst = [s.iso ? 'ISO ' + s.iso : '', s.verschluss].filter(Boolean).join(' · ');
-  const objektivEinst = [s.objektiv, s.blende].filter(Boolean).join(' · ');
   $('fg-detail-body').innerHTML =
     fgAbschnitt('Ausrüstung', s.equipment) +
-    fgAbschnitt('Kamera-Einstellungen', kameraEinst) +
-    fgAbschnitt('Objektiv-Einstellungen', objektivEinst) +
+    fgEinstellungenHTML(s.einstellungen) +
     fgAbschnitt('Ausrichtung', s.ausrichtung) +
     fgAbschnitt('PhotoPills-Check', s.photopills) +
     fgAbschnitt('Inspiration & Komposition', s.inspiration) +
@@ -229,6 +324,26 @@ const FG_MILCHSTRASSE_FENSTER_2026 = [
   { datum: new Date(2026,9,20), titel: 'Milchstraßenkern letztmals gut sichtbar',
     notiz: 'Kernregion verschwindet abends nach der Dämmerung im Südwesten.' }
 ];
+
+/* ---- Kalender-Icons: kleine, selbst gebaute Marker (24x24, wie ICON_PLANE/BED/PIN
+   in mod-reisen.js), keine Vorlage aus dem Netz. Ein Icon pro Ereignistyp, wird in
+   fgMarkerHTML() farbig eingefärbt in einen Kreis-Rahmen gesetzt (gleiches Muster wie
+   .rt-plane/.rt-bed/.rt-pin im Kern). */
+const FG_ICONS = {
+  neumond: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 3a9 9 0 1 0 0 18 7 7 0 0 1 0-18Z"/></svg>',
+  vollmond: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>',
+  supermond: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="10" cy="13" r="7"/><path d="M19 3l1.1 2.9L23 7l-2.9 1.1L19 11l-1.1-2.9L15 7l2.9-1.1L19 3Z"/></svg>',
+  meteor: '<svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.2" fill="currentColor"/><path d="M8 8 L20 20" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>',
+  finsternis: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/><circle cx="16" cy="9" r="6" fill="var(--bg)"/></svg>',
+  milchstrasse: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="18" r="1.8"/><circle cx="12" cy="11" r="2.4"/><circle cx="19" cy="5" r="1.8"/></svg>'
+};
+
+function fgMarkerHTML(typ, farbe){
+  const icon = FG_ICONS[typ] || FG_ICONS.vollmond;
+  return `<span style="position:relative;display:flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;background:var(--bg);margin-top:1px;box-shadow:0 0 0 3px var(--bg)">
+    <span style="width:14px;height:14px;color:${farbe};display:flex">${icon}</span>
+  </span>`;
+}
 
 /* Wandelt einen UTC-Zeitstempel in ein lokales Datum (Mitternacht) nach Berliner
    Kalendertag um – passend zu heuteBerlin()/isoVon() aus dem Kern, damit Vergleiche
@@ -340,7 +455,7 @@ function fgRenderCalendar(){
     const farbe = FG_FARBEN[e.typ] || 'var(--accent)';
     return `<div class="rt-row${i === events.length - 1 ? ' last' : ''}">
       <div class="rt-date"><span class="rt-day">${e.datum.getDate()}</span><span class="rt-mon">${FG_MONATE_KURZ[e.datum.getMonth()]}</span></div>
-      <div class="rt-line"><span class="rt-dot" style="background:${farbe}"></span></div>
+      <div class="rt-line">${fgMarkerHTML(e.typ, farbe)}</div>
       <div class="rt-body">
         <div class="rt-name" style="color:${farbe}">${esc(e.titel)}</div>
         <div class="rt-meta">${esc(FG_WOCHENTAGE[e.datum.getDay()])}, ${e.datum.getDate()}. ${esc(FG_MONATE_LANG[e.datum.getMonth()])}</div>
@@ -353,7 +468,7 @@ function fgRenderCalendar(){
 function fgRender(){ fgRenderList(); fgRenderCalendar(); }
 
 /* ---------------- Sicherung ----------------
-   Nur die Szenarien (inkl. der individuellen Notizen) – der Kalender ist reine
+   Nur die Guides (inkl. der individuellen Notizen) – der Kalender ist reine
    Berechnung und braucht keine Sicherung. */
 function fgBuildBackupPayload(){ return { szenarien }; }
 function fgApplyBackup(text){
@@ -362,16 +477,15 @@ function fgApplyBackup(text){
   szenarien = p.szenarien;
   szenarien.forEach(s => {
     if (typeof s.notizen !== 'string') s.notizen = '';
-    if (typeof s.kurzinfo !== 'string') s.kurzinfo = [s.objektiv, s.ausrichtung].filter(Boolean).join(' · ');
+    if (typeof s.kurzinfo !== 'string') s.kurzinfo = s.name || '';
+    if (!Array.isArray(s.einstellungen)) s.einstellungen = [];
   });
   fgPersist();
   return true;
 }
 
 /* Kachel-Grafik: schlichte Kamera, reine Strich-Konstruktion passend zum uebrigen
-   Kachel-Stil (wie bei Impfpass), keine Vorlage aus dem Netz. Farbe Violett.
-   viewBox mit etwas Rand um die Form (statt eng zugeschnitten) und duennere Linie,
-   damit die Grafik sich in der Staerke besser neben den anderen Modulen einreiht. */
+   Kachel-Stil (wie bei Impfpass), keine Vorlage aus dem Netz. Farbe Violett. */
 function fgTileArt(){
   return `<svg viewBox="6 19 108 92" preserveAspectRatio="xMidYMid meet" fill="none" stroke="var(--violet)" stroke-width="2.2"
        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
