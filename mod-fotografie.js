@@ -6,32 +6,27 @@
 
    Zwei Teile:
    1) Szenarien – eigene, frei anlegbare Aufnahme-Rezepte (z.B. "Milchstraße",
-      "Sternspuren") mit festen Basisfeldern (ISO, Blende, Verschlusszeit,
-      Brennweite, Weißabgleich, Ausrüstung) plus einem freien Notizfeld.
+      "Sternspuren") mit festen Feldern: Ausrüstung, Kamera-Einstellungen,
+      Objektiv-Einstellungen, Ausrichtung, PhotoPills-Check, Inspiration/Komposition
+      und Bearbeitung. Liste bleibt kompakt (Titel + Kurzinfo), alles Weitere zeigt
+      erst das Bearbeiten-Formular.
    2) Astro-Kalender – rein berechnete Ereignisse (Neumond, Vollmond/Supermond,
-      bekannte Meteorschauer) für die kommenden rund acht Monate, dazu ein
-      Hinweis auf die Milchstraßen-Saison. Es wird nichts gespeichert oder synchronisiert,
-      nur bei jedem Öffnen neu berechnet – es gibt daher auch nichts zu sichern. */
+      Meteorschauer, dazu die für 2026 bekannte Mondfinsternis und das
+      Milchstraßenkern-Sichtbarkeitsfenster) bis zum 31.12.2026. Es wird nichts
+      gespeichert oder synchronisiert, nur bei jedem Öffnen ab "heute" neu berechnet –
+      vergangene Termine fallen dadurch von selbst raus. */
 
 document.getElementById('mod-fotografie').insertAdjacentHTML('beforeend', `
 <div class="wrap">
 
   <div class="app-header"><button class="screen-back" aria-label="Zurück" onclick="closeModule()">‹</button><span>Jörg's Fotografie</span></div>
 
-  <div class="section-label">Szenarien</div>
   <div id="fg-list"></div>
   <div class="empty" id="fg-empty" style="display:none"><b>Noch kein Szenario angelegt</b>Tippe unten, um dein erstes Astrofoto-Rezept anzulegen.</div>
   <button class="add-btn" onclick="fgOpenModal()">＋ Szenario hinzufügen</button>
 
   <div class="section-label spaced">Astro-Kalender</div>
-  <div class="glass" style="padding:16px 18px">
-    <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted-2);font-weight:600">Milchstraßen-Saison</div>
-    <div style="font-size:1.05rem;font-weight:700;margin-top:6px;letter-spacing:-0.01em">April – September</div>
-    <div style="font-size:0.82rem;color:var(--muted);margin-top:5px;line-height:1.5">Galaktisches Zentrum in den dunklen Morgen- bzw. Abendstunden sichtbar – am besten in mondlosen Nächten rund um Neumond.</div>
-  </div>
-  <div class="rt-list" id="fg-calendar" style="margin-top:16px"></div>
-
-  <p class="backup-hint footnote">Neumond, Vollmond, Supermond-Kennzeichnung und Meteorschauer-Termine sind astronomisch berechnete Näherungswerte – kein amtlicher Almanach.</p>
+  <div class="rt-list" id="fg-calendar"></div>
 </div>
 
 <div class="overlay" id="fg-overlay" onclick="if(event.target===this)fgCloseModal()">
@@ -43,38 +38,45 @@ document.getElementById('mod-fotografie').insertAdjacentHTML('beforeend', `
         <label>Titel</label>
         <input type="text" id="fg-f-name" placeholder="z.B. Milchstraße" autocomplete="off">
       </div>
+      <div class="field">
+        <label>Ausrüstung</label>
+        <textarea id="fg-f-equipment" placeholder="Kamera, Objektiv, Zubehör …" rows="2"></textarea>
+      </div>
       <div class="field field-row">
         <div>
           <label>ISO</label>
           <input type="text" id="fg-f-iso" placeholder="z.B. 3200–6400" autocomplete="off">
         </div>
         <div>
-          <label>Blende</label>
-          <input type="text" id="fg-f-blende" placeholder="z.B. f/1.8" autocomplete="off">
+          <label>Verschlusszeit</label>
+          <input type="text" id="fg-f-verschluss" placeholder="z.B. 10–15s" autocomplete="off">
         </div>
       </div>
       <div class="field field-row">
         <div>
-          <label>Verschlusszeit</label>
-          <input type="text" id="fg-f-verschluss" placeholder="z.B. 10–15s" autocomplete="off">
+          <label>Objektiv</label>
+          <input type="text" id="fg-f-objektiv" placeholder="z.B. Sony FE 14mm F1.8 GM" autocomplete="off">
         </div>
         <div>
-          <label>Brennweite</label>
-          <input type="text" id="fg-f-brennweite" placeholder="z.B. 14mm" autocomplete="off">
+          <label>Blende</label>
+          <input type="text" id="fg-f-blende" placeholder="z.B. f/1.8" autocomplete="off">
         </div>
       </div>
       <div class="field">
-        <label>Weißabgleich</label>
-        <input type="text" id="fg-f-wb" placeholder="z.B. 3800–4200K" autocomplete="off">
+        <label>Ausrichtung</label>
+        <input type="text" id="fg-f-ausrichtung" placeholder="z.B. Süden, Querformat" autocomplete="off">
       </div>
       <div class="field">
-        <label>Ausrüstung</label>
-        <input type="text" id="fg-f-equip" placeholder="z.B. Stativ, L-Bracket, Fernauslöser" autocomplete="off" list="fg-gear-liste">
-        <datalist id="fg-gear-liste"></datalist>
+        <label>PhotoPills-Check</label>
+        <textarea id="fg-f-photopills" placeholder="Was vorab planen/prüfen …" rows="2"></textarea>
       </div>
       <div class="field">
-        <label>Notizen</label>
-        <textarea id="fg-f-notizen" placeholder="Workflow, Standortwahl, Stacking, Tipps …" rows="4"></textarea>
+        <label>Inspiration &amp; Komposition</label>
+        <textarea id="fg-f-inspiration" placeholder="Vordergrundmotiv, Beleuchtung, Bildaufbau …" rows="3"></textarea>
+      </div>
+      <div class="field">
+        <label>Bearbeitung</label>
+        <textarea id="fg-f-bearbeitung" placeholder="Programm + wichtigste Regler …" rows="3"></textarea>
       </div>
     </div>
     <div class="modal-actions">
@@ -85,27 +87,49 @@ document.getElementById('mod-fotografie').insertAdjacentHTML('beforeend', `
 </div>
 `);
 
+/* ---------------- Ausrüstungs-Basis ----------------
+   Fest hinterlegt (kein Zugriff auf die Ausrüstungsliste in den Einstellungen möglich,
+   die liegt nur im Local Storage). Dient als Referenz beim Formulieren der
+   Szenario-Vorgaben unten – Kamera und Objektive stehen dadurch verlässlich fest,
+   Zubehör (Stativ, L-Bracket, Fernauslöser …) wird pro Szenario passend dazugeschrieben. */
+const FG_AUSRUESTUNG = {
+  kamera: 'Sony α7V',
+  objektive: [
+    { name: 'Sony FE 14mm F1.8 GM',         blendeMax: 'f/1.8' },
+    { name: 'Sony FE 35mm F1.4 GM',         blendeMax: 'f/1.4' },
+    { name: 'Sony FE 70–200mm F2.8 GM II',  blendeMax: 'f/2.8' },
+    { name: 'Sony FE 200–600mm F5.6–6.3 G', blendeMax: 'f/5.6–6.3' }
+  ]
+};
+
 /* ---------------- Daten ---------------- */
 const FG_KEYS = { szenarien: 'fg_szenarien_v1' };
 
 /* Startbestand nur beim allerersten Aufruf (noch nichts gespeichert) – danach frei
-   editierbar/löschbar wie jeder andere Eintrag. Die Werte entsprechen den in anderen
-   Gesprächen ermittelten Einstellungen für die Sony α7V (14mm, 33 MP). */
+   editierbar/löschbar wie jeder andere Eintrag. Inhalte bewusst konkret vorgegeben
+   statt leer, basierend auf FG_AUSRUESTUNG und den in früheren Gesprächen ermittelten
+   Einstellungen. */
 function fgStartbestand(){
   return [
     {
       id: neueId(), name: 'Milchstraße',
-      iso: '3200–6400', blende: 'f/1.8', verschluss: '10–15s (NPF-Regel, 14mm)',
-      brennweite: '14mm', wb: '3800–4200K (RAW-Vorschau, in Lightroom feinjustieren)',
-      equip: 'Stativ mit L-Bracket, Fernauslöser',
-      notizen: 'SteadyShot aus, Langzeit-Rauschunterdrückung aus, elektronischer Verschluss. Dunkler Standort ohne Lichtverschmutzung, Kernregion Richtung Süden.'
+      equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · Stativ mit L-Bracket · Fernauslöser/Timer',
+      iso: '3200–6400', verschluss: '10–15s (NPF-Regel bei 14mm)',
+      objektiv: 'Sony FE 14mm F1.8 GM', blende: 'f/1.8 (Offenblende)',
+      ausrichtung: 'Süden bis Südosten, Querformat (weiter Blickwinkel für Kernregion + Horizont)',
+      photopills: 'Aufgangszeit & Richtung des galaktischen Zentrums prüfen (Night AR / Planner), nur bei Neumond planen, Lichtverschmutzung am Standort checken (Pollution Map).',
+      inspiration: 'Festes Vordergrundmotiv suchen (Baum, Fels, Ruine, Zelt) und mit warmweißem Licht kurz während der Belichtung antippen statt dauerhaft anstrahlen. Milchstraße diagonal statt mittig, Kern über dem Motiv positionieren.',
+      bearbeitung: 'Lightroom: Weißabgleich auf 3800–4200K feinjustieren · HSL: Blau/Lila-Sättigung & -Luminanz reduzieren · Radialfilter (Feder 70–80) über dem Kern, leicht erwärmen · dezente Vignette · Dunst/Klarheit moderat erhöhen.'
     },
     {
       id: neueId(), name: 'Sternspuren',
-      iso: '400–800', blende: 'f/2.8–4', verschluss: '30s Belichtung, 31s Intervall, ca. 77 Bilder / 40 Min',
-      brennweite: '14mm (weiter Blickwinkel)', wb: '3800–4200K, je nach Lichtverschmutzung anpassen',
-      equip: 'Stativ mit L-Bracket (Hochformat), Intervalltimer',
-      notizen: 'Richtung Norden zum Polarstern für konzentrische Kreise. Vorher Star Trail CleanR gegen Flugzeug-/Satellitenspuren, danach Stacking mit StarStaX (Desktop) oder Star Stacker (iPad) im Modus Lighten/Maximum.'
+      equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · Stativ mit L-Bracket (Hochformat) · Intervalltimer',
+      iso: '400–800', verschluss: '30s Belichtung, 31s Intervall, ca. 77 Bilder / 40 Min',
+      objektiv: 'Sony FE 14mm F1.8 GM', blende: 'f/2.8–4 (abgeblendet für Schärfe)',
+      ausrichtung: 'Norden zum Polarstern, Hochformat (konzentrische Kreise, mehr Himmel im Bild)',
+      photopills: 'Polarstern-Position prüfen (Kompass/AR), möglichst neumondnah planen (sonst überstrahlt der Vollmond die Spuren), Wetter/Wolkenfreiheit für die gesamte Sequenz checken.',
+      inspiration: 'Silhouette (Baum, Gebäude, Person) unter dem Polarstern platzieren, damit die Kreise einen klaren Mittelpunkt bekommen. Wolkenlücken oder Nebelschwaden geben zusätzliche Struktur.',
+      bearbeitung: 'Vor dem Stacking: Star Trail CleanR gegen Flugzeug-/Satellitenspuren · Stacking mit StarStaX (Desktop) oder Star Stacker (iPad), Modus Lighten/Maximum · danach Lightroom: Kontrast & Klarheit leicht anheben, Vordergrund separat aufhellen.'
     }
   ];
 }
@@ -115,16 +139,14 @@ if (!Array.isArray(szenarien)) szenarien = fgStartbestand();
 
 function fgPersist(){ store.set(FG_KEYS.szenarien, JSON.stringify(szenarien)); }
 
-/* ---------------- Liste ---------------- */
+/* ---------------- Liste (kompakt) ---------------- */
 function fgEntryHTML(s){
-  const kopf = [s.iso ? 'ISO ' + s.iso : '', s.blende, s.verschluss].filter(Boolean).join(' · ');
+  const kurz = [s.objektiv, s.ausrichtung].filter(Boolean).join(' · ');
   return `<div class="entry glass">
     <div class="entry-main">
       <div class="entry-name">${esc(s.name)}</div>
-      ${kopf ? `<div class="entry-sub">${esc(kopf)}</div>` : ''}
-      ${s.brennweite ? `<div class="entry-sub">${esc(s.brennweite)}</div>` : ''}
+      ${kurz ? `<div class="entry-sub">${esc(kurz)}</div>` : ''}
     </div>
-    <div class="entry-right">${s.wb ? `<span class="cat-pill pill-violet">${esc(s.wb)}</span>` : ''}</div>
   </div>`;
 }
 
@@ -141,28 +163,20 @@ function fgRenderList(){
 /* ---------------- Formular ---------------- */
 let fgEditId = null;
 
-function fgFuelleGearListe(){
-  const dl = $('fg-gear-liste'); if(!dl) return;
-  // gearAll() kommt aus dem Reisen-Modul (globale Ausrüstungsliste aus den Einstellungen) –
-  // nur Vorschlag per Autovervollständigung, kein Zwang, dieselbe Liste zu benutzen.
-  let namen = [];
-  try { namen = (typeof gearAll === 'function') ? gearAll() : []; } catch(e){ namen = []; }
-  dl.innerHTML = namen.map(n => `<option value="${esc(n)}"></option>`).join('');
-}
-
 function fgOpenModal(id){
   fgEditId = id || null;
   const s = id ? szenarien.find(x => x.id === id) : null;
-  $('fg-form-title').textContent = s ? 'Szenario bearbeiten' : 'Neues Szenario';
-  $('fg-f-name').value      = s ? (s.name || '') : '';
-  $('fg-f-iso').value       = s ? (s.iso || '') : '';
-  $('fg-f-blende').value    = s ? (s.blende || '') : '';
-  $('fg-f-verschluss').value= s ? (s.verschluss || '') : '';
-  $('fg-f-brennweite').value= s ? (s.brennweite || '') : '';
-  $('fg-f-wb').value        = s ? (s.wb || '') : '';
-  $('fg-f-equip').value     = s ? (s.equip || '') : '';
-  $('fg-f-notizen').value   = s ? (s.notizen || '') : '';
-  fgFuelleGearListe();
+  $('fg-form-title').textContent   = s ? 'Szenario bearbeiten' : 'Neues Szenario';
+  $('fg-f-name').value             = s ? (s.name || '') : '';
+  $('fg-f-equipment').value        = s ? (s.equipment || '') : '';
+  $('fg-f-iso').value              = s ? (s.iso || '') : '';
+  $('fg-f-verschluss').value       = s ? (s.verschluss || '') : '';
+  $('fg-f-objektiv').value         = s ? (s.objektiv || '') : '';
+  $('fg-f-blende').value           = s ? (s.blende || '') : '';
+  $('fg-f-ausrichtung').value      = s ? (s.ausrichtung || '') : '';
+  $('fg-f-photopills').value       = s ? (s.photopills || '') : '';
+  $('fg-f-inspiration').value      = s ? (s.inspiration || '') : '';
+  $('fg-f-bearbeitung').value      = s ? (s.bearbeitung || '') : '';
   closeOpenSwipe();
   oeffneOverlay('fg-overlay', fgCloseModal);
 }
@@ -173,13 +187,15 @@ async function fgSave(){
   if (!name){ await notify('Bitte einen Titel für das Szenario eintragen.'); return; }
   const daten = {
     name,
-    iso: $('fg-f-iso').value.trim(),
-    blende: $('fg-f-blende').value.trim(),
-    verschluss: $('fg-f-verschluss').value.trim(),
-    brennweite: $('fg-f-brennweite').value.trim(),
-    wb: $('fg-f-wb').value.trim(),
-    equip: $('fg-f-equip').value.trim(),
-    notizen: $('fg-f-notizen').value.trim()
+    equipment:   $('fg-f-equipment').value.trim(),
+    iso:         $('fg-f-iso').value.trim(),
+    verschluss:  $('fg-f-verschluss').value.trim(),
+    objektiv:    $('fg-f-objektiv').value.trim(),
+    blende:      $('fg-f-blende').value.trim(),
+    ausrichtung: $('fg-f-ausrichtung').value.trim(),
+    photopills:  $('fg-f-photopills').value.trim(),
+    inspiration: $('fg-f-inspiration').value.trim(),
+    bearbeitung: $('fg-f-bearbeitung').value.trim()
   };
   if (fgEditId){
     const s = szenarien.find(x => x.id === fgEditId);
@@ -206,8 +222,12 @@ async function fgDelete(id){
    Reine Berechnung, nichts davon wird gespeichert. Neumond/Vollmond über die
    synodische Mondperiode ab einem bekannten Referenz-Neumond; Supermond-Kennzeichnung
    über die anomalistische Periode ab dem gut dokumentierten Perigäums-Vollmond vom
-   14. November 2016. Meteorschauer über feste, jährlich wiederkehrende Maxima-Daten.
-   Alles bewusst als Näherung – siehe Fußnote im Modul selbst. */
+   14. November 2016 (nächste reale Übereinstimmung: Supermond am 24.12.2026).
+   Meteorschauer über feste, jährlich wiederkehrende Maxima-Daten. Mondfinsternis und
+   Milchstraßenkern-Fenster sind feste, recherchierte Termine für 2026 – der Kalender
+   läuft bewusst nur bis Jahresende 2026 und müsste für 2027 erweitert werden. */
+
+const FG_KALENDER_ENDE = new Date(2026, 11, 31);   // 31. Dezember 2026 – bewusste Grenze, siehe oben
 
 const FG_WOCHENTAGE = ['So','Mo','Di','Mi','Do','Fr','Sa'];
 const FG_MONATE_KURZ = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
@@ -223,6 +243,22 @@ const FG_METEORSCHAUER = [
   { monat: 10, tag: 17, name: 'Leoniden' },
   { monat: 11, tag: 14, name: 'Geminiden' },
   { monat: 11, tag: 22, name: 'Ursiden' }
+];
+
+/* Recherchiert (August 2026): partielle Mondfinsternis, 93–96% Bedeckung. */
+const FG_FINSTERNISSE_2026 = [
+  { datum: new Date(2026,7,28), titel: 'Partielle Mondfinsternis',
+    notiz: 'Bis zu 93–96% des Mondes im Erdschatten · Beginn 04:34 Uhr, Höhepunkt 06:12 Uhr, kurz vor Monduntergang.' }
+];
+
+/* Näherung für Deutschland (50°N): das galaktische Zentrum wird ab Ende Februar in
+   der Morgendämmerung tief im Südosten sichtbar und verschwindet ab Ende Oktober
+   abends im Südwesten wieder in der Dämmerung. */
+const FG_MILCHSTRASSE_FENSTER_2026 = [
+  { datum: new Date(2026,1,20), titel: 'Milchstraßenkern ab jetzt sichtbar',
+    notiz: 'Kernregion taucht morgens vor der Dämmerung tief im Südosten auf.' },
+  { datum: new Date(2026,9,20), titel: 'Milchstraßenkern letztmals gut sichtbar',
+    notiz: 'Kernregion verschwindet abends nach der Dämmerung im Südwesten.' }
 ];
 
 /* Wandelt einen UTC-Zeitstempel in ein lokales Datum (Mitternacht) nach Berliner
@@ -287,6 +323,10 @@ function fgMeteorschauerZwischen(startD, endD){
   return arr;
 }
 
+function fgFesteTermineZwischen(liste, startD, endD){
+  return liste.filter(e => e.datum.getTime() >= startD.getTime() && e.datum.getTime() <= endD.getTime());
+}
+
 function fgBaueKalender(startD, endD){
   const events = [];
   fgNeumondeZwischen(startD, endD).forEach(d => events.push({
@@ -303,18 +343,30 @@ function fgBaueKalender(startD, endD){
   fgMeteorschauerZwischen(startD, endD).forEach(e => events.push({
     datum: e.datum, typ: 'meteor', titel: 'Meteorschauer: ' + e.name, notiz: 'Aktivitätsmaximum'
   }));
+  fgFesteTermineZwischen(FG_FINSTERNISSE_2026, startD, endD).forEach(e => events.push({
+    datum: e.datum, typ: 'finsternis', titel: e.titel, notiz: e.notiz
+  }));
+  fgFesteTermineZwischen(FG_MILCHSTRASSE_FENSTER_2026, startD, endD).forEach(e => events.push({
+    datum: e.datum, typ: 'milchstrasse', titel: e.titel, notiz: e.notiz
+  }));
   events.sort((a,b) => a.datum - b.datum);
   return events;
 }
 
-const FG_FARBEN = { neumond: 'var(--violet)', vollmond: 'var(--accent)', supermond: 'var(--orange)', meteor: 'var(--green)' };
+const FG_FARBEN = {
+  neumond: 'var(--violet)', vollmond: 'var(--accent)', supermond: 'var(--orange)',
+  meteor: 'var(--green)', finsternis: 'var(--danger)', milchstrasse: 'var(--petrol)'
+};
 
 function fgRenderCalendar(){
   const el = $('fg-calendar'); if(!el) return;
   const heute = heuteBerlin();
-  const ende = new Date(heute.getTime() + 240 * 86400000);   // ca. 8 Monate voraus
-  const events = fgBaueKalender(heute, ende).slice(0, 24);
-  if (!events.length){ el.innerHTML = '<div class="empty">Keine berechneten Ereignisse im Zeitraum.</div>'; return; }
+  if (heute.getTime() > FG_KALENDER_ENDE.getTime()){
+    el.innerHTML = '<div class="empty">Kalender endet am 31.12.2026 – für 2027 muss er im Modul erweitert werden.</div>';
+    return;
+  }
+  const events = fgBaueKalender(heute, FG_KALENDER_ENDE);
+  if (!events.length){ el.innerHTML = '<div class="empty">Keine berechneten Ereignisse bis Jahresende.</div>'; return; }
   el.innerHTML = events.map((e, i) => {
     const farbe = FG_FARBEN[e.typ] || 'var(--accent)';
     return `<div class="rt-row${i === events.length - 1 ? ' last' : ''}">
@@ -342,23 +394,16 @@ function fgApplyBackup(text){
   return true;
 }
 
-/* Kachel-Grafik: Sichelmond mit zwei kleinen Sternfunkeln, darunter eine schlichte
-   Kamera – reine Strich-Konstruktion passend zum uebrigen Kachel-Stil (wie bei
-   Impfpass), keine Vorlage aus dem Netz. Farbe Violett, sonst im Stil ungenutzt. */
+/* Kachel-Grafik: schlichte Kamera, reine Strich-Konstruktion passend zum uebrigen
+   Kachel-Stil (wie bei Impfpass), keine Vorlage aus dem Netz. Farbe Violett. */
 function fgTileArt(){
-  const funkeln = (cx, cy, r) => {
-    const arme = [[0,-1],[0,1],[-1,0],[1,0]];
-    return arme.map(([dx,dy]) => `<line x1="${cx}" y1="${cy}" x2="${(cx+dx*r).toFixed(1)}" y2="${(cy+dy*r).toFixed(1)}"/>`).join('');
-  };
-  return `<svg viewBox="0 0 120 120" preserveAspectRatio="xMidYMid meet" fill="none" stroke="var(--violet)" stroke-width="2.1"
+  return `<svg viewBox="0 0 120 120" preserveAspectRatio="xMidYMid meet" fill="none" stroke="var(--violet)" stroke-width="2.4"
        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <path d="M70,20 A24,24 0 1 0 70,68 A17,17 0 1 1 70,20 Z"/>
-    <g>${funkeln(94, 30, 7)}</g>
-    <g>${funkeln(24, 78, 5)}</g>
-    <rect x="20" y="66" width="52" height="34" rx="8"/>
-    <rect x="34" y="58" width="16" height="10" rx="3"/>
-    <circle cx="46" cy="84" r="12"/>
-    <circle cx="46" cy="84" r="5.5"/>
+    <rect x="18" y="42" width="84" height="58" rx="12"/>
+    <rect x="42" y="30" width="26" height="16" rx="4"/>
+    <circle cx="60" cy="71" r="21"/>
+    <circle cx="60" cy="71" r="10"/>
+    <circle cx="86" cy="54" r="3.2" fill="var(--violet)" stroke="none"/>
   </svg>`;
 }
 
@@ -375,7 +420,9 @@ registerModule({
     try {
       const art = fgTileArt();
       const heute = heuteBerlin();
-      const events = fgBaueKalender(heute, new Date(heute.getTime() + 400*86400000));
+      if (heute.getTime() > FG_KALENDER_ENDE.getTime())
+        return { sub: 'Fotografie', value: szenarien.length, unit: szenarien.length === 1 ? 'Szenario' : 'Szenarien', note: 'angelegt', art };
+      const events = fgBaueKalender(heute, FG_KALENDER_ENDE);
       if (!events.length) return { sub: 'Fotografie', value: szenarien.length, unit: szenarien.length === 1 ? 'Szenario' : 'Szenarien', note: 'angelegt', art };
       const naechstes = events[0];
       const tage = Math.round((naechstes.datum - heute) / 86400000);
