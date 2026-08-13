@@ -1,15 +1,16 @@
 /* ================= BEREICH: FOTOGRAFIE =================
    Eigenständiges Modul. Optik und Bausteine kommen aus dem gemeinsamen Kern in
-   index.html (.entry, .field, .modal, .rt-row-Zeitleiste …) – dieses Modul bringt
-   keine eigene Gestaltung mit, nur eine Handvoll Farbwerte für die Kalender-Punkte,
-   die es aus den vorhandenen CSS-Variablen des Kerns schöpft.
+   index.html (.bento/.bento-tile, .screen, .glass, .rt-row-Zeitleiste …) – dieses
+   Modul bringt keine eigene Gestaltung mit, nur eine Handvoll Farbwerte für die
+   Kalender-Punkte, die es aus den vorhandenen CSS-Variablen des Kerns schöpft.
 
    Zwei Teile:
-   1) Szenarien – eigene, frei anlegbare Aufnahme-Rezepte (z.B. "Milchstraße",
-      "Sternspuren") mit festen Feldern: Ausrüstung, Kamera-Einstellungen,
-      Objektiv-Einstellungen, Ausrichtung, PhotoPills-Check, Inspiration/Komposition
-      und Bearbeitung. Liste bleibt kompakt (Titel + Kurzinfo), alles Weitere zeigt
-      erst das Bearbeiten-Formular.
+   1) Szenarien – kuratierte Aufnahme-Rezepte (z.B. "Milchstraße", "Sternspuren").
+      Anlegen, Ändern und Löschen passiert bewusst NICHT in der App, sondern hier im
+      Gespräch direkt im Code (fgStartbestand) – die App zeigt sie nur an. Einzige
+      Ausnahme: ein freies Notizen-Feld pro Szenario, das in der App selbst editiert
+      und gespeichert wird. Liste als Bento-Grid (2 pro Zeile), Antippen öffnet eine
+      reine Leseansicht.
    2) Astro-Kalender – rein berechnete Ereignisse (Neumond, Vollmond/Supermond,
       Meteorschauer, dazu die für 2026 bekannte Mondfinsternis und das
       Milchstraßenkern-Sichtbarkeitsfenster) bis zum 31.12.2026. Es wird nichts
@@ -22,68 +23,15 @@ document.getElementById('mod-fotografie').insertAdjacentHTML('beforeend', `
   <div class="app-header"><button class="screen-back" aria-label="Zurück" onclick="closeModule()">‹</button><span>Jörg's Fotografie</span></div>
 
   <div id="fg-list"></div>
-  <div class="empty" id="fg-empty" style="display:none"><b>Noch kein Szenario angelegt</b>Tippe unten, um dein erstes Astrofoto-Rezept anzulegen.</div>
-  <button class="add-btn" onclick="fgOpenModal()">＋ Szenario hinzufügen</button>
+  <div class="empty" id="fg-empty" style="display:none">Noch keine Szenarien hinterlegt.</div>
 
   <div class="section-label spaced">Astro-Kalender</div>
   <div class="rt-list" id="fg-calendar"></div>
 </div>
 
-<div class="overlay" id="fg-overlay" onclick="if(event.target===this)fgCloseModal()">
-  <div class="modal">
-    <div class="grabber"></div>
-    <h2 id="fg-form-title">Neues Szenario</h2>
-    <div class="field-stack">
-      <div class="field">
-        <label>Titel</label>
-        <input type="text" id="fg-f-name" placeholder="z.B. Milchstraße" autocomplete="off">
-      </div>
-      <div class="field">
-        <label>Ausrüstung</label>
-        <textarea id="fg-f-equipment" placeholder="Kamera, Objektiv, Zubehör …" rows="2"></textarea>
-      </div>
-      <div class="field field-row">
-        <div>
-          <label>ISO</label>
-          <input type="text" id="fg-f-iso" placeholder="z.B. 3200–6400" autocomplete="off">
-        </div>
-        <div>
-          <label>Verschlusszeit</label>
-          <input type="text" id="fg-f-verschluss" placeholder="z.B. 10–15s" autocomplete="off">
-        </div>
-      </div>
-      <div class="field field-row">
-        <div>
-          <label>Objektiv</label>
-          <input type="text" id="fg-f-objektiv" placeholder="z.B. Sony FE 14mm F1.8 GM" autocomplete="off">
-        </div>
-        <div>
-          <label>Blende</label>
-          <input type="text" id="fg-f-blende" placeholder="z.B. f/1.8" autocomplete="off">
-        </div>
-      </div>
-      <div class="field">
-        <label>Ausrichtung</label>
-        <input type="text" id="fg-f-ausrichtung" placeholder="z.B. Süden, Querformat" autocomplete="off">
-      </div>
-      <div class="field">
-        <label>PhotoPills-Check</label>
-        <textarea id="fg-f-photopills" placeholder="Was vorab planen/prüfen …" rows="2"></textarea>
-      </div>
-      <div class="field">
-        <label>Inspiration &amp; Komposition</label>
-        <textarea id="fg-f-inspiration" placeholder="Vordergrundmotiv, Beleuchtung, Bildaufbau …" rows="3"></textarea>
-      </div>
-      <div class="field">
-        <label>Bearbeitung</label>
-        <textarea id="fg-f-bearbeitung" placeholder="Programm + wichtigste Regler …" rows="3"></textarea>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="fgCloseModal()">Abbrechen</button>
-      <button class="btn btn-primary" onclick="fgSave()">Speichern</button>
-    </div>
-  </div>
+<div class="screen" id="fg-detail-screen">
+  <div class="app-header"><button class="screen-back" aria-label="Zurück" onclick="fgCloseDetail()">‹</button><span id="fg-detail-title"></span></div>
+  <div id="fg-detail-body"></div>
 </div>
 `);
 
@@ -105,10 +53,9 @@ const FG_AUSRUESTUNG = {
 /* ---------------- Daten ---------------- */
 const FG_KEYS = { szenarien: 'fg_szenarien_v1' };
 
-/* Startbestand nur beim allerersten Aufruf (noch nichts gespeichert) – danach frei
-   editierbar/löschbar wie jeder andere Eintrag. Inhalte bewusst konkret vorgegeben
-   statt leer, basierend auf FG_AUSRUESTUNG und den in früheren Gesprächen ermittelten
-   Einstellungen. */
+/* Kuratierter Bestand – Anlegen/Ändern/Löschen passiert hier im Code, nicht in der App
+   (siehe Kopfkommentar). Inhalte bewusst konkret, basierend auf FG_AUSRUESTUNG und den
+   in früheren Gesprächen ermittelten Einstellungen. */
 function fgStartbestand(){
   return [
     {
@@ -119,7 +66,8 @@ function fgStartbestand(){
       ausrichtung: 'Süden bis Südosten, Querformat (weiter Blickwinkel für Kernregion + Horizont)',
       photopills: 'Aufgangszeit & Richtung des galaktischen Zentrums prüfen (Night AR / Planner), nur bei Neumond planen, Lichtverschmutzung am Standort checken (Pollution Map).',
       inspiration: 'Festes Vordergrundmotiv suchen (Baum, Fels, Ruine, Zelt) und mit warmweißem Licht kurz während der Belichtung antippen statt dauerhaft anstrahlen. Milchstraße diagonal statt mittig, Kern über dem Motiv positionieren.',
-      bearbeitung: 'Lightroom: Weißabgleich auf 3800–4200K feinjustieren · HSL: Blau/Lila-Sättigung & -Luminanz reduzieren · Radialfilter (Feder 70–80) über dem Kern, leicht erwärmen · dezente Vignette · Dunst/Klarheit moderat erhöhen.'
+      bearbeitung: 'Lightroom: Weißabgleich auf 3800–4200K feinjustieren · HSL: Blau/Lila-Sättigung & -Luminanz reduzieren · Radialfilter (Feder 70–80) über dem Kern, leicht erwärmen · dezente Vignette · Dunst/Klarheit moderat erhöhen.',
+      notizen: ''
     },
     {
       id: neueId(), name: 'Sternspuren',
@@ -129,93 +77,86 @@ function fgStartbestand(){
       ausrichtung: 'Norden zum Polarstern, Hochformat (konzentrische Kreise, mehr Himmel im Bild)',
       photopills: 'Polarstern-Position prüfen (Kompass/AR), möglichst neumondnah planen (sonst überstrahlt der Vollmond die Spuren), Wetter/Wolkenfreiheit für die gesamte Sequenz checken.',
       inspiration: 'Silhouette (Baum, Gebäude, Person) unter dem Polarstern platzieren, damit die Kreise einen klaren Mittelpunkt bekommen. Wolkenlücken oder Nebelschwaden geben zusätzliche Struktur.',
-      bearbeitung: 'Vor dem Stacking: Star Trail CleanR gegen Flugzeug-/Satellitenspuren · Stacking mit StarStaX (Desktop) oder Star Stacker (iPad), Modus Lighten/Maximum · danach Lightroom: Kontrast & Klarheit leicht anheben, Vordergrund separat aufhellen.'
+      bearbeitung: 'Vor dem Stacking: Star Trail CleanR gegen Flugzeug-/Satellitenspuren · Stacking mit StarStaX (Desktop) oder Star Stacker (iPad), Modus Lighten/Maximum · danach Lightroom: Kontrast & Klarheit leicht anheben, Vordergrund separat aufhellen.',
+      notizen: ''
     }
   ];
 }
 
 let szenarien = safeParse(store.get(FG_KEYS.szenarien), null);
 if (!Array.isArray(szenarien)) szenarien = fgStartbestand();
+// Bestehende Speicherstände (vor Einführung des Notizen-Felds) nachrüsten.
+szenarien.forEach(s => { if (typeof s.notizen !== 'string') s.notizen = ''; });
 
 function fgPersist(){ store.set(FG_KEYS.szenarien, JSON.stringify(szenarien)); }
 
-/* ---------------- Liste (kompakt) ---------------- */
-function fgEntryHTML(s){
+/* ---------------- Liste (Bento-Grid, 2 pro Zeile) ---------------- */
+function fgTileHTML(s){
   const kurz = [s.objektiv, s.ausrichtung].filter(Boolean).join(' · ');
-  return `<div class="entry glass">
-    <div class="entry-main">
-      <div class="entry-name">${esc(s.name)}</div>
-      ${kurz ? `<div class="entry-sub">${esc(kurz)}</div>` : ''}
-    </div>
+  return `<div class="bento-tile" onclick="fgOpenDetail('${s.id}')">
+    <div class="bento-head"><span class="bento-title">Szenario</span></div>
+    <div class="bento-primary" style="font-size:1.05rem;white-space:normal;line-height:1.25">${esc(s.name)}</div>
+    ${kurz ? `<div class="bento-foot"><div style="font-size:0.74rem;color:var(--muted);line-height:1.4">${esc(kurz)}</div></div>` : ''}
   </div>`;
 }
 
 function fgRenderList(){
   const el = $('fg-list'), leer = $('fg-empty'); if(!el) return;
   if (leer) leer.style.display = szenarien.length ? 'none' : '';
-  el.innerHTML = `<div class="list">${szenarien.map(s => swipeWrap('fg', s.id, fgEntryHTML(s))).join('')}</div>`;
-  el.querySelectorAll('.entry-wrap').forEach(wrap => {
-    const id = wrap.dataset.id;
-    attachSwipeGeneric(wrap, () => fgDelete(id), () => fgOpenModal(id));
-  });
+  el.innerHTML = szenarien.length ? `<div class="bento">${szenarien.map(s => fgTileHTML(s)).join('')}</div>` : '';
 }
 
-/* ---------------- Formular ---------------- */
-let fgEditId = null;
+/* ---------------- Leseansicht ---------------- */
+let fgDetailId = null;
 
-function fgOpenModal(id){
-  fgEditId = id || null;
-  const s = id ? szenarien.find(x => x.id === id) : null;
-  $('fg-form-title').textContent   = s ? 'Szenario bearbeiten' : 'Neues Szenario';
-  $('fg-f-name').value             = s ? (s.name || '') : '';
-  $('fg-f-equipment').value        = s ? (s.equipment || '') : '';
-  $('fg-f-iso').value              = s ? (s.iso || '') : '';
-  $('fg-f-verschluss').value       = s ? (s.verschluss || '') : '';
-  $('fg-f-objektiv').value         = s ? (s.objektiv || '') : '';
-  $('fg-f-blende').value           = s ? (s.blende || '') : '';
-  $('fg-f-ausrichtung').value      = s ? (s.ausrichtung || '') : '';
-  $('fg-f-photopills').value       = s ? (s.photopills || '') : '';
-  $('fg-f-inspiration').value      = s ? (s.inspiration || '') : '';
-  $('fg-f-bearbeitung').value      = s ? (s.bearbeitung || '') : '';
-  closeOpenSwipe();
-  oeffneOverlay('fg-overlay', fgCloseModal);
+function fgAbschnitt(label, text){
+  if (!text) return '';
+  return `<div class="glass" style="padding:16px 18px;margin-bottom:12px">
+    <div class="bento-title" style="margin-bottom:6px">${esc(label)}</div>
+    <div style="font-size:0.88rem;color:var(--text);line-height:1.55;white-space:pre-wrap">${esc(text)}</div>
+  </div>`;
 }
-function fgCloseModal(){ schliesseOverlay('fg-overlay'); fgEditId = null; }
 
-async function fgSave(){
-  const name = $('fg-f-name').value.trim();
-  if (!name){ await notify('Bitte einen Titel für das Szenario eintragen.'); return; }
-  const daten = {
-    name,
-    equipment:   $('fg-f-equipment').value.trim(),
-    iso:         $('fg-f-iso').value.trim(),
-    verschluss:  $('fg-f-verschluss').value.trim(),
-    objektiv:    $('fg-f-objektiv').value.trim(),
-    blende:      $('fg-f-blende').value.trim(),
-    ausrichtung: $('fg-f-ausrichtung').value.trim(),
-    photopills:  $('fg-f-photopills').value.trim(),
-    inspiration: $('fg-f-inspiration').value.trim(),
-    bearbeitung: $('fg-f-bearbeitung').value.trim()
-  };
-  if (fgEditId){
-    const s = szenarien.find(x => x.id === fgEditId);
-    if (s) Object.assign(s, daten);
-  } else {
-    szenarien.push(Object.assign({ id: neueId() }, daten));
-  }
+function fgOpenDetail(id){
+  const s = szenarien.find(x => x.id === id); if (!s) return;
+  fgDetailId = id;
+  $('fg-detail-title').textContent = s.name;
+  const kameraEinst = [s.iso ? 'ISO ' + s.iso : '', s.verschluss].filter(Boolean).join(' · ');
+  const objektivEinst = [s.objektiv, s.blende].filter(Boolean).join(' · ');
+  $('fg-detail-body').innerHTML =
+    fgAbschnitt('Ausrüstung', s.equipment) +
+    fgAbschnitt('Kamera-Einstellungen', kameraEinst) +
+    fgAbschnitt('Objektiv-Einstellungen', objektivEinst) +
+    fgAbschnitt('Ausrichtung', s.ausrichtung) +
+    fgAbschnitt('PhotoPills-Check', s.photopills) +
+    fgAbschnitt('Inspiration & Komposition', s.inspiration) +
+    fgAbschnitt('Bearbeitung', s.bearbeitung) +
+    `<div class="glass" style="padding:16px 18px;margin-bottom:12px">
+      <div class="bento-title" style="margin-bottom:6px">Notizen</div>
+      <textarea id="fg-notiz-feld" rows="4" placeholder="Eigene Beobachtungen, Ergebnisse, Anpassungen …"
+        style="width:100%;background:transparent;border:none;outline:none;resize:vertical;font:inherit;color:var(--text);line-height:1.55;padding:0">${esc(s.notizen || '')}</textarea>
+      <button class="btn btn-secondary" style="margin-top:10px" onclick="fgSaveNotiz()">Notiz speichern</button>
+    </div>`;
+  const sc = $('fg-detail-screen');
+  sc.classList.add('open');
+  sc.scrollTop = 0;
+  setTimeout(() => { if (sc.classList.contains('open')) sc.classList.add('settled'); }, 460);
+}
+
+function fgCloseDetail(){
+  const sc = $('fg-detail-screen'); if (!sc) return;
+  sc.classList.remove('settled');
+  void sc.offsetHeight;
+  sc.classList.remove('open');
+  fgDetailId = null;
+}
+
+function fgSaveNotiz(){
+  const s = szenarien.find(x => x.id === fgDetailId); if (!s) return;
+  const feld = $('fg-notiz-feld'); if (!feld) return;
+  s.notizen = feld.value.trim();
   fgPersist();
-  fgCloseModal();
-  fgRenderList();
-  renderLauncher();
-  showToast('Gespeichert');
-}
-
-async function fgDelete(id){
-  await loeschenMitRueckfrage({
-    liste: szenarien, id,
-    speichern: () => fgPersist(),
-    zeichnen: () => fgRenderList()
-  });
+  showToast('Notiz gespeichert');
 }
 
 /* ---------------- Astro-Kalender ----------------
@@ -384,20 +325,25 @@ function fgRenderCalendar(){
 function fgRender(){ fgRenderList(); fgRenderCalendar(); }
 
 /* ---------------- Sicherung ----------------
-   Nur die Szenarien – der Kalender ist reine Berechnung und braucht keine Sicherung. */
+   Nur die Szenarien (inkl. der individuellen Notizen) – der Kalender ist reine
+   Berechnung und braucht keine Sicherung. */
 function fgBuildBackupPayload(){ return { szenarien }; }
 function fgApplyBackup(text){
   const p = safeParse(text, null);
   if (!(p && Array.isArray(p.szenarien))) return false;
   szenarien = p.szenarien;
+  szenarien.forEach(s => { if (typeof s.notizen !== 'string') s.notizen = ''; });
   fgPersist();
   return true;
 }
 
 /* Kachel-Grafik: schlichte Kamera, reine Strich-Konstruktion passend zum uebrigen
-   Kachel-Stil (wie bei Impfpass), keine Vorlage aus dem Netz. Farbe Violett. */
+   Kachel-Stil (wie bei Impfpass), keine Vorlage aus dem Netz. Farbe Violett.
+   viewBox eng um die Form geschnitten (wie bei Impfpass), damit die Grafik die
+   Kachel genauso ausfuellt wie bei den anderen Modulen, statt mit viel Leerraum
+   drumherum kleiner zu wirken. */
 function fgTileArt(){
-  return `<svg viewBox="0 0 120 120" preserveAspectRatio="xMidYMid meet" fill="none" stroke="var(--violet)" stroke-width="2.4"
+  return `<svg viewBox="15 27 90 76" preserveAspectRatio="xMidYMid meet" fill="none" stroke="var(--violet)" stroke-width="2.4"
        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <rect x="18" y="42" width="84" height="58" rx="12"/>
     <rect x="42" y="30" width="26" height="16" rx="4"/>
@@ -421,12 +367,12 @@ registerModule({
       const art = fgTileArt();
       const heute = heuteBerlin();
       if (heute.getTime() > FG_KALENDER_ENDE.getTime())
-        return { sub: 'Fotografie', value: szenarien.length, unit: szenarien.length === 1 ? 'Szenario' : 'Szenarien', note: 'angelegt', art };
+        return { sub: 'Guidelines & Kalender', value: szenarien.length, unit: szenarien.length === 1 ? 'Szenario' : 'Szenarien', note: 'angelegt', art };
       const events = fgBaueKalender(heute, FG_KALENDER_ENDE);
-      if (!events.length) return { sub: 'Fotografie', value: szenarien.length, unit: szenarien.length === 1 ? 'Szenario' : 'Szenarien', note: 'angelegt', art };
+      if (!events.length) return { sub: 'Guidelines & Kalender', value: szenarien.length, unit: szenarien.length === 1 ? 'Szenario' : 'Szenarien', note: 'angelegt', art };
       const naechstes = events[0];
       const tage = Math.round((naechstes.datum - heute) / 86400000);
-      return { sub: 'Fotografie', value: tage, unit: tage === 1 ? 'Tag' : 'Tage', note: naechstes.titel, art };
-    } catch(e) { return { sub: 'Fotografie' }; }
+      return { sub: 'Guidelines & Kalender', value: tage, unit: tage === 1 ? 'Tag' : 'Tage', note: naechstes.titel, art };
+    } catch(e) { return { sub: 'Guidelines & Kalender' }; }
   }
 });
