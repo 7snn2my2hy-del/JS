@@ -5,12 +5,11 @@
    Kalender-Punkte, die es aus den vorhandenen CSS-Variablen des Kerns schöpft.
 
    Zwei Teile:
-   1) Szenarien – kuratierte Aufnahme-Rezepte (z.B. "Milchstraße", "Sternspuren").
-      Anlegen, Ändern und Löschen passiert bewusst NICHT in der App, sondern hier im
-      Gespräch direkt im Code (fgStartbestand) – die App zeigt sie nur an. Einzige
-      Ausnahme: ein freies Notizen-Feld pro Szenario, das in der App selbst editiert
-      und gespeichert wird. Liste als Bento-Grid (2 pro Zeile), Antippen öffnet eine
-      reine Leseansicht.
+   1) Szenarien (hier "Guides") – kuratierte Aufnahme-Rezepte. Anlegen, Ändern und
+      Löschen passiert bewusst NICHT in der App, sondern hier im Gespräch direkt im
+      Code (fgStartbestand) – die App zeigt sie nur an. Einzige Ausnahme: ein freies
+      Notizen-Feld pro Szenario, das in der App selbst editiert und gespeichert wird.
+      Liste als Bento-Grid (2 pro Zeile), Antippen öffnet eine reine Leseansicht.
    2) Astro-Kalender – rein berechnete Ereignisse (Neumond, Vollmond/Supermond,
       Meteorschauer, dazu die für 2026 bekannte Mondfinsternis und das
       Milchstraßenkern-Sichtbarkeitsfenster) bis zum 31.12.2026. Es wird nichts
@@ -23,7 +22,7 @@ document.getElementById('mod-fotografie').insertAdjacentHTML('beforeend', `
   <div class="app-header"><button class="screen-back" aria-label="Zurück" onclick="closeModule()">‹</button><span>Jörg's Fotografie</span></div>
 
   <div id="fg-list"></div>
-  <div class="empty" id="fg-empty" style="display:none">Noch keine Szenarien hinterlegt.</div>
+  <div class="empty" id="fg-empty" style="display:none">Noch keine Guides hinterlegt.</div>
 
   <div class="section-label spaced">Astro-Kalender</div>
   <div class="rt-list" id="fg-calendar"></div>
@@ -38,8 +37,8 @@ document.getElementById('mod-fotografie').insertAdjacentHTML('beforeend', `
 /* ---------------- Ausrüstungs-Basis ----------------
    Fest hinterlegt (kein Zugriff auf die Ausrüstungsliste in den Einstellungen möglich,
    die liegt nur im Local Storage). Dient als Referenz beim Formulieren der
-   Szenario-Vorgaben unten – Kamera und Objektive stehen dadurch verlässlich fest,
-   Zubehör (Stativ, L-Bracket, Fernauslöser …) wird pro Szenario passend dazugeschrieben. */
+   Guide-Vorgaben unten – Kamera und Objektive stehen dadurch verlässlich fest,
+   Zubehör (Stativ, L-Bracket, Fernauslöser …) wird pro Guide passend dazugeschrieben. */
 const FG_AUSRUESTUNG = {
   kamera: 'Sony α7V',
   objektive: [
@@ -55,11 +54,13 @@ const FG_KEYS = { szenarien: 'fg_szenarien_v1' };
 
 /* Kuratierter Bestand – Anlegen/Ändern/Löschen passiert hier im Code, nicht in der App
    (siehe Kopfkommentar). Inhalte bewusst konkret, basierend auf FG_AUSRUESTUNG und den
-   in früheren Gesprächen ermittelten Einstellungen. */
+   in früheren Gesprächen ermittelten Einstellungen. "kurzinfo" ist der kurze
+   Beschreibungstext auf der Kachel, unabhängig von den technischen Feldern formuliert. */
 function fgStartbestand(){
   return [
     {
-      id: neueId(), name: 'Milchstraße',
+      id: neueId(), name: 'Milchstraße (Shot)',
+      kurzinfo: 'Einzelaufnahme des galaktischen Zentrums mit Vordergrundmotiv',
       equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · Stativ mit L-Bracket · Fernauslöser/Timer',
       iso: '3200–6400', verschluss: '10–15s (NPF-Regel bei 14mm)',
       objektiv: 'Sony FE 14mm F1.8 GM', blende: 'f/1.8 (Offenblende)',
@@ -70,7 +71,20 @@ function fgStartbestand(){
       notizen: ''
     },
     {
-      id: neueId(), name: 'Sternspuren',
+      id: neueId(), name: 'Milchstraße (Timelapse)',
+      kurzinfo: 'Zeitrafferserie der wandernden Milchstraße über die Nacht',
+      equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · stabiles Stativ · Intervalltimer · optional Star Tracker/Slider, ausreichend Akku/Speicherkarte',
+      iso: '3200–6400 (über die ganze Serie konstant halten)', verschluss: '10–13s Einzelbelichtung, 1–2s Pause, mehrere hundert Bilder für 2–4 Std. Sequenz',
+      objektiv: 'Sony FE 14mm F1.8 GM', blende: 'f/1.8–2.0 (leicht abgeblendet für gleichmäßigere Schärfe über die Serie)',
+      ausrichtung: 'Süden, Querformat – Kern wandert im Bildverlauf von links nach rechts durchs Bild',
+      photopills: 'Zeitfenster mit Night AR planen, in dem der Kern gut im Ausschnitt bleibt. Akku-/Speicherkapazität für die Gesamtdauer vorab durchrechnen. Neumond-Nacht wählen.',
+      inspiration: 'Ruhiges, unbewegtes Vordergrundmotiv am Bildrand wählen, damit die Bewegung der Milchstraße den Kontrast bildet. Bei Star Tracker den Vordergrund separat unbewegt aufnehmen und später einblenden.',
+      bearbeitung: 'LRTimelapse zum Deflickern & Angleichen der Belichtung über die Serie · Lightroom-Grundentwicklung wie bei der Einzelaufnahme (WB, HSL, Kontrast) · Export als Bildsequenz, Zusammensetzen/Rendern z.B. in LRTimelapse oder Premiere.',
+      notizen: ''
+    },
+    {
+      id: neueId(), name: 'Star Trails',
+      kurzinfo: 'Konzentrische Sternspuren um den Polarstern, gestackt aus vielen Einzelbildern',
       equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · Stativ mit L-Bracket (Hochformat) · Intervalltimer',
       iso: '400–800', verschluss: '30s Belichtung, 31s Intervall, ca. 77 Bilder / 40 Min',
       objektiv: 'Sony FE 14mm F1.8 GM', blende: 'f/2.8–4 (abgeblendet für Schärfe)',
@@ -79,24 +93,38 @@ function fgStartbestand(){
       inspiration: 'Silhouette (Baum, Gebäude, Person) unter dem Polarstern platzieren, damit die Kreise einen klaren Mittelpunkt bekommen. Wolkenlücken oder Nebelschwaden geben zusätzliche Struktur.',
       bearbeitung: 'Vor dem Stacking: Star Trail CleanR gegen Flugzeug-/Satellitenspuren · Stacking mit StarStaX (Desktop) oder Star Stacker (iPad), Modus Lighten/Maximum · danach Lightroom: Kontrast & Klarheit leicht anheben, Vordergrund separat aufhellen.',
       notizen: ''
+    },
+    {
+      id: neueId(), name: 'Meteoriten',
+      kurzinfo: 'Weitwinklige Serienaufnahmen während eines Meteorschauer-Maximums',
+      equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · Stativ · Intervalltimer, ausreichend Speicherkarte/Akku für lange Serie',
+      iso: '3200–6400', verschluss: '10–15s Einzelbelichtung, minimale Pause, durchgehende Serie über mehrere Stunden',
+      objektiv: 'Sony FE 14mm F1.8 GM', blende: 'f/1.8 (Offenblende, für möglichst viele/schwache Meteore)',
+      ausrichtung: 'Radiant (Ursprungspunkt des Schauers) leicht versetzt im Bild, nicht mittig · Querformat für großes Sichtfeld',
+      photopills: 'Maximum-Zeitpunkt & Radiant-Position des Schauers prüfen (z.B. Perseiden Mitte August), Mondphase beachten (bei Vollmond kaum schwache Meteore sichtbar), dunklen Standort mit freiem Horizont wählen.',
+      inspiration: 'Landschaft oder markantes Vordergrundmotiv als Kontext mit ins Bild nehmen. Die hellsten Meteore erscheinen selten – Geduld einplanen und komplette Serie durchlaufen lassen, auch wenn einzelne Bilder leer bleiben.',
+      bearbeitung: 'Einzelbilder mit Meteorspur in Lightroom sichten und markieren · in Photoshop mehrere Bilder mit Meteoren im Modus "Aufhellen" (Lighten) übereinanderlegen für ein Bild mit mehreren Spuren · Himmel/Vordergrund wie bei der Milchstraßenaufnahme feinabstimmen (WB, HSL, Kontrast).',
+      notizen: ''
     }
   ];
 }
 
 let szenarien = safeParse(store.get(FG_KEYS.szenarien), null);
 if (!Array.isArray(szenarien)) szenarien = fgStartbestand();
-// Bestehende Speicherstände (vor Einführung des Notizen-Felds) nachrüsten.
-szenarien.forEach(s => { if (typeof s.notizen !== 'string') s.notizen = ''; });
+// Bestehende Speicherstände (vor Einführung von Notizen/Kurzinfo) nachrüsten.
+szenarien.forEach(s => {
+  if (typeof s.notizen !== 'string') s.notizen = '';
+  if (typeof s.kurzinfo !== 'string') s.kurzinfo = [s.objektiv, s.ausrichtung].filter(Boolean).join(' · ');
+});
 
 function fgPersist(){ store.set(FG_KEYS.szenarien, JSON.stringify(szenarien)); }
 
 /* ---------------- Liste (Bento-Grid, 2 pro Zeile) ---------------- */
 function fgTileHTML(s){
-  const kurz = [s.objektiv, s.ausrichtung].filter(Boolean).join(' · ');
   return `<div class="bento-tile" onclick="fgOpenDetail('${s.id}')">
-    <div class="bento-head"><span class="bento-title">Szenario</span></div>
+    <div class="bento-head"><span class="bento-title">Guides</span></div>
     <div class="bento-primary" style="font-size:1.05rem;white-space:normal;line-height:1.25">${esc(s.name)}</div>
-    ${kurz ? `<div class="bento-foot"><div style="font-size:0.74rem;color:var(--muted);line-height:1.4">${esc(kurz)}</div></div>` : ''}
+    ${s.kurzinfo ? `<div class="bento-foot"><div style="font-size:0.74rem;color:var(--muted);line-height:1.4">${esc(s.kurzinfo)}</div></div>` : ''}
   </div>`;
 }
 
@@ -332,18 +360,20 @@ function fgApplyBackup(text){
   const p = safeParse(text, null);
   if (!(p && Array.isArray(p.szenarien))) return false;
   szenarien = p.szenarien;
-  szenarien.forEach(s => { if (typeof s.notizen !== 'string') s.notizen = ''; });
+  szenarien.forEach(s => {
+    if (typeof s.notizen !== 'string') s.notizen = '';
+    if (typeof s.kurzinfo !== 'string') s.kurzinfo = [s.objektiv, s.ausrichtung].filter(Boolean).join(' · ');
+  });
   fgPersist();
   return true;
 }
 
 /* Kachel-Grafik: schlichte Kamera, reine Strich-Konstruktion passend zum uebrigen
    Kachel-Stil (wie bei Impfpass), keine Vorlage aus dem Netz. Farbe Violett.
-   viewBox eng um die Form geschnitten (wie bei Impfpass), damit die Grafik die
-   Kachel genauso ausfuellt wie bei den anderen Modulen, statt mit viel Leerraum
-   drumherum kleiner zu wirken. */
+   viewBox mit etwas Rand um die Form (statt eng zugeschnitten) und duennere Linie,
+   damit die Grafik sich in der Staerke besser neben den anderen Modulen einreiht. */
 function fgTileArt(){
-  return `<svg viewBox="15 27 90 76" preserveAspectRatio="xMidYMid meet" fill="none" stroke="var(--violet)" stroke-width="2.4"
+  return `<svg viewBox="6 19 108 92" preserveAspectRatio="xMidYMid meet" fill="none" stroke="var(--violet)" stroke-width="2.2"
        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <rect x="18" y="42" width="84" height="58" rx="12"/>
     <rect x="42" y="30" width="26" height="16" rx="4"/>
@@ -354,11 +384,11 @@ function fgTileArt(){
 }
 
 registerModule({
-  id: 'fotografie', name: 'Fotografie', tagline: 'Astro-Szenarien & Kalender', order: 4,
+  id: 'fotografie', name: 'Fotografie', tagline: 'Astro-Guides & Kalender', order: 4,
   keys: FG_KEYS,
   buildPayload: () => fgBuildBackupPayload(),
   applyBackup: (t) => fgApplyBackup(t),
-  restoreInfo: p => ((p && p.szenarien || []).length) + ' Szenario/Szenarien',
+  restoreInfo: p => ((p && p.szenarien || []).length) + ' Guide(s)',
   detect: p => !!(p && Array.isArray(p.szenarien)),
   init: () => { try { fgRender(); } catch(e){} },
   onOpen: () => { try { fgRender(); } catch(e){} },
@@ -367,12 +397,12 @@ registerModule({
       const art = fgTileArt();
       const heute = heuteBerlin();
       if (heute.getTime() > FG_KALENDER_ENDE.getTime())
-        return { sub: 'Guidelines & Kalender', value: szenarien.length, unit: szenarien.length === 1 ? 'Szenario' : 'Szenarien', note: 'angelegt', art };
+        return { sub: 'Guides & Kalender', value: szenarien.length, unit: szenarien.length === 1 ? 'Guide' : 'Guides', note: 'angelegt', art };
       const events = fgBaueKalender(heute, FG_KALENDER_ENDE);
-      if (!events.length) return { sub: 'Guidelines & Kalender', value: szenarien.length, unit: szenarien.length === 1 ? 'Szenario' : 'Szenarien', note: 'angelegt', art };
+      if (!events.length) return { sub: 'Guides & Kalender', value: szenarien.length, unit: szenarien.length === 1 ? 'Guide' : 'Guides', note: 'angelegt', art };
       const naechstes = events[0];
       const tage = Math.round((naechstes.datum - heute) / 86400000);
-      return { sub: 'Guidelines & Kalender', value: tage, unit: tage === 1 ? 'Tag' : 'Tage', note: naechstes.titel, art };
-    } catch(e) { return { sub: 'Guidelines & Kalender' }; }
+      return { sub: 'Guides & Kalender', value: tage, unit: tage === 1 ? 'Tag' : 'Tage', note: naechstes.titel, art };
+    } catch(e) { return { sub: 'Guides & Kalender' }; }
   }
 });
