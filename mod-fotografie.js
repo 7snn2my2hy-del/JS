@@ -10,9 +10,9 @@
       bewusst NICHT in der App, sondern hier im Gespräch direkt im Code
       (fgStartbestand) – die App zeigt sie nur an. Einzige Ausnahme: ein freies
       Notizen-Feld pro Guide, das in der App selbst editiert und gespeichert wird.
-      Liste als Bento-Grid (2 pro Zeile); jede Kachel zeigt Titel, ISO/Blende/Zeit auf
-      einen Blick und ein eigenes Wasserzeichen-Motiv (wie tt-map bei den
-      Reise-Kacheln), Antippen öffnet eine reine Leseansicht mit der vollständigen
+      Liste als Bento-Grid (2 pro Zeile); jede Kachel zeigt Titel, ein kleines
+      Icon-Badge oben rechts sowie ISO/Blende/Zeit unten (an den Kachelrand
+      angedockt), Antippen öffnet eine reine Leseansicht mit der vollständigen
       Kamera-Einstellungen-Zeilenliste (Label links, Wert rechts).
    2) Astro-Kalender – rein berechnete Ereignisse (Neumond/Milchstraße, Vollmond/
       Supermond, Meteorschauer, dazu die für 2026 bekannte Mondfinsternis und das
@@ -54,49 +54,23 @@ const FG_AUSRUESTUNG = {
   ]
 };
 
-/* ---------------- Kachel-Wasserzeichen ----------------
-   Eigene, selbst gebaute Illustration je Guide (kein Foto/Fremdmaterial), viewBox
-   0 0 120 120 wie fgTileArt(), wird ueber die vorhandene .tt-map-Regel im Kern als
-   grossflaechiges, transparentes Wasserzeichen HINTER dem Kartentext dargestellt
-   (gleiches Muster wie die Laendersilhouetten bei den Reise-Kacheln). */
-const FG_GUIDE_ART = {
-  'ms-shot': `<svg viewBox="0 0 120 120" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M4 58 Q60 6 116 58"/>
-    <path d="M2 104 L118 104"/>
-    <path d="M20 104 L20 78 L34 60 L48 78 L48 104"/>
-  </svg>`,
-  'ms-timelapse': `<svg viewBox="0 0 120 120" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M4 50 Q60 -2 116 50"/>
-    <path d="M8 66 Q60 20 112 66" stroke-dasharray="1 7" opacity="0.6"/>
-    <path d="M12 82 Q60 42 108 82" stroke-dasharray="1 7" opacity="0.35"/>
-    <path d="M2 104 L118 104"/>
-    <path d="M20 104 L20 86 L30 74 L40 86 L40 104"/>
-  </svg>`,
-  'ms-stacking': `<svg viewBox="0 0 120 120" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M4 50 Q60 2 116 50"/>
-    <path d="M4 62 Q60 14 116 62" opacity="0.55"/>
-    <path d="M4 74 Q60 26 116 74" opacity="0.3"/>
-    <path d="M2 104 L118 104"/>
-    <path d="M20 104 L20 86 L30 74 L40 86 L40 104"/>
-  </svg>`,
-  'star-trails': `<svg viewBox="0 0 120 120" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round">
-    <circle cx="88" cy="30" r="10"/>
-    <circle cx="88" cy="30" r="20"/>
-    <circle cx="88" cy="30" r="30"/>
-    <circle cx="88" cy="30" r="1.6" fill="var(--violet)" stroke="none"/>
-  </svg>`,
-  'meteoriten': `<svg viewBox="0 0 120 120" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round">
-    <circle cx="22" cy="18" r="2.2" fill="var(--violet)" stroke="none"/><path d="M22 18 L52 48"/>
-    <circle cx="76" cy="14" r="1.7" fill="var(--violet)" stroke="none"/><path d="M76 14 L98 36"/>
-    <circle cx="44" cy="66" r="1.9" fill="var(--violet)" stroke="none"/><path d="M44 66 L68 90"/>
-  </svg>`
+/* ---------------- Kachel-Icon ----------------
+   Kleines, festes Icon-Badge oben rechts in der Kachel (kein raumgreifendes
+   Wasserzeichen mehr) – eigene, selbst gebaute Glyphe je Guide, viewBox 0 0 24 24,
+   einfarbig Violett, feste Größe/Position unabhängig von Titel- oder Wertlänge. */
+const FG_GUIDE_ICON = {
+  'ms-shot': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 16 Q12 4 22 16"/></svg>',
+  'ms-timelapse': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 13 Q12 3 22 13"/><path d="M4 18 Q12 10 20 18" stroke-dasharray="1 4" opacity="0.6"/></svg>',
+  'ms-stacking': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 9 Q12 1 22 9"/><path d="M2 14 Q12 6 22 14" opacity="0.6"/><path d="M2 19 Q12 11 22 19" opacity="0.35"/></svg>',
+  'star-trails': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>',
+  'meteoriten': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="5" r="1.5" fill="currentColor" stroke="none"/><path d="M5 5 L13 13"/><circle cx="18" cy="7" r="1.2" fill="currentColor" stroke="none"/><path d="M18 7 L22 11"/></svg>'
 };
 
 /* ---------------- Daten ---------------- */
 const FG_KEYS = { szenarien: 'fg_szenarien_v1' };
 
 /* Kuratierter Bestand – Anlegen/Ändern/Löschen passiert hier im Code, nicht in der App
-   (siehe Kopfkommentar). "art" wählt das Wasserzeichen-Motiv (FG_GUIDE_ART). Die
+   (siehe Kopfkommentar). "art" wählt das Icon-Badge (FG_GUIDE_ICON). Die
    kachel*-Felder sind eigene, bewusst kurze Werte für die Kachel (ohne
    Zusatzerklärungen) – die ausführlichen Werte mit Kontext stehen in "einstellungen"
    für die Leseansicht. Reihenfolge dort: ISO, Blende, Verschlusszeit zuerst, danach
@@ -254,17 +228,16 @@ function fgKachelZeile(label, wert){
 }
 
 function fgTileHTML(s){
+  const icon = FG_GUIDE_ICON[s.art] || '';
   return `<div class="bento-tile" style="position:relative" onclick="fgOpenDetail('${s.id}')">
-    <div class="tt-map">${FG_GUIDE_ART[s.art] || ''}</div>
-    <div style="position:relative;z-index:1;display:flex;flex-direction:column;height:100%">
-      <div class="bento-head"><span class="bento-title">Guides</span></div>
-      <div class="bento-primary" style="font-size:1.05rem;white-space:normal;line-height:1.25">${esc(s.name)}</div>
-      <div class="bento-foot">
-        <div class="bento-list">
-          ${fgKachelZeile('ISO', s.kachelIso)}
-          ${fgKachelZeile('Blende', s.kachelBlende)}
-          ${fgKachelZeile('Zeit', s.kachelZeit)}
-        </div>
+    <span style="position:absolute;top:15px;right:16px;width:20px;height:20px;color:var(--violet);opacity:0.85">${icon}</span>
+    <div class="bento-head"><span class="bento-title">Guides</span></div>
+    <div class="bento-primary" style="font-size:1.05rem;white-space:normal;line-height:1.25;padding-right:26px">${esc(s.name)}</div>
+    <div class="bento-foot" style="margin-top:auto;padding-top:14px">
+      <div class="bento-list">
+        ${fgKachelZeile('ISO', s.kachelIso)}
+        ${fgKachelZeile('Blende', s.kachelBlende)}
+        ${fgKachelZeile('Zeit', s.kachelZeit)}
       </div>
     </div>
   </div>`;
