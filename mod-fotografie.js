@@ -1,19 +1,21 @@
 /* ================= BEREICH: FOTOGRAFIE =================
    Eigenständiges Modul. Optik und Bausteine kommen aus dem gemeinsamen Kern in
-   index.html (.bento/.bento-tile, .screen, .glass, .rt-row-Zeitleiste …) – dieses
-   Modul bringt keine eigene Gestaltung mit, nur eine Handvoll Farbwerte und kleine
-   selbst gebaute Icons für die Kalender-Marker, die es aus den vorhandenen
-   CSS-Variablen des Kerns schöpft.
+   index.html (.bento/.bento-tile, .tt-map-Wasserzeichen, .screen, .glass,
+   .rt-row-Zeitleiste …) – dieses Modul bringt keine eigene Gestaltung mit, nur eine
+   Handvoll Farbwerte und kleine selbst gebaute Icons/Illustrationen, die es aus den
+   vorhandenen CSS-Variablen des Kerns schöpft.
 
    Zwei Teile:
    1) Guides – kuratierte Aufnahme-Rezepte. Anlegen, Ändern und Löschen passiert
       bewusst NICHT in der App, sondern hier im Gespräch direkt im Code
       (fgStartbestand) – die App zeigt sie nur an. Einzige Ausnahme: ein freies
       Notizen-Feld pro Guide, das in der App selbst editiert und gespeichert wird.
-      Liste als Bento-Grid (2 pro Zeile), Antippen öffnet eine reine Leseansicht mit
-      den Kamera-Einstellungen als Zeilenliste (Label links, Wert rechts).
-   2) Astro-Kalender – rein berechnete Ereignisse (Neumond, Vollmond/Supermond,
-      Meteorschauer, dazu die für 2026 bekannte Mondfinsternis und das
+      Liste als Bento-Grid (2 pro Zeile); jede Kachel zeigt Titel, ISO/Blende/Zeit auf
+      einen Blick und ein eigenes Wasserzeichen-Motiv (wie tt-map bei den
+      Reise-Kacheln), Antippen öffnet eine reine Leseansicht mit der vollständigen
+      Kamera-Einstellungen-Zeilenliste (Label links, Wert rechts).
+   2) Astro-Kalender – rein berechnete Ereignisse (Neumond/Milchstraße, Vollmond/
+      Supermond, Meteorschauer, dazu die für 2026 bekannte Mondfinsternis und das
       Milchstraßenkern-Sichtbarkeitsfenster) bis zum 31.12.2026, mit kleinen
       Icon-Markern statt reinen Farbpunkten (wie Flug/Hotel/Ort bei Reisen). Es wird
       nichts gespeichert oder synchronisiert, nur bei jedem Öffnen ab "heute" neu
@@ -52,19 +54,58 @@ const FG_AUSRUESTUNG = {
   ]
 };
 
+/* ---------------- Kachel-Wasserzeichen ----------------
+   Eigene, selbst gebaute Illustration je Guide (kein Foto/Fremdmaterial), viewBox
+   0 0 120 120 wie fgTileArt(), wird ueber die vorhandene .tt-map-Regel im Kern als
+   grossflaechiges, transparentes Wasserzeichen HINTER dem Kartentext dargestellt
+   (gleiches Muster wie die Laendersilhouetten bei den Reise-Kacheln). */
+const FG_GUIDE_ART = {
+  'ms-shot': `<svg viewBox="0 0 120 120" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 58 Q60 6 116 58"/>
+    <path d="M2 104 L118 104"/>
+    <path d="M20 104 L20 78 L34 60 L48 78 L48 104"/>
+  </svg>`,
+  'ms-timelapse': `<svg viewBox="0 0 120 120" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 50 Q60 -2 116 50"/>
+    <path d="M8 66 Q60 20 112 66" stroke-dasharray="1 7" opacity="0.6"/>
+    <path d="M12 82 Q60 42 108 82" stroke-dasharray="1 7" opacity="0.35"/>
+    <path d="M2 104 L118 104"/>
+    <path d="M20 104 L20 86 L30 74 L40 86 L40 104"/>
+  </svg>`,
+  'ms-stacking': `<svg viewBox="0 0 120 120" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 50 Q60 2 116 50"/>
+    <path d="M4 62 Q60 14 116 62" opacity="0.55"/>
+    <path d="M4 74 Q60 26 116 74" opacity="0.3"/>
+    <path d="M2 104 L118 104"/>
+    <path d="M20 104 L20 86 L30 74 L40 86 L40 104"/>
+  </svg>`,
+  'star-trails': `<svg viewBox="0 0 120 120" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round">
+    <circle cx="88" cy="30" r="10"/>
+    <circle cx="88" cy="30" r="20"/>
+    <circle cx="88" cy="30" r="30"/>
+    <circle cx="88" cy="30" r="1.6" fill="var(--violet)" stroke="none"/>
+  </svg>`,
+  'meteoriten': `<svg viewBox="0 0 120 120" fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round">
+    <circle cx="22" cy="18" r="2.2" fill="var(--violet)" stroke="none"/><path d="M22 18 L52 48"/>
+    <circle cx="76" cy="14" r="1.7" fill="var(--violet)" stroke="none"/><path d="M76 14 L98 36"/>
+    <circle cx="44" cy="66" r="1.9" fill="var(--violet)" stroke="none"/><path d="M44 66 L68 90"/>
+  </svg>`
+};
+
 /* ---------------- Daten ---------------- */
 const FG_KEYS = { szenarien: 'fg_szenarien_v1' };
 
 /* Kuratierter Bestand – Anlegen/Ändern/Löschen passiert hier im Code, nicht in der App
-   (siehe Kopfkommentar). "kurzinfo" ist der kurze Beschreibungstext auf der Kachel.
-   "einstellungen" ist die Zeilenliste für den Abschnitt "Kamera-Einstellungen" in der
-   Leseansicht – bewusste Reihenfolge: ISO, Blende, Verschlusszeit zuerst, danach alle
-   weiteren motivrelevanten Einstellungen an Kamera und Objektiv. */
+   (siehe Kopfkommentar). "art" wählt das Wasserzeichen-Motiv (FG_GUIDE_ART). Die
+   kachel*-Felder sind eigene, bewusst kurze Werte für die Kachel (ohne
+   Zusatzerklärungen) – die ausführlichen Werte mit Kontext stehen in "einstellungen"
+   für die Leseansicht. Reihenfolge dort: ISO, Blende, Verschlusszeit zuerst, danach
+   alle weiteren motivrelevanten Einstellungen an Kamera und Objektiv. */
 function fgStartbestand(){
   return [
     {
-      id: neueId(), name: 'Milchstraße (Shot)',
-      kurzinfo: 'Einzelaufnahme des galaktischen Zentrums mit Vordergrundmotiv',
+      id: neueId(), name: 'Milchstraße (Shot)', art: 'ms-shot',
+      kachelIso: '3200–6400', kachelBlende: 'f/1.8', kachelZeit: '10–15s',
       equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · Stativ mit L-Bracket · Fernauslöser/Timer',
       einstellungen: [
         { label: 'ISO', wert: '3200–6400' },
@@ -86,8 +127,8 @@ function fgStartbestand(){
       notizen: ''
     },
     {
-      id: neueId(), name: 'Milchstraße (Timelapse)',
-      kurzinfo: 'Zeitrafferserie der wandernden Milchstraße über die Nacht',
+      id: neueId(), name: 'Milchstraße (Timelapse)', art: 'ms-timelapse',
+      kachelIso: '3200–6400', kachelBlende: 'f/1.8–2.0', kachelZeit: '10–13s',
       equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · stabiles Stativ · Intervalltimer · optional Star Tracker/Slider, ausreichend Akku/Speicherkarte',
       einstellungen: [
         { label: 'ISO', wert: '3200–6400 (über die ganze Serie konstant halten)' },
@@ -110,8 +151,8 @@ function fgStartbestand(){
       notizen: ''
     },
     {
-      id: neueId(), name: 'Milchstraße (Stacking)',
-      kurzinfo: 'Rauschreduzierte Milchstraße aus mehreren gestackten Belichtungen plus separatem Vordergrund',
+      id: neueId(), name: 'Milchstraße (Stacking)', art: 'ms-stacking',
+      kachelIso: '1600–3200', kachelBlende: 'f/1.8–2.0', kachelZeit: '10–15s',
       equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · Stativ mit L-Bracket · Fernauslöser/Timer',
       einstellungen: [
         { label: 'ISO (Himmel-Serie)', wert: '1600–3200 (niedriger als bei der Einzelaufnahme, das Stacking reduziert Rauschen)' },
@@ -135,8 +176,8 @@ function fgStartbestand(){
       notizen: ''
     },
     {
-      id: neueId(), name: 'Star Trails',
-      kurzinfo: 'Konzentrische Sternspuren um den Polarstern, gestackt aus vielen Einzelbildern',
+      id: neueId(), name: 'Star Trails', art: 'star-trails',
+      kachelIso: '400–800', kachelBlende: 'f/2.8–4', kachelZeit: '30s',
       equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · Stativ mit L-Bracket (Hochformat) · Intervalltimer',
       einstellungen: [
         { label: 'ISO', wert: '400–800' },
@@ -159,8 +200,8 @@ function fgStartbestand(){
       notizen: ''
     },
     {
-      id: neueId(), name: 'Meteoriten',
-      kurzinfo: 'Weitwinklige Serienaufnahmen während eines Meteorschauer-Maximums',
+      id: neueId(), name: 'Meteoriten', art: 'meteoriten',
+      kachelIso: '3200–6400', kachelBlende: 'f/1.8', kachelZeit: '10–15s',
       equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · Stativ · Intervalltimer, ausreichend Speicherkarte/Akku für lange Serie',
       einstellungen: [
         { label: 'ISO', wert: '3200–6400' },
@@ -187,10 +228,9 @@ function fgStartbestand(){
 
 let szenarien = safeParse(store.get(FG_KEYS.szenarien), null);
 if (!Array.isArray(szenarien)) szenarien = fgStartbestand();
-// Bestehende Speicherstände (vor Einführung von Notizen/Kurzinfo/Einstellungen-Liste) nachrüsten.
+// Bestehende Speicherstände (vor Einführung von Notizen/Einstellungen-Liste/Kachel-Werten) nachrüsten.
 szenarien.forEach(s => {
   if (typeof s.notizen !== 'string') s.notizen = '';
-  if (typeof s.kurzinfo !== 'string') s.kurzinfo = s.name || '';
   if (!Array.isArray(s.einstellungen)) {
     s.einstellungen = [
       s.iso ? { label: 'ISO', wert: s.iso } : null,
@@ -199,16 +239,34 @@ szenarien.forEach(s => {
       s.objektiv ? { label: 'Objektiv', wert: s.objektiv } : null
     ].filter(Boolean);
   }
+  if (!s.art) s.art = 'ms-shot';
+  if (!s.kachelIso) s.kachelIso = (s.einstellungen.find(z => z.label === 'ISO') || {}).wert || '';
+  if (!s.kachelBlende) s.kachelBlende = (s.einstellungen.find(z => z.label === 'Blende') || {}).wert || '';
+  if (!s.kachelZeit) s.kachelZeit = (s.einstellungen.find(z => z.label === 'Verschlusszeit') || {}).wert || '';
 });
 
 function fgPersist(){ store.set(FG_KEYS.szenarien, JSON.stringify(szenarien)); }
 
 /* ---------------- Liste (Bento-Grid, 2 pro Zeile) ---------------- */
+function fgKachelZeile(label, wert){
+  if (!wert) return '';
+  return `<div class="bento-list-row"><span class="bl">${esc(label)}</span><span class="bv">${esc(wert)}</span></div>`;
+}
+
 function fgTileHTML(s){
-  return `<div class="bento-tile" onclick="fgOpenDetail('${s.id}')">
-    <div class="bento-head"><span class="bento-title">Guides</span></div>
-    <div class="bento-primary" style="font-size:1.05rem;white-space:normal;line-height:1.25">${esc(s.name)}</div>
-    ${s.kurzinfo ? `<div class="bento-foot"><div style="font-size:0.74rem;color:var(--muted);line-height:1.4">${esc(s.kurzinfo)}</div></div>` : ''}
+  return `<div class="bento-tile" style="position:relative" onclick="fgOpenDetail('${s.id}')">
+    <div class="tt-map">${FG_GUIDE_ART[s.art] || ''}</div>
+    <div style="position:relative;z-index:1;display:flex;flex-direction:column;height:100%">
+      <div class="bento-head"><span class="bento-title">Guides</span></div>
+      <div class="bento-primary" style="font-size:1.05rem;white-space:normal;line-height:1.25">${esc(s.name)}</div>
+      <div class="bento-foot">
+        <div class="bento-list">
+          ${fgKachelZeile('ISO', s.kachelIso)}
+          ${fgKachelZeile('Blende', s.kachelBlende)}
+          ${fgKachelZeile('Zeit', s.kachelZeit)}
+        </div>
+      </div>
+    </div>
   </div>`;
 }
 
@@ -289,7 +347,9 @@ function fgSaveNotiz(){
    14. November 2016 (nächste reale Übereinstimmung: Supermond am 24.12.2026).
    Meteorschauer über feste, jährlich wiederkehrende Maxima-Daten. Mondfinsternis und
    Milchstraßenkern-Fenster sind feste, recherchierte Termine für 2026 – der Kalender
-   läuft bewusst nur bis Jahresende 2026 und müsste für 2027 erweitert werden. */
+   läuft bewusst nur bis Jahresende 2026 und müsste für 2027 erweitert werden.
+   Ein Neumond während der Milchstraßen-Saison (April–September) heißt direkt
+   "Milchstraße" statt "Neumond" – außerhalb der Saison bleibt es "Neumond". */
 
 const FG_KALENDER_ENDE = new Date(2026, 11, 31);   // 31. Dezember 2026 – bewusste Grenze, siehe oben
 
@@ -413,15 +473,18 @@ function fgFesteTermineZwischen(liste, startD, endD){
 
 function fgBaueKalender(startD, endD){
   const events = [];
-  fgNeumondeZwischen(startD, endD).forEach(d => events.push({
-    datum: d, typ: 'neumond', titel: 'Neumond',
-    notiz: fgIstMilchstrassenSaison(d) ? 'Dunkelster Himmel des Monats – idealer Termin für die Milchstraße' : 'Dunkelster Himmel des Monats'
-  }));
+  fgNeumondeZwischen(startD, endD).forEach(d => {
+    const saison = fgIstMilchstrassenSaison(d);
+    events.push({
+      datum: d, typ: 'neumond', titel: saison ? 'Milchstraße' : 'Neumond',
+      notiz: saison ? 'Dunkelster Himmel des Monats – idealer Termin für die Milchstraße' : 'Dunkelster Himmel des Monats'
+    });
+  });
   fgVollmondeZwischen(startD, endD).forEach(d => {
     const supermond = fgIstSupermond(d);
     events.push({
       datum: d, typ: supermond ? 'supermond' : 'vollmond', titel: supermond ? 'Supermond' : 'Vollmond',
-      notiz: supermond ? 'Vollmond nahe der Erdnähe – auffällig groß und hell' : 'Hellste Nacht des Monats – ungünstig für Milchstraße/Sternspuren'
+      notiz: supermond ? 'Vollmond nahe der Erdnähe – auffällig groß und hell' : 'Hellste Nacht des Monats – ungünstig für Sternspuren'
     });
   });
   fgMeteorschauerZwischen(startD, endD).forEach(e => events.push({
@@ -477,8 +540,8 @@ function fgApplyBackup(text){
   szenarien = p.szenarien;
   szenarien.forEach(s => {
     if (typeof s.notizen !== 'string') s.notizen = '';
-    if (typeof s.kurzinfo !== 'string') s.kurzinfo = s.name || '';
     if (!Array.isArray(s.einstellungen)) s.einstellungen = [];
+    if (!s.art) s.art = 'ms-shot';
   });
   fgPersist();
   return true;
