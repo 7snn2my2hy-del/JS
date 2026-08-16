@@ -29,7 +29,7 @@ document.getElementById('mod-fotografie').insertAdjacentHTML('beforeend', `
   <div id="fg-list"></div>
   <div class="empty" id="fg-empty" style="display:none">Noch keine Guides hinterlegt.</div>
 
-  <div style="height:1px;background:var(--stroke);margin:40px 0 4px"></div>
+  <div style="height:1px;background:var(--stroke);margin:28px 0"></div>
   <div class="section-label">Astro-Kalender</div>
   <div class="rt-list" id="fg-calendar"></div>
 </div>
