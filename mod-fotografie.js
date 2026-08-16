@@ -65,7 +65,11 @@ const FG_GUIDE_ICON = {
   'ms-stacking': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 9 Q12 1 22 9"/><path d="M2 14 Q12 6 22 14" opacity="0.6"/><path d="M2 19 Q12 11 22 19" opacity="0.35"/></svg>',
   'ms-panorama': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 15 Q12 5 22 15"/><rect x="3" y="8" width="18" height="11" rx="1" opacity="0.45"/><path d="M9 8 L9 19 M15 8 L15 19" opacity="0.45"/></svg>',
   'star-trails': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>',
-  'meteoriten': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="5" r="1.5" fill="currentColor" stroke="none"/><path d="M5 5 L13 13"/><circle cx="18" cy="7" r="1.2" fill="currentColor" stroke="none"/><path d="M18 7 L22 11"/></svg>'
+  'meteoriten': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="5" r="1.5" fill="currentColor" stroke="none"/><path d="M5 5 L13 13"/><circle cx="18" cy="7" r="1.2" fill="currentColor" stroke="none"/><path d="M18 7 L22 11"/></svg>',
+  'mond-detail': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="9" r="1.2" fill="currentColor" stroke="none"/><circle cx="14.5" cy="14" r="1.8" fill="currentColor" stroke="none"/><circle cx="15" cy="8" r="0.9" fill="currentColor" stroke="none"/></svg>',
+  'sonne-detail': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/><circle cx="10.5" cy="12.5" r="0.8" fill="currentColor" stroke="none"/></svg>',
+  'ms-vollbogen': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 15 Q12 2 23 15"/><path d="M6 10.6 L6 8.6M12 6.3 L12 4.3M18 10.6 L18 8.6" stroke-width="1.4" opacity="0.6"/></svg>',
+  'wildtiere-slowmo': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><ellipse cx="12" cy="16.5" rx="5.2" ry="4"/><circle cx="6.2" cy="8.2" r="1.6"/><circle cx="11.5" cy="5.5" r="1.6"/><circle cx="16.8" cy="6.6" r="1.6"/><circle cx="19.8" cy="10.6" r="1.4"/></svg>'
 };
 
 /* ---------------- Daten ---------------- */
@@ -76,7 +80,8 @@ const FG_KEYS = { szenarien: 'fg_szenarien_v1' };
    werden muss. */
 const FG_ZUBEHOER_BASIS = [
   'Objektivheizung/Taukappe', 'Rotlicht-Stirnlampe', 'Ersatzakkus',
-  'Klarsicht-/UV-Filter abnehmen (sonst Reflexionshalos um helle Sterne)'
+  'Klarsicht-/UV-Filter abnehmen (sonst Reflexionshalos um helle Sterne)',
+  'SD-Karte UHS-II V60 oder schneller – 33MP-RAW beläuft sich auf gut 60–70 MB je Bild'
 ];
 
 /* Die "Einmalig im Menü"-Gruppe ist bei fast allen Guides identisch – als Funktion,
@@ -109,12 +114,12 @@ function fgStartbestand(){
     {
       id: neueId(), name: 'Milchstraße (Shot)', art: 'ms-shot',
       kachelIso: '3200–6400', kachelBlende: 'f/1.8', kachelZeit: '10–15s',
-      equipment: ['Sony α7V', 'Sony FE 14mm F1.8 GM', 'Stativ', 'Fernauslöser/Timer', ...FG_ZUBEHOER_BASIS],
+      equipment: ['Sony α7V', 'Sony FE 14mm F1.8 GM', 'Stativ mit Kugelkopf', 'Fernauslöser/Timer', ...FG_ZUBEHOER_BASIS],
       einstellungen: [
         { titel: 'Aufnahme', zeilen: [
           { label: 'Modus', wert: 'Manuell (M)' },
           { label: 'ISO', wert: '3200–6400' },
-          { label: 'Blende', wert: 'f/1.8 (Offenblende)' },
+          { label: 'Blende', wert: 'f/1.8 (Offenblende) – auf f/2.0 abblenden, falls Koma an den Bildrändern sichtbar wird' },
           { label: 'Verschlusszeit', wert: '10–15s (NPF-Regel bei 14mm)' },
           { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
           { label: 'Fokus', wert: 'Manuell, auf ∞ bzw. hellen Stern per Fokuslupe + Peaking – nach Temperaturwechsel erneut prüfen' }
@@ -139,7 +144,7 @@ function fgStartbestand(){
     {
       id: neueId(), name: 'Milchstraße (Timelapse)', art: 'ms-timelapse',
       kachelIso: '3200–6400', kachelBlende: 'f/1.8–2.0', kachelZeit: '10–13s',
-      equipment: ['Sony α7V', 'Sony FE 14mm F1.8 GM', 'stabiles Stativ', 'Intervalltimer', 'ausreichend Akku/Speicherkarte', ...FG_ZUBEHOER_BASIS],
+      equipment: ['Sony α7V', 'Sony FE 14mm F1.8 GM', 'Stabiles Stativ mit Kugelkopf', 'Intervalltimer', 'Große Karte: 300 Bilder ≈ 20 GB, für eine ganze Nacht 128 GB einplanen', ...FG_ZUBEHOER_BASIS],
       einstellungen: [
         { titel: 'Aufnahme', zeilen: [
           { label: 'Modus', wert: 'Manuell (M)' },
@@ -175,7 +180,7 @@ function fgStartbestand(){
     {
       id: neueId(), name: 'Milchstraße (Stacking)', art: 'ms-stacking',
       kachelIso: '1600–3200', kachelBlende: 'f/1.8–2.0', kachelZeit: '10–15s',
-      equipment: ['Sony α7V', 'Sony FE 14mm F1.8 GM', 'Stativ', 'Fernauslöser/Timer', ...FG_ZUBEHOER_BASIS],
+      equipment: ['Sony α7V', 'Sony FE 14mm F1.8 GM', 'Stativ mit Kugelkopf', 'Fernauslöser/Timer', ...FG_ZUBEHOER_BASIS],
       einstellungen: [
         { titel: 'Aufnahme', zeilen: [
           { label: 'Modus', wert: 'Manuell (M)' },
@@ -209,7 +214,7 @@ function fgStartbestand(){
     {
       id: neueId(), name: 'Milchstraße (Panorama)', art: 'ms-panorama',
       kachelIso: '1600–3200', kachelBlende: 'f/1.8–2.0', kachelZeit: '8–13s',
-      equipment: ['Sony α7V', 'Sony FE 35mm F1.4 GM', 'Stativ mit Nivellierbasis und gerastetem Kopf', 'L-Bracket', 'Fernauslöser/Timer', ...FG_ZUBEHOER_BASIS],
+      equipment: ['Sony α7V', 'Sony FE 35mm F1.4 GM', 'Stativ mit Nivellierbasis und Nodalpunkt-Kopf', 'L-Bracket', 'Fernauslöser/Timer', ...FG_ZUBEHOER_BASIS],
       einstellungen: [
         { titel: 'Aufnahme', zeilen: [
           { label: 'Modus', wert: 'Manuell (M)' },
@@ -244,14 +249,14 @@ function fgStartbestand(){
     },
     {
       id: neueId(), name: 'Star Trails', art: 'star-trails',
-      kachelIso: '400–800', kachelBlende: 'f/2.8–4', kachelZeit: '30s',
-      equipment: ['Sony α7V', 'Sony FE 14mm F1.8 GM', 'Stativ mit L-Bracket (Hochformat)', 'Intervalltimer', ...FG_ZUBEHOER_BASIS],
+      kachelIso: '400–800', kachelBlende: 'f/2.8–4', kachelZeit: '30s × 1–3 Std.',
+      equipment: ['Sony α7V', 'Sony FE 14mm F1.8 GM', 'Stativ mit Kugelkopf und L-Bracket (Hochformat)', 'Intervalltimer', ...FG_ZUBEHOER_BASIS],
       einstellungen: [
         { titel: 'Aufnahme', zeilen: [
           { label: 'Modus', wert: 'Manuell (M)' },
           { label: 'ISO', wert: '400–800' },
           { label: 'Blende', wert: 'f/2.8–4 (abgeblendet für Schärfe)' },
-          { label: 'Verschlusszeit', wert: '30s Belichtung, 31s Intervall, ca. 77 Bilder / 40 Min' },
+          { label: 'Verschlusszeit', wert: '30s Belichtung, 33s Intervall (3s Speicherpuffer) – Minimum 30 Min, ideal 1–3 Std. Bei 2 Std. rund 220 Bilder' },
           { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
           { label: 'Fokus', wert: 'Manuell, auf ∞ – per Fokuslupe + Peaking, nach Temperaturwechsel erneut prüfen' }
         ]},
@@ -263,7 +268,7 @@ function fgStartbestand(){
                   g.zeilen[4] = { label: 'Langzeit-Rauschunterdrückung', wert: 'Zwingend Aus (sonst Lücken zwischen den Trails durch Verarbeitungspause)' };
                   return g; })(),
         { titel: 'Workflow', zeilen: [
-          { label: 'Intervall-Hinweis', wert: 'Die Sony-Intervallfunktion misst von Start zu Start, nicht ab Belichtungsende' },
+          { label: 'Intervall-Hinweis', wert: 'Die Sony-Intervallfunktion misst von Start zu Start, nicht ab Belichtungsende – mind. 3s Puffer einplanen, sonst Lücken in den Spuren' },
           { label: 'Dark Frames', wert: '5–10 Aufnahmen mit aufgesetztem Objektivdeckel bei identischen Werten am Session-Ende' }
         ]}
       ],
@@ -281,12 +286,12 @@ function fgStartbestand(){
     {
       id: neueId(), name: 'Meteoriten', art: 'meteoriten',
       kachelIso: '3200–6400', kachelBlende: 'f/1.8', kachelZeit: '10–15s',
-      equipment: ['Sony α7V', 'Sony FE 14mm F1.8 GM', 'Stativ', 'Intervalltimer', 'ausreichend Speicherkarte/Akku für lange Serie', ...FG_ZUBEHOER_BASIS],
+      equipment: ['Sony α7V', 'Sony FE 14mm F1.8 GM', 'Stativ mit Kugelkopf', 'Intervalltimer', 'Große Karte: durchgehende Nachtserie kommt schnell auf 60–100 GB', ...FG_ZUBEHOER_BASIS],
       einstellungen: [
         { titel: 'Aufnahme', zeilen: [
           { label: 'Modus', wert: 'Manuell (M)' },
           { label: 'ISO', wert: '3200–6400' },
-          { label: 'Blende', wert: 'f/1.8 (Offenblende, für möglichst viele/schwache Meteore)' },
+          { label: 'Blende', wert: 'f/1.8 (Offenblende, für möglichst viele/schwache Meteore) – auf f/2.0 abblenden bei sichtbarer Koma' },
           { label: 'Verschlusszeit', wert: '10–15s Einzelbelichtung, minimale Pause' },
           { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
           { label: 'Fokus', wert: 'Manuell, auf ∞ – per Fokuslupe + Peaking, nach Temperaturwechsel erneut prüfen' }
@@ -306,6 +311,172 @@ function fgStartbestand(){
         'Hellste Treffer hinterher als Bonus-Shots markieren'
       ],
       bearbeitung: ['Lightroom', 'Photoshop'],
+      notizen: ''
+    },
+    {
+      id: neueId(), name: 'Mond (Detail)', art: 'mond-detail',
+      kachelIso: '100–200', kachelBlende: 'f/8', kachelZeit: '1/125–1/250s',
+      equipment: ['Sony α7V', 'Sony FE 200–600mm F5.6–6.3 G', 'Stabiles Stativ mit Gimbalkopf', 'Fernauslöser/Timer', ...FG_ZUBEHOER_BASIS],
+      einstellungen: [
+        { titel: 'Aufnahme', zeilen: [
+          { label: 'Modus', wert: 'Manuell (M)' },
+          { label: 'ISO', wert: '100–200' },
+          { label: 'Blende', wert: 'f/8 (Schärfe-Sweet-Spot des Objektivs)' },
+          { label: 'Verschlusszeit', wert: '1/125–1/250s als Startwert, per Histogramm anpassen (entspricht der Looney-11-Regel f/11 bei 1/ISO, hier auf f/8 umgerechnet)' },
+          { label: 'Objektiv', wert: 'Sony FE 200–600mm F5.6–6.3 G' },
+          { label: 'Fokus', wert: 'Manuell, per Fokuslupe direkt auf Kraterkante bzw. Terminator scharfstellen' }
+        ]},
+        { titel: 'Farbe & Format', zeilen: [
+          { label: 'Weißabgleich', wert: 'Tageslicht bzw. fest (nicht Auto)' },
+          { label: 'Dateiformat', wert: 'RAW (verlustfrei komprimiert)' }
+        ]},
+        { titel: 'Einmalig im Menü', zeilen: [
+          { label: 'AF/MF-Schalter', wert: 'Am Objektiv auf MF (nicht nur im Menü)' },
+          { label: 'Verschluss', wert: 'Elektronisch' },
+          { label: 'SteadyShot', wert: 'Aus (Stativbetrieb)' },
+          { label: 'Serienbildmodus', wert: 'Hohe Geschwindigkeit (für die Lucky-Imaging-Serie)' },
+          { label: 'Energiesparen', wert: 'Auto-Ausschaltzeit aus' }
+        ]},
+        { titel: 'Workflow', zeilen: [
+          { label: 'Serienaufnahme', wert: '50–100 Bilder als Burst für Stacking (Lucky Imaging gegen Luftunruhe) – schnelle Karte (V90/CFexpress) leert den Puffer spürbar zügiger' },
+          { label: 'Zeitpunkt', wert: 'Mond möglichst hoch am Himmel, ruhige Luft (gutes Seeing) – nicht bei Vollmond (flaches Licht ohne Schattenrelief)' }
+        ]}
+      ],
+      ausrichtung: 'Position wechselt mit Datum/Uhrzeit – vorher per Kompass-App/Stellarium prüfen, Kamera folgt der Bewegung nach',
+      komposition: [
+        'Terminator (Licht-Schatten-Grenze) für Reliefeffekt nutzen, nicht bei Vollmond fotografieren',
+        'Bekannte Krater wie Tycho oder Copernicus am Terminator gezielt anvisieren',
+        'Ausschnitt statt ganzer Mondscheibe für mehr Detail',
+        'Verschiedene Mondphasen über mehrere Nächte vergleichen',
+        'Bei schmaler Sichel optional das Erdlicht mit einfangen (deutlich längere Belichtung, separater Ansatz)'
+      ],
+      bearbeitung: ['AutoStakkert', 'Registax', 'Lightroom'],
+      notizen: ''
+    },
+    {
+      id: neueId(), name: 'Sonne (Detail)', art: 'sonne-detail',
+      kachelIso: '100', kachelBlende: 'f/8', kachelZeit: '1/500–1/2000s',
+      equipment: [
+        'Sony α7V', 'Sony FE 200–600mm F5.6–6.3 G', 'Stabiles Stativ mit Gimbalkopf', 'Fernauslöser/Timer',
+        'Sonnenfilter ND ≈100.000 (z.B. Baader AstroSolar) – noch zu besorgen, zwingend vor jeder Nutzung',
+        'Objektivdeckel griffbereit als Sofortschutz beim Filterwechsel'
+      ],
+      einstellungen: [
+        { titel: 'Aufnahme', zeilen: [
+          { label: 'Modus', wert: 'Manuell (M)' },
+          { label: 'ISO', wert: '100' },
+          { label: 'Blende', wert: 'f/8–11 (Schärfe-Sweet-Spot) – ab f/16 Beugungsunschärfe' },
+          { label: 'Verschlusszeit', wert: '1/125–1/500s als Startwert bei ND-5.0-Folie, je nach Filterdichte per Histogramm anpassen' },
+          { label: 'Objektiv', wert: 'Sony FE 200–600mm F5.6–6.3 G' },
+          { label: 'Fokus', wert: 'Manuell, per Fokuslupe auf Sonnenrand oder Fleckengruppe scharfstellen' }
+        ]},
+        { titel: 'Farbe & Format', zeilen: [
+          { label: 'Weißabgleich', wert: 'Tageslicht bzw. fest (nicht Auto)' },
+          { label: 'Dateiformat', wert: 'RAW (verlustfrei komprimiert)' }
+        ]},
+        { titel: 'Einmalig im Menü', zeilen: [
+          { label: 'AF/MF-Schalter', wert: 'Am Objektiv auf MF (nicht nur im Menü)' },
+          { label: 'Verschluss', wert: 'Elektronisch' },
+          { label: 'SteadyShot', wert: 'Aus (Stativbetrieb)' },
+          { label: 'Serienbildmodus', wert: 'Hohe Geschwindigkeit (für die Lucky-Imaging-Serie)' },
+          { label: 'Energiesparen', wert: 'Auto-Ausschaltzeit aus' }
+        ]},
+        { titel: 'Workflow', zeilen: [
+          { label: 'Augenschutz', wert: 'Sonnenfinsternisbrille nach Norm ISO 12312-2 tragen – niemals ungeschützt in die Sonne blicken, auch nicht kurz. Selbst mit Brille NIE durch ungefilterte Optik schauen: das gebündelte Licht überfordert die Brille' },
+          { label: 'Kameraschutz', wert: 'Zertifizierten Sonnenfilter fest vor der Frontlinse prüfen, BEVOR die Kamera auf die Sonne gerichtet wird – ohne Filter brennt das Licht binnen Sekunden durch den Sensor' },
+          { label: 'Fokus fixieren', wert: 'Fokusring nach dem Scharfstellen mit Tape fixieren – verrutscht sonst beim Nachführen' },
+          { label: 'Serienaufnahme', wert: '50–100 Bilder als Burst für Stacking – schnelle Karte (V90/CFexpress) leert den Puffer spürbar zügiger' },
+          { label: 'Vorbereitung', wert: 'Aktive Fleckenregionen vorab online prüfen (z.B. spaceweather.com)' }
+        ]}
+      ],
+      ausrichtung: 'Position wechselt mit Datum/Uhrzeit – vorher per Kompass-App/Stellarium prüfen, Kamera folgt der Bewegung nach',
+      komposition: [
+        'Aktive Sonnenfleckenregionen gezielt anvisieren',
+        'Sonnenrand (Limb) mit feinen Strukturen einfangen',
+        'Ausschnitt statt ganzer Sonnenscheibe für mehr Detail',
+        'Ruhige Luftschichten am späten Vormittag/frühen Nachmittag nutzen',
+        'Mehrere Tage vergleichen, um die Sonnenrotation/Fleckenwanderung zu zeigen'
+      ],
+      bearbeitung: ['AutoStakkert', 'Registax', 'Lightroom'],
+      notizen: ''
+    },
+    {
+      id: neueId(), name: 'Milchstraße (Vollbogen)', art: 'ms-vollbogen',
+      kachelIso: '3200–6400', kachelBlende: 'f/1.8', kachelZeit: '10–15s',
+      equipment: ['Sony α7V', 'Sony FE 14mm F1.8 GM', 'Stativ mit Nivellierbasis und Nodalpunkt-Kopf', 'Fernauslöser/Timer', ...FG_ZUBEHOER_BASIS],
+      einstellungen: [
+        { titel: 'Aufnahme', zeilen: [
+          { label: 'Modus', wert: 'Manuell (M)' },
+          { label: 'ISO', wert: '3200–6400' },
+          { label: 'Blende', wert: 'f/1.8 (Offenblende) – auf f/2.0 abblenden, falls Koma an den Bildrändern sichtbar wird' },
+          { label: 'Verschlusszeit', wert: '10–15s (NPF-Regel bei 14mm)' },
+          { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
+          { label: 'Raster', wert: '5–7 Segmente in einer Reihe, horizontal geschwenkt, ca. 25–30% Überlappung' },
+          { label: 'Fokus', wert: 'Manuell, auf ∞ – über alle Segmente identisch lassen, per Fokuslupe + Peaking, nach Temperaturwechsel erneut prüfen' }
+        ]},
+        { titel: 'Farbe & Format', zeilen: [
+          { label: 'Weißabgleich', wert: 'Fest einstellen (nicht Auto) – sonst driften die Segmente auseinander' },
+          { label: 'Dateiformat', wert: 'RAW (verlustfrei komprimiert)' }
+        ]},
+        fgMenuGruppe('Aus (Akku für die vielen Segmente schonen)'),
+        { titel: 'Workflow', zeilen: [
+          { label: 'Nivellierung', wert: 'Horizontlinie über alle Segmente auf gleicher Höhe halten – Nivellierbasis vorher justieren' },
+          { label: 'Wetter', wert: 'Nur bei durchgehend klarem Himmel aufnehmen – eine Wolke in einem Segment stört das ganze Panorama' }
+        ]}
+      ],
+      ausrichtung: 'Süden bis Südosten, Querformat – Kamera horizontal von einem Ende des Bogens zum anderen schwenken',
+      komposition: [
+        'Horizontlinie über alle Segmente gleich halten',
+        'Bogen mittig im Panorama zentrieren',
+        'Markante Silhouette am Fußpunkt des Bogens platzieren',
+        'Genug Überlappung für sauberes Stitching einplanen',
+        'Nur bei komplett klarem Himmel – eine Wolke ruiniert das ganze Panorama'
+      ],
+      bearbeitung: ['PTGui', 'Lightroom'],
+      notizen: ''
+    },
+    {
+      id: neueId(), name: 'Wildtiere (Slowmo)', art: 'wildtiere-slowmo',
+      kachelIso: 'Auto', kachelBlende: 'f/5.6–8', kachelZeit: '1/240s',
+      equipment: [
+        'Sony α7V', 'Sony FE 200–600mm F5.6–6.3 G', 'CFexpress Type A (VPG200) bzw. SD UHS-II V90 – 4K120p in 10-bit 4:2:2 braucht dauerhaft hohe Schreibrate, langsamere Karten brechen die Aufnahme ab',
+        'Ersatzakkus', 'Fahrzeug-Fensterauflage/Beanbag (im Fahrzeug) bzw. Monopod mit Fluid-Videokopf (zu Fuß/Hide) – klassisches Stativ bei sich bewegenden Tieren meist unpraktisch'
+      ],
+      einstellungen: [
+        { titel: 'Aufnahme', zeilen: [
+          { label: 'Modus', wert: 'Video S&Q' },
+          { label: 'Bildrate', wert: '4K 120p (5-fache Zeitlupe) oder FHD 240p (10-fache, weniger Auflösung)' },
+          { label: 'Blende', wert: 'f/5.6–8' },
+          { label: 'Verschlusszeit', wert: '180°-Regel – bei 120fps 1/240s, bei 240fps 1/480s' },
+          { label: 'ISO', wert: 'Auto mit Obergrenze (tagsüber meist niedrig)' },
+          { label: 'Objektiv', wert: 'Sony FE 200–600mm F5.6–6.3 G' },
+          { label: 'Fokus', wert: 'AF-C mit Tier-Motiverkennung (Real-time Recognition AF) – viele Kameras versagen bei 120fps beim AF; im Zweifel etwas abblenden für mehr Schärfentiefe' }
+        ]},
+        { titel: 'Farbe & Format', zeilen: [
+          { label: 'Farbprofil', wert: 'S-Cinetone (einfacher zu graden) bzw. S-Log3 (mehr Grading-Spielraum)' },
+          { label: 'Dateiformat', wert: 'XAVC HS 10-bit 4:2:2' }
+        ]},
+        { titel: 'Einmalig im Menü', zeilen: [
+          { label: 'Motiverkennung', wert: 'Tiere/Vögel aktivieren' },
+          { label: 'SteadyShot', wert: 'Active Mode' },
+          { label: 'Kartenkapazität', wert: 'Vorher prüfen – hohe Datenrate bei 120p' },
+          { label: 'Wind-Rauschunterdrückung', wert: 'Ein (falls Ton relevant)' }
+        ]},
+        { titel: 'Workflow', zeilen: [
+          { label: 'Cliplänge', wert: 'Deutlich länger filmen als gedacht – Zeitlupe „frisst“ Sekunden' },
+          { label: 'Vibration', wert: 'Motor/Fahrzeug wenn möglich aus' },
+          { label: 'Puffer', wert: 'Vor und nach der Aktion mitfilmen' }
+        ]}
+      ],
+      ausrichtung: 'Position folgt dem Tier – auf Fluchtdistanz und Windrichtung achten (Wind nicht zum Tier hin tragen)',
+      komposition: [
+        'Raum in Blickrichtung des Tieres lassen (Headroom in Bewegungsrichtung)',
+        'Auf Actionmomente warten (Sprung, Angriff, Rennen) statt Dauerfilmen',
+        'Augenhöhe des Tieres anstreben für Wirkung',
+        'Erst Kontext einfangen, dann näher für Detail',
+        'Mehrere kurze Clips statt einem langen für Schnittvarianz'
+      ],
+      bearbeitung: ['DaVinci Resolve', 'Premiere Pro'],
       notizen: ''
     }
   ];
