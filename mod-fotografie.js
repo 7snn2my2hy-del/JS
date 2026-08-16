@@ -1,19 +1,19 @@
 /* ================= BEREICH: FOTOGRAFIE =================
    Eigenständiges Modul. Optik und Bausteine kommen aus dem gemeinsamen Kern in
-   index.html (.bento/.bento-tile, .tt-map-Wasserzeichen, .screen, .glass,
-   .rt-row-Zeitleiste …) – dieses Modul bringt keine eigene Gestaltung mit, nur eine
-   Handvoll Farbwerte und kleine selbst gebaute Icons/Illustrationen, die es aus den
-   vorhandenen CSS-Variablen des Kerns schöpft.
+   index.html (.bento/.bento-tile, .screen, .glass, .rt-row-Zeitleiste …) – dieses
+   Modul bringt keine eigene Gestaltung mit, nur eine Handvoll Farbwerte und kleine
+   selbst gebaute Icons, die es aus den vorhandenen CSS-Variablen des Kerns schöpft.
 
    Zwei Teile:
    1) Guides – kuratierte Aufnahme-Rezepte. Anlegen, Ändern und Löschen passiert
       bewusst NICHT in der App, sondern hier im Gespräch direkt im Code
       (fgStartbestand) – die App zeigt sie nur an. Einzige Ausnahme: ein freies
       Notizen-Feld pro Guide, das in der App selbst editiert und gespeichert wird.
-      Liste als Bento-Grid (2 pro Zeile); jede Kachel zeigt Titel, ein kleines
-      Icon-Badge oben rechts sowie ISO/Blende/Zeit unten (an den Kachelrand
-      angedockt), Antippen öffnet eine reine Leseansicht mit der vollständigen
-      Kamera-Einstellungen-Zeilenliste (Label links, Wert rechts).
+      Liste als Bento-Grid (2 pro Zeile); jede Kachel zeigt Titel, ISO/Blende/Zeit auf
+      einen Blick und ein kleines Icon-Badge oben rechts. Antippen öffnet eine reine
+      Leseansicht: Ausrüstung, Komposition und Bearbeitung als Listen, die
+      Kamera-Einstellungen als Zeilenliste in vier Gruppen (Aufnahme, Farbe & Format,
+      Einmalig im Menü, Workflow) mit optischer Trennung dazwischen.
    2) Astro-Kalender – rein berechnete Ereignisse (Neumond/Milchstraße, Vollmond/
       Supermond, Meteorschauer, dazu die für 2026 bekannte Mondfinsternis und das
       Milchstraßenkern-Sichtbarkeitsfenster) bis zum 31.12.2026, mit kleinen
@@ -29,7 +29,8 @@ document.getElementById('mod-fotografie').insertAdjacentHTML('beforeend', `
   <div id="fg-list"></div>
   <div class="empty" id="fg-empty" style="display:none">Noch keine Guides hinterlegt.</div>
 
-  <div class="section-label spaced">Astro-Kalender</div>
+  <div style="height:1px;background:var(--stroke);margin:40px 0 4px"></div>
+  <div class="section-label">Astro-Kalender</div>
   <div class="rt-list" id="fg-calendar"></div>
 </div>
 
@@ -55,9 +56,9 @@ const FG_AUSRUESTUNG = {
 };
 
 /* ---------------- Kachel-Icon ----------------
-   Kleines, festes Icon-Badge oben rechts in der Kachel (kein raumgreifendes
-   Wasserzeichen mehr) – eigene, selbst gebaute Glyphe je Guide, viewBox 0 0 24 24,
-   einfarbig Violett, feste Größe/Position unabhängig von Titel- oder Wertlänge. */
+   Kleines, festes Icon-Badge oben rechts in der Kachel – eigene, selbst gebaute
+   Glyphe je Guide, viewBox 0 0 24 24, einfarbig Violett, feste Größe/Position
+   unabhängig von Titel- oder Wertlänge. */
 const FG_GUIDE_ICON = {
   'ms-shot': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 16 Q12 4 22 16"/></svg>',
   'ms-timelapse': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 13 Q12 3 22 13"/><path d="M4 18 Q12 10 20 18" stroke-dasharray="1 4" opacity="0.6"/></svg>',
@@ -70,207 +71,241 @@ const FG_GUIDE_ICON = {
 /* ---------------- Daten ---------------- */
 const FG_KEYS = { szenarien: 'fg_szenarien_v1' };
 
-/* Kuratierter Bestand – Anlegen/Ändern/Löschen passiert hier im Code, nicht in der App
-   (siehe Kopfkommentar). "art" wählt das Icon-Badge (FG_GUIDE_ICON). Die
-   kachel*-Felder sind eigene, bewusst kurze Werte für die Kachel (ohne
-   Zusatzerklärungen) – die ausführlichen Werte mit Kontext stehen in "einstellungen"
-   für die Leseansicht. Reihenfolge dort: ISO, Blende, Verschlusszeit zuerst, danach
-   alle weiteren motivrelevanten Einstellungen an Kamera und Objektiv. */
+/* Gemeinsame Basis-Ausrüstung, die bei jedem Guide zusätzlich zu Kamera/Objektiv/
+   Stativ dazukommt – separat gehalten, damit sie nicht in jedem Guide neu getippt
+   werden muss. */
+const FG_ZUBEHOER_BASIS = [
+  'Objektivheizung/Taukappe', 'Rotlicht-Stirnlampe', 'Ersatzakkus',
+  'Klarsicht-/UV-Filter abnehmen (sonst Reflexionshalos um helle Sterne)'
+];
+
+/* Die "Einmalig im Menü"-Gruppe ist bei fast allen Guides identisch – als Funktion,
+   damit sie nicht sechsmal dupliziert werden muss. bildwiedergabeHinweis ist bei
+   Serienaufnahmen gesetzt (Akku sparen), bei der Einzelaufnahme leer. */
+function fgMenuGruppe(bildwiedergabeHinweis){
+  const zeilen = [
+    { label: 'AF/MF-Schalter', wert: 'Am Objektiv auf MF (nicht nur im Menü)' },
+    { label: 'Blendenring', wert: 'Bewusst gesetzt bzw. auf A' },
+    { label: 'Verschluss', wert: 'Elektronisch' },
+    { label: 'SteadyShot', wert: 'Aus' },
+    { label: 'Langzeit-Rauschunterdrückung', wert: 'Aus' },
+    { label: 'Hohe-ISO-Rauschminderung', wert: 'Aus bzw. Niedrig' },
+    { label: 'Helle Überwachung', wert: 'Auf Custom-Taste legen – macht das Bildfeld nachts im Live-View sichtbar' },
+    { label: 'Energiesparen', wert: 'Auto-Ausschaltzeit aus' },
+    { label: 'Displayhelligkeit', wert: 'Runter (Nachtsicht erhalten)' },
+    { label: 'Sensorreinigung beim Ausschalten', wert: 'Aus' }
+  ];
+  if (bildwiedergabeHinweis) zeilen.push({ label: 'Bildwiedergabe', wert: bildwiedergabeHinweis });
+  return { titel: 'Einmalig im Menü', zeilen };
+}
+
+/* Kuratierter Bestand – Anlegen/Ändern/Löschen passiert hier im Code, nicht in der
+   App (siehe Kopfkommentar). "einstellungen" ist eine Liste von Gruppen
+   { titel, zeilen:[{label,wert}] } für die Leseansicht, in fester Reihenfolge:
+   Aufnahme (Modus/ISO/Blende/Zeit/Objektiv/Fokus zuerst), Farbe & Format,
+   Einmalig im Menü, Workflow (nur wo relevant, z.B. Dark Frames). */
 function fgStartbestand(){
   return [
     {
       id: neueId(), name: 'Milchstraße (Shot)', art: 'ms-shot',
       kachelIso: '3200–6400', kachelBlende: 'f/1.8', kachelZeit: '10–15s',
-      equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · Stativ mit L-Bracket · Fernauslöser/Timer · Objektivheizung/Taukappe · Rotlicht-Stirnlampe · Ersatzakkus · Klarsicht-/UV-Filter abnehmen (sonst Reflexionshalos um helle Sterne) · Stativ-Mittelsäule nicht ausfahren, Tasche als Ballast einhängen',
+      equipment: ['Sony α7V', 'Sony FE 14mm F1.8 GM', 'Stativ', 'Fernauslöser/Timer', ...FG_ZUBEHOER_BASIS],
       einstellungen: [
-        { label: 'ISO', wert: '3200–6400' },
-        { label: 'Blende', wert: 'f/1.8 (Offenblende)' },
-        { label: 'Verschlusszeit', wert: '10–15s (NPF-Regel bei 14mm)' },
-        { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
-        { label: 'Fokus', wert: 'Manuell, auf ∞ bzw. hellen Stern – per Fokuslupe + Peaking, nach Temperaturwechsel erneut prüfen' },
-        { label: 'AF/MF-Schalter', wert: 'Am Objektiv auf MF (nicht nur im Menü)' },
-        { label: 'Blendenring', wert: 'Bewusst gesetzt bzw. auf A' },
-        { label: 'Modus', wert: 'Manuell (M)' },
-        { label: 'Verschluss', wert: 'Elektronisch' },
-        { label: 'SteadyShot', wert: 'Aus' },
-        { label: 'Langzeit-Rauschunterdrückung', wert: 'Aus' },
-        { label: 'Hohe-ISO-Rauschminderung', wert: 'Aus bzw. Niedrig' },
-        { label: 'Helle Überwachung', wert: 'Auf Custom-Taste legen – macht das Bildfeld nachts im Live-View sichtbar' },
-        { label: 'Energiesparen', wert: 'Auto-Ausschaltzeit aus' },
-        { label: 'Displayhelligkeit', wert: 'Runter (Nachtsicht erhalten)' },
-        { label: 'Sensorreinigung beim Ausschalten', wert: 'Aus' },
-        { label: 'Weißabgleich', wert: '3800–4200K (RAW), in Lightroom feinjustieren' },
-        { label: 'Dateiformat', wert: 'RAW (verlustfrei komprimiert)' }
+        { titel: 'Aufnahme', zeilen: [
+          { label: 'Modus', wert: 'Manuell (M)' },
+          { label: 'ISO', wert: '3200–6400' },
+          { label: 'Blende', wert: 'f/1.8 (Offenblende)' },
+          { label: 'Verschlusszeit', wert: '10–15s (NPF-Regel bei 14mm)' },
+          { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
+          { label: 'Fokus', wert: 'Manuell, auf ∞ bzw. hellen Stern per Fokuslupe + Peaking – nach Temperaturwechsel erneut prüfen' }
+        ]},
+        { titel: 'Farbe & Format', zeilen: [
+          { label: 'Weißabgleich', wert: '3800–4200K (RAW), in Lightroom feinjustieren' },
+          { label: 'Dateiformat', wert: 'RAW (verlustfrei komprimiert)' }
+        ]},
+        fgMenuGruppe(null)
       ],
       ausrichtung: 'Süden bis Südosten, Querformat (weiter Blickwinkel für Kernregion + Horizont)',
-      photopills: 'Aufgangszeit & Richtung des galaktischen Zentrums prüfen (Night AR / Planner), nur bei Neumond planen, Lichtverschmutzung am Standort checken (Pollution Map).',
-      inspiration: 'Festes Vordergrundmotiv suchen (Baum, Fels, Ruine, Zelt) und mit warmweißem Licht kurz während der Belichtung antippen statt dauerhaft anstrahlen. Milchstraße diagonal statt mittig, Kern über dem Motiv positionieren.',
-      bearbeitung: 'Lightroom: Weißabgleich auf 3800–4200K feinjustieren · HSL: Blau/Lila-Sättigung & -Luminanz reduzieren · Radialfilter (Feder 70–80) über dem Kern, leicht erwärmen · dezente Vignette · Dunst/Klarheit moderat erhöhen.',
+      komposition: [
+        'Festes Vordergrundmotiv mit Kern darüber positionieren',
+        'Diagonale statt mittige Aufteilung der Milchstraße',
+        'Spiegelung nutzen, z.B. See oder nasser Sand',
+        'Person als Silhouette für Maßstab einbauen',
+        'Leading Lines im Vordergrund zum Kern führen'
+      ],
+      bearbeitung: ['Lightroom'],
       notizen: ''
     },
     {
       id: neueId(), name: 'Milchstraße (Timelapse)', art: 'ms-timelapse',
       kachelIso: '3200–6400', kachelBlende: 'f/1.8–2.0', kachelZeit: '10–13s',
-      equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · stabiles Stativ · Intervalltimer · ausreichend Akku/Speicherkarte · Objektivheizung/Taukappe · Rotlicht-Stirnlampe · Ersatzakkus · Klarsicht-/UV-Filter abnehmen (sonst Reflexionshalos um helle Sterne) · Stativ-Mittelsäule nicht ausfahren, Tasche als Ballast einhängen',
+      equipment: ['Sony α7V', 'Sony FE 14mm F1.8 GM', 'stabiles Stativ', 'Intervalltimer', 'ausreichend Akku/Speicherkarte', ...FG_ZUBEHOER_BASIS],
       einstellungen: [
-        { label: 'ISO', wert: '3200–6400 (über die ganze Serie konstant halten)' },
-        { label: 'Blende', wert: 'f/1.8–2.0 (leicht abgeblendet für gleichmäßigere Schärfe)' },
-        { label: 'Verschlusszeit', wert: '10–13s Einzelbelichtung, 1–2s Pause' },
-        { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
-        { label: 'Fokus', wert: 'Manuell, auf ∞, vor Start fixieren und nicht mehr verändern – per Fokuslupe + Peaking, nach Temperaturwechsel erneut prüfen' },
-        { label: 'AF/MF-Schalter', wert: 'Am Objektiv auf MF (nicht nur im Menü)' },
-        { label: 'Blendenring', wert: 'Bewusst gesetzt bzw. auf A, De-Klick aktivieren' },
-        { label: 'Modus', wert: 'Manuell (M)' },
-        { label: 'Verschluss', wert: 'Elektronisch' },
-        { label: 'SteadyShot', wert: 'Aus' },
-        { label: 'Langzeit-Rauschunterdrückung', wert: 'Aus' },
-        { label: 'Hohe-ISO-Rauschminderung', wert: 'Aus bzw. Niedrig' },
-        { label: 'Helle Überwachung', wert: 'Auf Custom-Taste legen – macht das Bildfeld nachts im Live-View sichtbar' },
-        { label: 'Energiesparen', wert: 'Auto-Ausschaltzeit aus' },
-        { label: 'Displayhelligkeit', wert: 'Runter (Nachtsicht erhalten)' },
-        { label: 'Sensorreinigung beim Ausschalten', wert: 'Aus' },
-        { label: 'AE-Verfolgung bei Intervall', wert: 'Aus' },
-        { label: 'Bildanzahl', wert: '25 Bilder ≈ 1s Video – für 12s Clip ca. 300 Bilder' },
-        { label: 'Weißabgleich', wert: 'Fest einstellen (nicht Auto), sonst flackert die Serie' },
-        { label: 'Dateiformat', wert: 'RAW (verlustfrei komprimiert)' },
-        { label: 'Bildwiedergabe', wert: 'Aus (spart Akku über die lange Serie)' }
+        { titel: 'Aufnahme', zeilen: [
+          { label: 'Modus', wert: 'Manuell (M)' },
+          { label: 'ISO', wert: '3200–6400 (über die ganze Serie konstant halten)' },
+          { label: 'Blende', wert: 'f/1.8–2.0 (leicht abgeblendet für gleichmäßigere Schärfe)' },
+          { label: 'Verschlusszeit', wert: '10–13s Einzelbelichtung, 1–2s Pause' },
+          { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
+          { label: 'Fokus', wert: 'Manuell, auf ∞, vor Start fixieren und nicht mehr verändern – per Fokuslupe + Peaking, nach Temperaturwechsel erneut prüfen' }
+        ]},
+        { titel: 'Farbe & Format', zeilen: [
+          { label: 'Weißabgleich', wert: 'Fest einstellen (nicht Auto), sonst flackert die Serie' },
+          { label: 'Dateiformat', wert: 'RAW (verlustfrei komprimiert)' }
+        ]},
+        (() => { const g = fgMenuGruppe('Aus (spart Akku über die lange Serie)');
+                  g.zeilen[1] = { label: 'Blendenring', wert: 'Bewusst gesetzt bzw. auf A, De-Klick aktivieren' };
+                  return g; })(),
+        { titel: 'Workflow', zeilen: [
+          { label: 'AE-Verfolgung bei Intervall', wert: 'Aus' },
+          { label: 'Bildanzahl', wert: '25 Bilder ≈ 1s Video – für 12s Clip ca. 300 Bilder' }
+        ]}
       ],
       ausrichtung: 'Süden, Querformat – Kern wandert im Bildverlauf von links nach rechts durchs Bild',
-      photopills: 'Zeitfenster mit Night AR planen, in dem der Kern gut im Ausschnitt bleibt. Akku-/Speicherkapazität für die Gesamtdauer vorab durchrechnen. Neumond-Nacht wählen.',
-      inspiration: 'Ruhiges, unbewegtes Vordergrundmotiv am Bildrand wählen, damit die Bewegung der Milchstraße den Kontrast bildet. Bei Star Tracker den Vordergrund separat unbewegt aufnehmen und später einblenden.',
-      bearbeitung: 'LRTimelapse zum Deflickern & Angleichen der Belichtung über die Serie · Lightroom-Grundentwicklung wie bei der Einzelaufnahme (WB, HSL, Kontrast) · Export als Bildsequenz, Zusammensetzen/Rendern z.B. in LRTimelapse oder Premiere.',
+      komposition: [
+        'Ruhiges Vordergrundmotiv am Bildrand platzieren',
+        'Etwas Bewegtes einbauen, z.B. ziehende Wolken oder Wasser',
+        'Weiten Horizont für den vollen Bogen wählen',
+        'Festen Ankerpunkt im Bild behalten',
+        'Dämmerungsübergang am Anfang/Ende mit einplanen'
+      ],
+      bearbeitung: ['LRTimelapse', 'Lightroom', 'Premiere'],
       notizen: ''
     },
     {
       id: neueId(), name: 'Milchstraße (Stacking)', art: 'ms-stacking',
       kachelIso: '1600–3200', kachelBlende: 'f/1.8–2.0', kachelZeit: '10–15s',
-      equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · Stativ mit L-Bracket · Fernauslöser/Timer · Objektivheizung/Taukappe · Rotlicht-Stirnlampe · Ersatzakkus · Klarsicht-/UV-Filter abnehmen (sonst Reflexionshalos um helle Sterne) · Stativ-Mittelsäule nicht ausfahren, Tasche als Ballast einhängen',
+      equipment: ['Sony α7V', 'Sony FE 14mm F1.8 GM', 'Stativ', 'Fernauslöser/Timer', ...FG_ZUBEHOER_BASIS],
       einstellungen: [
-        { label: 'ISO (Himmel-Serie)', wert: '1600–3200 (niedriger als bei der Einzelaufnahme, das Stacking reduziert Rauschen)' },
-        { label: 'Blende', wert: 'f/1.8–2.0' },
-        { label: 'Verschlusszeit (Himmel)', wert: '8–10 Bilder à 10–15s, identischer Ausschnitt' },
-        { label: 'ISO/Zeit (Vordergrund)', wert: '2–4 Bilder à 20–30s bei ISO 400–800' },
-        { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
-        { label: 'Fokus', wert: 'Manuell, auf ∞ – zwischen den Serien nicht verändern – per Fokuslupe + Peaking, nach Temperaturwechsel erneut prüfen' },
-        { label: 'AF/MF-Schalter', wert: 'Am Objektiv auf MF (nicht nur im Menü)' },
-        { label: 'Blendenring', wert: 'Bewusst gesetzt bzw. auf A' },
-        { label: 'Modus', wert: 'Manuell (M)' },
-        { label: 'Verschluss', wert: 'Elektronisch' },
-        { label: 'SteadyShot', wert: 'Aus' },
-        { label: 'Langzeit-Rauschunterdrückung', wert: 'Aus' },
-        { label: 'Hohe-ISO-Rauschminderung', wert: 'Aus bzw. Niedrig' },
-        { label: 'Helle Überwachung', wert: 'Auf Custom-Taste legen – macht das Bildfeld nachts im Live-View sichtbar' },
-        { label: 'Energiesparen', wert: 'Auto-Ausschaltzeit aus' },
-        { label: 'Displayhelligkeit', wert: 'Runter (Nachtsicht erhalten)' },
-        { label: 'Sensorreinigung beim Ausschalten', wert: 'Aus' },
-        { label: 'Dark Frames', wert: '5–10 Aufnahmen mit aufgesetztem Objektivdeckel bei identischen Werten am Session-Ende (Hot-Pixel-Entfernung)' },
-        { label: 'Weißabgleich', wert: 'Fest einstellen (nicht Auto), für konsistentes Stacking' },
-        { label: 'Dateiformat', wert: 'RAW (verlustfrei komprimiert)' },
-        { label: 'Bildwiedergabe', wert: 'Aus (Akku für die mehreren Serien schonen)' }
+        { titel: 'Aufnahme', zeilen: [
+          { label: 'Modus', wert: 'Manuell (M)' },
+          { label: 'ISO (Himmel-Serie)', wert: '1600–3200 (niedriger als bei der Einzelaufnahme, das Stacking reduziert Rauschen)' },
+          { label: 'Blende', wert: 'f/1.8–2.0' },
+          { label: 'Verschlusszeit (Himmel)', wert: '8–10 Bilder à 10–15s, identischer Ausschnitt' },
+          { label: 'ISO/Zeit (Vordergrund)', wert: '2–4 Bilder à 20–30s bei ISO 400–800' },
+          { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
+          { label: 'Fokus', wert: 'Manuell, auf ∞ – zwischen den Serien nicht verändern, per Fokuslupe + Peaking, nach Temperaturwechsel erneut prüfen' }
+        ]},
+        { titel: 'Farbe & Format', zeilen: [
+          { label: 'Weißabgleich', wert: 'Fest einstellen (nicht Auto), für konsistentes Stacking' },
+          { label: 'Dateiformat', wert: 'RAW (verlustfrei komprimiert)' }
+        ]},
+        fgMenuGruppe('Aus (Akku für die mehreren Serien schonen)'),
+        { titel: 'Workflow', zeilen: [
+          { label: 'Dark Frames', wert: '5–10 Aufnahmen mit aufgesetztem Objektivdeckel bei identischen Werten am Session-Ende (Hot-Pixel-Entfernung)' }
+        ]}
       ],
       ausrichtung: 'Süden bis Südosten, Querformat – Kamera zwischen den Serien nicht bewegen (identischer Ausschnitt nötig)',
-      photopills: 'Wie bei der Einzelaufnahme: Position des galaktischen Zentrums, Neumond, Lichtverschmutzung prüfen. Zusätzlich genug Zeit für die mehreren Serien einplanen (ca. 15–20 Min. Gesamtaufnahmezeit).',
-      inspiration: 'Gleiche Bildideen wie bei der Einzelaufnahme (festes Vordergrundmotiv, warmweiß kurz anleuchten, Kern diagonal über dem Motiv) – durch das Stacking bleibt der Himmel dabei deutlich rauschärmer und detailreicher.',
-      bearbeitung: 'Himmel-Serie inkl. Dark Frames in Sequator oder Starry Landscape Stacker stacken · Vordergrund-Belichtung separat in Photoshop einblenden/maskieren · danach wie bei der Einzelaufnahme in Lightroom: Weißabgleich, HSL Blau/Lila reduzieren, Radialfilter über dem Kern, Vignette, Dunst/Klarheit.',
+      komposition: [
+        'Gleiche Bildideen wie beim Einzelbild, Vordergrund aber ruhig halten',
+        'Nebel-/Staubstrukturen im Kern gezielt einfangen',
+        'Kontrastreiches Vordergrundmotiv wählen',
+        'Kern im Drittel-Raster positionieren',
+        'Wasserfläche für Spiegelung nutzen'
+      ],
+      bearbeitung: ['Sequator', 'Starry Landscape Stacker', 'Photoshop', 'Lightroom'],
       notizen: ''
     },
     {
       id: neueId(), name: 'Milchstraße (Panorama)', art: 'ms-panorama',
       kachelIso: '1600–3200', kachelBlende: 'f/1.8–2.0', kachelZeit: '8–13s',
-      equipment: 'Sony α7V · Sony FE 35mm F1.4 GM · Stativ mit Nivellierbasis und gerastetem Kopf · L-Bracket · Fernauslöser/Timer · Objektivheizung/Taukappe · Rotlicht-Stirnlampe · Ersatzakkus · Klarsicht-/UV-Filter abnehmen (sonst Reflexionshalos um helle Sterne) · Stativ-Mittelsäule nicht ausfahren, Tasche als Ballast einhängen',
+      equipment: ['Sony α7V', 'Sony FE 35mm F1.4 GM', 'Stativ mit Nivellierbasis und gerastetem Kopf', 'L-Bracket', 'Fernauslöser/Timer', ...FG_ZUBEHOER_BASIS],
       einstellungen: [
-        { label: 'ISO', wert: '1600–3200 (jedes Feld wird gestackt, daher niedriger als beim Einzelbild)' },
-        { label: 'Blende', wert: 'f/1.8–2.0' },
-        { label: 'Verschlusszeit', wert: '8–13s (NPF-Regel bei 35mm), 6–8 Bilder je Feld' },
-        { label: 'Objektiv', wert: 'Sony FE 35mm F1.4 GM' },
-        { label: 'Raster', wert: '3 Reihen × 5–6 Bilder, ca. 30% Überlappung' },
-        { label: 'Drehpunkt', wert: 'Möglichst nodalpunktnah drehen, Kopf gerastet – zwischen den Feldern nichts verstellen' },
-        { label: 'Fokus', wert: 'Manuell, auf ∞ – per Fokuslupe + Peaking, nach Temperaturwechsel erneut prüfen – über alle Felder identisch lassen' },
-        { label: 'AF/MF-Schalter', wert: 'Am Objektiv auf MF (nicht nur im Menü)' },
-        { label: 'Blendenring', wert: 'Bewusst gesetzt bzw. auf A' },
-        { label: 'Modus', wert: 'Manuell (M)' },
-        { label: 'Verschluss', wert: 'Elektronisch' },
-        { label: 'SteadyShot', wert: 'Aus' },
-        { label: 'Langzeit-Rauschunterdrückung', wert: 'Aus' },
-        { label: 'Hohe-ISO-Rauschminderung', wert: 'Aus bzw. Niedrig' },
-        { label: 'Helle Überwachung', wert: 'Auf Custom-Taste legen – macht das Bildfeld nachts im Live-View sichtbar' },
-        { label: 'Energiesparen', wert: 'Auto-Ausschaltzeit aus' },
-        { label: 'Displayhelligkeit', wert: 'Runter (Nachtsicht erhalten)' },
-        { label: 'Sensorreinigung beim Ausschalten', wert: 'Aus' },
-        { label: 'Dark Frames', wert: '5–10 Aufnahmen mit aufgesetztem Objektivdeckel bei identischen Werten am Session-Ende' },
-        { label: 'Vordergrund', wert: 'Separate, längere Belichtungen bei ISO 400–800, ungetrackt' },
-        { label: 'Weißabgleich', wert: 'Fest einstellen (nicht Auto) – sonst driften die Felder auseinander' },
-        { label: 'Dateiformat', wert: 'RAW (verlustfrei komprimiert)' },
-        { label: 'Bildwiedergabe', wert: 'Aus (Akku für die vielen Felder schonen)' }
+        { titel: 'Aufnahme', zeilen: [
+          { label: 'Modus', wert: 'Manuell (M)' },
+          { label: 'ISO', wert: '1600–3200 (jedes Feld wird gestackt, daher niedriger als beim Einzelbild)' },
+          { label: 'Blende', wert: 'f/1.8–2.0' },
+          { label: 'Verschlusszeit', wert: '8–13s (NPF-Regel bei 35mm), 6–8 Bilder je Feld' },
+          { label: 'Objektiv', wert: 'Sony FE 35mm F1.4 GM' },
+          { label: 'Raster', wert: '3 Reihen × 5–6 Bilder, ca. 30% Überlappung' },
+          { label: 'Drehpunkt', wert: 'Möglichst nodalpunktnah drehen, Kopf gerastet – zwischen den Feldern nichts verstellen' },
+          { label: 'Fokus', wert: 'Manuell, auf ∞ – über alle Felder identisch lassen, per Fokuslupe + Peaking, nach Temperaturwechsel erneut prüfen' }
+        ]},
+        { titel: 'Farbe & Format', zeilen: [
+          { label: 'Weißabgleich', wert: 'Fest einstellen (nicht Auto) – sonst driften die Felder auseinander' },
+          { label: 'Dateiformat', wert: 'RAW (verlustfrei komprimiert)' }
+        ]},
+        fgMenuGruppe('Aus (Akku für die vielen Felder schonen)'),
+        { titel: 'Workflow', zeilen: [
+          { label: 'Dark Frames', wert: '5–10 Aufnahmen mit aufgesetztem Objektivdeckel bei identischen Werten am Session-Ende' },
+          { label: 'Vordergrund', wert: 'Separate, längere Belichtungen bei ISO 400–800, ungetrackt' }
+        ]}
       ],
       ausrichtung: 'Süden bis Südosten, Kamera im Hochformat schwenken (mehr Höhe je Feld) · untere Reihe auf den Vordergrund, mittlere auf die Kernregion, obere auf den Bogen',
-      photopills: 'Verlauf des Bogens über die Nacht mit Night AR prüfen und Startzeitpunkt so wählen, dass er während der gesamten Aufnahme im geplanten Raster bleibt. Neumond zwingend. Genug Zeit einplanen: 3 Reihen × 6 Felder × 8 Bilder sind rund 150 Aufnahmen.',
-      inspiration: 'Der eigentliche Gewinn gegenüber 14mm: die Kernregion fällt auf deutlich mehr Pixel, dadurch werden Staubbänder und die H-alpha-Regionen (Lagunen-, Trifidnebel) sichtbar. Weiten Bildwinkel trotzdem durch das Stitching. Nur für Nächte einplanen, in denen Wetter, Mond und Standort wirklich passen.',
-      bearbeitung: 'Jedes Feld einzeln stacken (Sequator/Starry Landscape Stacker, inkl. Dark Frames) · gestackte Felder in PTGui oder Lightroom zum Panorama stitchen · Vordergrund separat einblenden/maskieren · danach Lightroom: Weißabgleich, HSL Blau/Lila reduzieren, Kern selektiv anheben, Vignette.',
+      komposition: [
+        'Untere Reihe auf den Vordergrund, mittlere auf die Kernregion, obere auf den Bogen ausrichten',
+        'Horizont in der unteren Bildreihe gerade halten',
+        'Vordergrundmotiv mittig unter dem Kern platzieren',
+        'Genug Überlappung für sauberes Stitching einplanen',
+        'Bogen möglichst symmetrisch ins Panorama einpassen'
+      ],
+      bearbeitung: ['Sequator', 'Starry Landscape Stacker', 'PTGui', 'Lightroom'],
       notizen: ''
     },
     {
       id: neueId(), name: 'Star Trails', art: 'star-trails',
       kachelIso: '400–800', kachelBlende: 'f/2.8–4', kachelZeit: '30s',
-      equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · Stativ mit L-Bracket (Hochformat) · Intervalltimer · Objektivheizung/Taukappe · Rotlicht-Stirnlampe · Ersatzakkus · Klarsicht-/UV-Filter abnehmen (sonst Reflexionshalos um helle Sterne) · Stativ-Mittelsäule nicht ausfahren, Tasche als Ballast einhängen',
+      equipment: ['Sony α7V', 'Sony FE 14mm F1.8 GM', 'Stativ mit L-Bracket (Hochformat)', 'Intervalltimer', ...FG_ZUBEHOER_BASIS],
       einstellungen: [
-        { label: 'ISO', wert: '400–800' },
-        { label: 'Blende', wert: 'f/2.8–4 (abgeblendet für Schärfe)' },
-        { label: 'Verschlusszeit', wert: '30s Belichtung, 31s Intervall, ca. 77 Bilder / 40 Min' },
-        { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
-        { label: 'Fokus', wert: 'Manuell, auf ∞ – per Fokuslupe + Peaking, nach Temperaturwechsel erneut prüfen' },
-        { label: 'AF/MF-Schalter', wert: 'Am Objektiv auf MF (nicht nur im Menü)' },
-        { label: 'Blendenring', wert: 'Bewusst gesetzt bzw. auf A' },
-        { label: 'Modus', wert: 'Manuell (M)' },
-        { label: 'Verschluss', wert: 'Elektronisch' },
-        { label: 'SteadyShot', wert: 'Aus' },
-        { label: 'Langzeit-Rauschunterdrückung', wert: 'Zwingend Aus (sonst Lücken zwischen den Trails durch Verarbeitungspause)' },
-        { label: 'Hohe-ISO-Rauschminderung', wert: 'Aus bzw. Niedrig' },
-        { label: 'Helle Überwachung', wert: 'Auf Custom-Taste legen – macht das Bildfeld nachts im Live-View sichtbar' },
-        { label: 'Energiesparen', wert: 'Auto-Ausschaltzeit aus' },
-        { label: 'Displayhelligkeit', wert: 'Runter (Nachtsicht erhalten)' },
-        { label: 'Sensorreinigung beim Ausschalten', wert: 'Aus' },
-        { label: 'Intervall-Hinweis', wert: 'Die Sony-Intervallfunktion misst von Start zu Start, nicht ab Belichtungsende' },
-        { label: 'Dark Frames', wert: '5–10 Aufnahmen mit aufgesetztem Objektivdeckel bei identischen Werten am Session-Ende' },
-        { label: 'Weißabgleich', wert: '3800–4200K, je nach Lichtverschmutzung anpassen' },
-        { label: 'Dateiformat', wert: 'RAW (verlustfrei komprimiert)' },
-        { label: 'Bildwiedergabe', wert: 'Aus (Akku für die lange Serie schonen)' }
+        { titel: 'Aufnahme', zeilen: [
+          { label: 'Modus', wert: 'Manuell (M)' },
+          { label: 'ISO', wert: '400–800' },
+          { label: 'Blende', wert: 'f/2.8–4 (abgeblendet für Schärfe)' },
+          { label: 'Verschlusszeit', wert: '30s Belichtung, 31s Intervall, ca. 77 Bilder / 40 Min' },
+          { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
+          { label: 'Fokus', wert: 'Manuell, auf ∞ – per Fokuslupe + Peaking, nach Temperaturwechsel erneut prüfen' }
+        ]},
+        { titel: 'Farbe & Format', zeilen: [
+          { label: 'Weißabgleich', wert: '3800–4200K, je nach Lichtverschmutzung anpassen' },
+          { label: 'Dateiformat', wert: 'RAW (verlustfrei komprimiert)' }
+        ]},
+        (() => { const g = fgMenuGruppe('Aus (Akku für die lange Serie schonen)');
+                  g.zeilen[4] = { label: 'Langzeit-Rauschunterdrückung', wert: 'Zwingend Aus (sonst Lücken zwischen den Trails durch Verarbeitungspause)' };
+                  return g; })(),
+        { titel: 'Workflow', zeilen: [
+          { label: 'Intervall-Hinweis', wert: 'Die Sony-Intervallfunktion misst von Start zu Start, nicht ab Belichtungsende' },
+          { label: 'Dark Frames', wert: '5–10 Aufnahmen mit aufgesetztem Objektivdeckel bei identischen Werten am Session-Ende' }
+        ]}
       ],
       ausrichtung: 'Norden zum Polarstern, Hochformat (konzentrische Kreise, mehr Himmel im Bild)',
-      photopills: 'Polarstern-Position prüfen (Kompass/AR), möglichst neumondnah planen (sonst überstrahlt der Vollmond die Spuren), Wetter/Wolkenfreiheit für die gesamte Sequenz checken.',
-      inspiration: 'Silhouette (Baum, Gebäude, Person) unter dem Polarstern platzieren, damit die Kreise einen klaren Mittelpunkt bekommen. Wolkenlücken oder Nebelschwaden geben zusätzliche Struktur.',
-      bearbeitung: 'Vor dem Stacking: Star Trail CleanR gegen Flugzeug-/Satellitenspuren · Stacking mit StarStaX (Desktop) oder Star Stacker (iPad), Modus Lighten/Maximum · danach Lightroom: Kontrast & Klarheit leicht anheben, Vordergrund separat aufhellen.',
+      komposition: [
+        'Silhouette direkt unter dem Polarstern platzieren',
+        'Vordergrund leicht versetzt vom Zentrum',
+        'Wolkenlücken oder Nebel als zusätzliche Struktur nutzen',
+        'Reflektierende Fläche für gespiegelte Kreise',
+        'Möglichst viel Himmel für lange Bögen einplanen'
+      ],
+      bearbeitung: ['Star Trail CleanR', 'StarStaX', 'Star Stacker (iPad)', 'Lightroom'],
       notizen: ''
     },
     {
       id: neueId(), name: 'Meteoriten', art: 'meteoriten',
       kachelIso: '3200–6400', kachelBlende: 'f/1.8', kachelZeit: '10–15s',
-      equipment: 'Sony α7V · Sony FE 14mm F1.8 GM · Stativ · Intervalltimer, ausreichend Speicherkarte/Akku für lange Serie · Objektivheizung/Taukappe · Rotlicht-Stirnlampe · Ersatzakkus · Klarsicht-/UV-Filter abnehmen (sonst Reflexionshalos um helle Sterne) · Stativ-Mittelsäule nicht ausfahren, Tasche als Ballast einhängen',
+      equipment: ['Sony α7V', 'Sony FE 14mm F1.8 GM', 'Stativ', 'Intervalltimer', 'ausreichend Speicherkarte/Akku für lange Serie', ...FG_ZUBEHOER_BASIS],
       einstellungen: [
-        { label: 'ISO', wert: '3200–6400' },
-        { label: 'Blende', wert: 'f/1.8 (Offenblende, für möglichst viele/schwache Meteore)' },
-        { label: 'Verschlusszeit', wert: '10–15s Einzelbelichtung, minimale Pause' },
-        { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
-        { label: 'Fokus', wert: 'Manuell, auf ∞ – per Fokuslupe + Peaking, nach Temperaturwechsel erneut prüfen' },
-        { label: 'AF/MF-Schalter', wert: 'Am Objektiv auf MF (nicht nur im Menü)' },
-        { label: 'Blendenring', wert: 'Bewusst gesetzt bzw. auf A' },
-        { label: 'Modus', wert: 'Manuell (M)' },
-        { label: 'Verschluss', wert: 'Elektronisch' },
-        { label: 'SteadyShot', wert: 'Aus' },
-        { label: 'Langzeit-Rauschunterdrückung', wert: 'Aus' },
-        { label: 'Hohe-ISO-Rauschminderung', wert: 'Aus bzw. Niedrig' },
-        { label: 'Helle Überwachung', wert: 'Auf Custom-Taste legen – macht das Bildfeld nachts im Live-View sichtbar' },
-        { label: 'Energiesparen', wert: 'Auto-Ausschaltzeit aus' },
-        { label: 'Displayhelligkeit', wert: 'Runter (Nachtsicht erhalten)' },
-        { label: 'Sensorreinigung beim Ausschalten', wert: 'Aus' },
-        { label: 'Weißabgleich', wert: '3800–4200K (RAW), in Lightroom feinjustieren' },
-        { label: 'Dateiformat', wert: 'RAW (verlustfrei komprimiert)' },
-        { label: 'Bildwiedergabe', wert: 'Aus (Akku für die durchgehende Serie schonen)' }
+        { titel: 'Aufnahme', zeilen: [
+          { label: 'Modus', wert: 'Manuell (M)' },
+          { label: 'ISO', wert: '3200–6400' },
+          { label: 'Blende', wert: 'f/1.8 (Offenblende, für möglichst viele/schwache Meteore)' },
+          { label: 'Verschlusszeit', wert: '10–15s Einzelbelichtung, minimale Pause' },
+          { label: 'Objektiv', wert: 'Sony FE 14mm F1.8 GM' },
+          { label: 'Fokus', wert: 'Manuell, auf ∞ – per Fokuslupe + Peaking, nach Temperaturwechsel erneut prüfen' }
+        ]},
+        { titel: 'Farbe & Format', zeilen: [
+          { label: 'Weißabgleich', wert: '3800–4200K (RAW), in Lightroom feinjustieren' },
+          { label: 'Dateiformat', wert: 'RAW (verlustfrei komprimiert)' }
+        ]},
+        fgMenuGruppe('Aus (Akku für die durchgehende Serie schonen)')
       ],
       ausrichtung: 'Radiant (Ursprungspunkt des Schauers) etwa 30–40° neben der Bildmitte – dort erscheinen die Spuren am längsten · Querformat für großes Sichtfeld',
-      photopills: 'Maximum-Zeitpunkt & Radiant-Position des Schauers prüfen (z.B. Perseiden Mitte August), Mondphase beachten (bei Vollmond kaum schwache Meteore sichtbar), dunklen Standort mit freiem Horizont wählen.',
-      inspiration: 'Landschaft oder markantes Vordergrundmotiv als Kontext mit ins Bild nehmen. Die hellsten Meteore erscheinen selten – Geduld einplanen und komplette Serie durchlaufen lassen, auch wenn einzelne Bilder leer bleiben.',
-      bearbeitung: 'Einzelbilder mit Meteorspur in Lightroom sichten und markieren · in Photoshop mehrere Bilder mit Meteoren im Modus "Aufhellen" (Lighten) übereinanderlegen für ein Bild mit mehreren Spuren · Himmel/Vordergrund wie bei der Milchstraßenaufnahme feinabstimmen (WB, HSL, Kontrast).',
+      komposition: [
+        'Markantes Vordergrundmotiv, kein leerer Himmel',
+        'Radiant im Drittel-Raster platzieren',
+        'Mehrere Bildebenen für Tiefe einbauen',
+        'Ruhiges Motiv über die ganze Session',
+        'Hellste Treffer hinterher als Bonus-Shots markieren'
+      ],
+      bearbeitung: ['Lightroom', 'Photoshop'],
       notizen: ''
     }
   ];
@@ -278,21 +313,24 @@ function fgStartbestand(){
 
 let szenarien = safeParse(store.get(FG_KEYS.szenarien), null);
 if (!Array.isArray(szenarien)) szenarien = fgStartbestand();
-// Bestehende Speicherstände (vor Einführung von Notizen/Einstellungen-Liste/Kachel-Werten) nachrüsten.
+// Bestehende Speicherstände (vor der Umstellung auf Listen/Gruppen) nachrüsten.
 szenarien.forEach(s => {
   if (typeof s.notizen !== 'string') s.notizen = '';
-  if (!Array.isArray(s.einstellungen)) {
-    s.einstellungen = [
-      s.iso ? { label: 'ISO', wert: s.iso } : null,
-      s.blende ? { label: 'Blende', wert: s.blende } : null,
-      s.verschluss ? { label: 'Verschlusszeit', wert: s.verschluss } : null,
-      s.objektiv ? { label: 'Objektiv', wert: s.objektiv } : null
-    ].filter(Boolean);
+  if (typeof s.equipment === 'string') s.equipment = s.equipment.split(' · ').map(t => t.trim()).filter(Boolean);
+  if (!Array.isArray(s.equipment)) s.equipment = [];
+  if (Array.isArray(s.einstellungen) && s.einstellungen.length && !s.einstellungen[0].titel) {
+    s.einstellungen = [{ titel: 'Kamera', zeilen: s.einstellungen }];
   }
+  if (!Array.isArray(s.einstellungen)) s.einstellungen = [];
+  if (!Array.isArray(s.komposition)) s.komposition = s.inspiration ? [s.inspiration] : [];
+  if (typeof s.bearbeitung === 'string') s.bearbeitung = s.bearbeitung.split(' · ').map(t => t.trim()).filter(Boolean);
+  if (!Array.isArray(s.bearbeitung)) s.bearbeitung = [];
+  delete s.photopills;
+  delete s.inspiration;
   if (!s.art) s.art = 'ms-shot';
-  if (!s.kachelIso) s.kachelIso = (s.einstellungen.find(z => z.label === 'ISO') || {}).wert || '';
-  if (!s.kachelBlende) s.kachelBlende = (s.einstellungen.find(z => z.label === 'Blende') || {}).wert || '';
-  if (!s.kachelZeit) s.kachelZeit = (s.einstellungen.find(z => z.label === 'Verschlusszeit') || {}).wert || '';
+  if (!s.kachelIso) s.kachelIso = '';
+  if (!s.kachelBlende) s.kachelBlende = '';
+  if (!s.kachelZeit) s.kachelZeit = '';
 });
 
 function fgPersist(){ store.set(FG_KEYS.szenarien, JSON.stringify(szenarien)); }
@@ -336,17 +374,36 @@ function fgAbschnitt(label, text){
   </div>`;
 }
 
-/* Zeilenliste Label links / Wert rechts (Wert darf bei Bedarf mehrzeilig umbrechen,
-   bleibt dabei aber rechtsbündig) – für den Abschnitt "Kamera-Einstellungen". */
-function fgEinstellungenHTML(liste){
-  if (!liste || !liste.length) return '';
-  const zeilen = liste.map((z, i) => `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:9px 0;${i < liste.length - 1 ? 'border-bottom:1px solid var(--stroke)' : ''}">
-      <span style="font-size:0.82rem;color:var(--text);font-weight:600;flex-shrink:0">${esc(z.label)}</span>
-      <span style="font-size:0.82rem;color:var(--muted);text-align:right">${esc(z.wert)}</span>
-    </div>`).join('');
+/* Für Ausrüstung/Komposition/Bearbeitung: einfache Aufzählung statt Fließtext. */
+function fgListeAbschnitt(label, items){
+  if (!items || !items.length) return '';
+  const li = items.map(t => `<li style="margin-bottom:6px">${esc(t)}</li>`).join('');
+  return `<div class="glass" style="padding:16px 18px;margin-bottom:12px">
+    <div class="bento-title" style="margin-bottom:8px">${esc(label)}</div>
+    <ul style="margin:0;padding-left:18px;font-size:0.88rem;color:var(--text);line-height:1.5">${li}</ul>
+  </div>`;
+}
+
+/* Kamera-Einstellungen: mehrere Gruppen (Aufnahme, Farbe & Format, Einmalig im Menü,
+   Workflow) in einer Karte, mit dünner Trennlinie + kleinem Gruppentitel zwischen den
+   Abschnitten. Zeilen selbst wie gehabt Label links / Wert rechts, Wert darf bei
+   Bedarf mehrzeilig umbrechen, bleibt dabei rechtsbündig. */
+function fgEinstellungenHTML(gruppen){
+  const sichtbar = (gruppen || []).filter(g => g.zeilen && g.zeilen.length);
+  if (!sichtbar.length) return '';
+  const teile = sichtbar.map((g, gi) => {
+    const zeilen = g.zeilen.map((z, i) => `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:9px 0;${i < g.zeilen.length - 1 ? 'border-bottom:1px solid var(--stroke)' : ''}">
+        <span style="font-size:0.82rem;color:var(--text);font-weight:600;flex-shrink:0">${esc(z.label)}</span>
+        <span style="font-size:0.82rem;color:var(--muted);text-align:right">${esc(z.wert)}</span>
+      </div>`).join('');
+    return `<div style="${gi > 0 ? 'margin-top:16px;padding-top:14px;border-top:1px solid var(--stroke)' : ''}">
+      <div style="font-size:0.66rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted-2);font-weight:700;margin-bottom:2px">${esc(g.titel)}</div>
+      ${zeilen}
+    </div>`;
+  }).join('');
   return `<div class="glass" style="padding:16px 18px;margin-bottom:12px">
     <div class="bento-title" style="margin-bottom:2px">Kamera-Einstellungen</div>
-    ${zeilen}
+    ${teile}
   </div>`;
 }
 
@@ -355,12 +412,11 @@ function fgOpenDetail(id){
   fgDetailId = id;
   $('fg-detail-title').textContent = s.name;
   $('fg-detail-body').innerHTML =
-    fgAbschnitt('Ausrüstung', s.equipment) +
+    fgListeAbschnitt('Ausrüstung', s.equipment) +
     fgEinstellungenHTML(s.einstellungen) +
     fgAbschnitt('Ausrichtung', s.ausrichtung) +
-    fgAbschnitt('PhotoPills-Check', s.photopills) +
-    fgAbschnitt('Inspiration & Komposition', s.inspiration) +
-    fgAbschnitt('Bearbeitung', s.bearbeitung) +
+    fgListeAbschnitt('Komposition', s.komposition) +
+    fgListeAbschnitt('Bearbeitung', s.bearbeitung) +
     `<div class="glass" style="padding:16px 18px;margin-bottom:12px">
       <div class="bento-title" style="margin-bottom:6px">Notizen</div>
       <textarea id="fg-notiz-feld" rows="4" placeholder="Eigene Beobachtungen, Ergebnisse, Anpassungen …"
@@ -589,7 +645,17 @@ function fgApplyBackup(text){
   szenarien = p.szenarien;
   szenarien.forEach(s => {
     if (typeof s.notizen !== 'string') s.notizen = '';
+    if (typeof s.equipment === 'string') s.equipment = s.equipment.split(' · ').map(t => t.trim()).filter(Boolean);
+    if (!Array.isArray(s.equipment)) s.equipment = [];
+    if (Array.isArray(s.einstellungen) && s.einstellungen.length && !s.einstellungen[0].titel) {
+      s.einstellungen = [{ titel: 'Kamera', zeilen: s.einstellungen }];
+    }
     if (!Array.isArray(s.einstellungen)) s.einstellungen = [];
+    if (!Array.isArray(s.komposition)) s.komposition = s.inspiration ? [s.inspiration] : [];
+    if (typeof s.bearbeitung === 'string') s.bearbeitung = s.bearbeitung.split(' · ').map(t => t.trim()).filter(Boolean);
+    if (!Array.isArray(s.bearbeitung)) s.bearbeitung = [];
+    delete s.photopills;
+    delete s.inspiration;
     if (!s.art) s.art = 'ms-shot';
   });
   fgPersist();
