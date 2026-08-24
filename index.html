@@ -293,8 +293,11 @@
   .list { display: flex; flex-direction: column; gap: 10px; }
   /* ===== ROUTE ALS ZEITLEISTE ===== */
   .rt-list { margin-top: 4px; min-width: 0; }
-  .rt-row { display: grid; grid-template-columns: 38px 22px 1fr; align-items: start; cursor: pointer; transition: transform 0.3s var(--spring); }
-  .rt-row:active { transform: scale(0.99); }
+  .rt-row { display: grid; grid-template-columns: 38px 22px 1fr 26px; align-items: start; }
+  /* Chevron: einziger Weg in die Detailansicht. Grosszuegige Trefferflaeche, aber
+     optisch zurueckhaltend - er wiederholt sich in jeder Zeile. */
+  .rt-chev { display: flex; align-items: center; justify-content: center; width: 26px; min-height: 26px; margin-top: -2px; padding: 0; font: inherit; font-size: 1.15rem; line-height: 1; color: var(--muted-2); background: transparent; border: none; outline: none; -webkit-appearance: none; appearance: none; cursor: pointer; transition: color 0.2s, transform 0.2s var(--spring); }
+  .rt-chev:active { color: var(--text); transform: scale(0.86); }
   /* Datumsspalte */
   .rt-date { display: flex; flex-direction: column; align-items: center; padding-top: 1px; }
   .rt-day { font-size: 1.12rem; font-weight: 800; letter-spacing: -0.03em; color: var(--text); font-variant-numeric: tabular-nums; line-height: 1.05; }
@@ -408,14 +411,66 @@
   /* Ausrüstung: Kategorie-Überschriften im Auswahl-Sheet */
   .gc-cat-label { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted-2); font-weight: 700; padding: 10px 4px 2px; }
   .gc-cat-label:first-child { padding-top: 0; }
-  .rt-sub { margin-top: 4px; font-size: 0.72rem; color: var(--muted-2); }
   /* Inhalt */
   .rt-body { min-width: 0; padding: 0 2px 24px 8px; }
   .rt-row.last .rt-body { padding-bottom: 6px; }
   .rt-name { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; min-width: 0; overflow-wrap: anywhere; }
   .rt-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; font-size: 0.76rem; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 0; }
   .rt-meta > * { min-width: 0; overflow-wrap: anywhere; }
+  /* Dritte Zeile: beschreibende Angaben. Mehrere rt-sub untereinander sind erlaubt
+     (Mietwagen: Fahrzeug, dann Station) und ruecken dann enger zusammen. */
+  .rt-sub { margin-top: 4px; font-size: 0.72rem; color: var(--muted-2); line-height: 1.4; min-width: 0; overflow-wrap: anywhere; }
+  .rt-sub + .rt-sub { margin-top: 2px; }
+  /* Wird vom Fotografie-Bereich fuer die Notiz unter einem Ort genutzt. Im Reisen-
+     Zeitstrahl steht bewusst kein Notiztext mehr, die Regel bleibt aber im Kern. */
+  .rt-notes { margin-top: 6px; font-size: 0.79rem; color: var(--muted-2); line-height: 1.45; }
+  /* Telefonnummern sind waehlbar. Bewusst nur dezent abgesetzt: die Zeile soll nicht
+     wie ein Knopf wirken, das Antippen der uebrigen Zeile oeffnet weiterhin die Ansicht. */
+  .rt-tel { color: var(--muted); text-decoration: none; font-variant-numeric: tabular-nums; }
+  .rt-tel:active { color: var(--accent); }
+  .dv-v .rt-tel { color: var(--accent); font-size: 0.88rem; }
   .rt-nights { padding: 2px 7px; border-radius: var(--r-pill); background: rgba(0,179,184,0.15); color: var(--petrol); font-weight: 600; font-size: 0.7rem; white-space: normal; overflow-wrap: anywhere; }
+
+  /* Finanzen: Feinheiten, die vorher inline standen. Uebrig bleiben dort nur noch
+     Styles, deren Wert aus den Daten kommt (Balkenbreiten, Kategoriefarben). */
+  .fin-row-tight { padding: 2px 0; }
+  .fin-row-right { justify-content: flex-end; }
+  .bento-seg-leer { flex: 1; background: var(--stroke); }
+  .bento-map-legend i.jahr-1 { background: var(--violet); }
+  .bento-map-legend i.jahr-2 { background: var(--petrol); }
+  .legend-dot-ueber { background: var(--danger); }
+
+  /* ===== FOTOGRAFIE: Guide-Kachel und Leseansicht =====
+     Lag vorher als Inline-Styles im Modul und war damit die einzige Stelle der App mit
+     eigener, am Kern vorbei gepflegter Gestaltung. Schriftgroessen und Abstaende folgen
+     jetzt denselben Werten wie die uebrigen Karten. */
+  .fg-tile { position: relative; }
+  .fg-tile-icon { position: absolute; top: 15px; right: 16px; width: 20px; height: 20px; color: var(--violet); opacity: 0.85; }
+  .fg-tile .bento-primary { font-size: 1.05rem; white-space: normal; line-height: 1.25; padding-right: 26px; }
+  .fg-tile .bento-foot { margin-top: auto; padding-top: 14px; }
+  /* Karte in der Leseansicht - gleiche Polsterung wie .dv-card, nur mit eigenem Namen,
+     weil hier Fliesstext und Aufzaehlungen statt Label/Wert-Zeilen stehen. */
+  .fg-card { padding: 16px 18px; margin-bottom: 12px; }
+  .fg-card .bento-title { margin-bottom: 6px; }
+  .fg-text { font-size: 0.88rem; color: var(--text); line-height: 1.55; white-space: pre-wrap; }
+  .fg-liste { margin: 0; padding-left: 18px; font-size: 0.88rem; color: var(--text); line-height: 1.5; }
+  .fg-liste li { margin-bottom: 6px; }
+  .fg-liste li:last-child { margin-bottom: 0; }
+  /* Kamera-Einstellungen: Gruppen mit Titel, Zeilen Label links / Wert rechts */
+  .fg-gruppe + .fg-gruppe { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--stroke); }
+  .fg-gruppe-titel { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted-2); font-weight: 700; margin-bottom: 2px; }
+  .fg-zeile { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--stroke); }
+  .fg-zeile:last-child { border-bottom: none; }
+  .fg-zeile-label { font-size: 0.82rem; color: var(--text); font-weight: 600; flex-shrink: 0; }
+  .fg-zeile-wert { font-size: 0.82rem; color: var(--muted); text-align: right; }
+  /* Notizfeld: soll wie Fliesstext wirken, nicht wie ein Eingabefeld */
+  .fg-notiz { width: 100%; background: transparent; border: none; outline: none; resize: vertical; font: inherit; color: var(--text); line-height: 1.55; padding: 0; }
+  .fg-notiz-btn { margin-top: 10px; }
+  /* Marker im Astro-Kalender - baugleich zu .rt-transfer im Reisen-Zeitstrahl */
+  .fg-marker { position: relative; display: flex; align-items: center; justify-content: center; width: 19px; height: 19px; border-radius: 50%; background: var(--bg); margin-top: 1px; box-shadow: 0 0 0 3px var(--bg); }
+  .fg-marker-icon { width: 14px; height: 14px; display: flex; }
+  /* Trennlinie zwischen Guides und Kalender */
+  .fg-trenner { height: 1px; background: var(--stroke); margin: 28px 0; }
 
   /* ===== EINTRAG-ANSICHT (nur lesen) ===== */
   .dv-card { padding: 4px 16px; margin-bottom: 4px; border-radius: var(--r-entry); }
@@ -429,6 +484,12 @@
   .dv-bullets { padding: 14px 16px; margin: 0; }
   .dv-bullets li { font-size: 0.88rem; line-height: 1.55; color: var(--text); margin-bottom: 8px; margin-left: 16px; }
   .dv-bullets li:last-child { margin-bottom: 0; }
+  /* Fehlende Angabe. Bewusst sichtbar statt ausgeblendet, damit alle Eintraege einer
+     Kategorie denselben Aufbau behalten und vergleichbar bleiben. */
+  .dv-leer { color: var(--muted-2); }
+  /* Notruf abgesetzt, damit er nicht mit der Nummer fuer Geschaeftszeiten verwechselt wird */
+  .dv-row-alarm .dv-k { color: var(--danger); }
+  .dv-row-alarm .dv-v .rt-tel { color: var(--danger); font-weight: 600; }
 
   /* ===== FLÜGE ALS BORDKARTE ===== */
 
@@ -446,7 +507,12 @@
   /* Nach der Öffnen-Animation die Transform entfernen – ein dauerhaftes transform auf einem
      position:fixed-Scrollcontainer bringt iOS-Safari beim Momentum-Scrollen zum Haken. */
   .screen.settled { transform: none; }
-  html.ebene-offen, body.ebene-offen { overflow: hidden; overscroll-behavior: none; }
+  /* Bewusst KEIN overflow: hidden auf html/body. Das aendert bei einer installierten
+     PWA mit viewport-fit=cover die Berechnung des Layout-Viewports - der Web-View reicht
+     dann nicht mehr bis zum unteren Bildschirmrand und es bleibt ein leerer Streifen.
+     Das Durchreichen der Wischbewegung verhindert bereits overscroll-behavior: contain
+     auf den fixen Ebenen selbst; hier genuegt die Bremse am Dokument. */
+  html.ebene-offen, body.ebene-offen { overscroll-behavior: none; }
   /* Zurück-Geste: der Bildschirm folgt dem Finger, darunter wird die vorige Ebene sichtbar */
   .screen.dragging, .mod-container.dragging, #mod-finanzen .detail-sheet.dragging { transition: none !important; will-change: transform; }
   /* Statt eines grossen weichen Schlagschattens (46px Radius, muesste iOS bei jedem

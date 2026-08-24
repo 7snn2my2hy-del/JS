@@ -29,7 +29,7 @@ document.getElementById('mod-fotografie').insertAdjacentHTML('beforeend', `
   <div id="fg-list"></div>
   <div class="empty" id="fg-empty" style="display:none">Noch keine Guides hinterlegt.</div>
 
-  <div style="height:1px;background:var(--stroke);margin:28px 0"></div>
+  <div class="fg-trenner"></div>
   <div class="section-label">Astro-Kalender</div>
   <div class="rt-list" id="fg-calendar"></div>
 </div>
@@ -514,11 +514,11 @@ function fgKachelZeile(label, wert){
 
 function fgTileHTML(s){
   const icon = FG_GUIDE_ICON[s.art] || '';
-  return `<div class="bento-tile" style="position:relative" onclick="fgOpenDetail('${s.id}')">
-    <span style="position:absolute;top:15px;right:16px;width:20px;height:20px;color:var(--violet);opacity:0.85">${icon}</span>
+  return `<div class="bento-tile fg-tile" onclick="fgOpenDetail('${s.id}')">
+    <span class="fg-tile-icon">${icon}</span>
     <div class="bento-head"><span class="bento-title">Guides</span></div>
-    <div class="bento-primary" style="font-size:1.05rem;white-space:normal;line-height:1.25;padding-right:26px">${esc(s.name)}</div>
-    <div class="bento-foot" style="margin-top:auto;padding-top:14px">
+    <div class="bento-primary">${esc(s.name)}</div>
+    <div class="bento-foot">
       <div class="bento-list">
         ${fgKachelZeile('ISO', s.kachelIso)}
         ${fgKachelZeile('Blende', s.kachelBlende)}
@@ -539,19 +539,19 @@ let fgDetailId = null;
 
 function fgAbschnitt(label, text){
   if (!text) return '';
-  return `<div class="glass" style="padding:16px 18px;margin-bottom:12px">
-    <div class="bento-title" style="margin-bottom:6px">${esc(label)}</div>
-    <div style="font-size:0.88rem;color:var(--text);line-height:1.55;white-space:pre-wrap">${esc(text)}</div>
+  return `<div class="glass fg-card">
+    <div class="bento-title">${esc(label)}</div>
+    <div class="fg-text">${esc(text)}</div>
   </div>`;
 }
 
 /* Für Ausrüstung/Komposition/Bearbeitung: einfache Aufzählung statt Fließtext. */
 function fgListeAbschnitt(label, items){
   if (!items || !items.length) return '';
-  const li = items.map(t => `<li style="margin-bottom:6px">${esc(t)}</li>`).join('');
-  return `<div class="glass" style="padding:16px 18px;margin-bottom:12px">
-    <div class="bento-title" style="margin-bottom:8px">${esc(label)}</div>
-    <ul style="margin:0;padding-left:18px;font-size:0.88rem;color:var(--text);line-height:1.5">${li}</ul>
+  const li = items.map(t => `<li>${esc(t)}</li>`).join('');
+  return `<div class="glass fg-card">
+    <div class="bento-title">${esc(label)}</div>
+    <ul class="fg-liste">${li}</ul>
   </div>`;
 }
 
@@ -563,17 +563,17 @@ function fgEinstellungenHTML(gruppen){
   const sichtbar = (gruppen || []).filter(g => g.zeilen && g.zeilen.length);
   if (!sichtbar.length) return '';
   const teile = sichtbar.map((g, gi) => {
-    const zeilen = g.zeilen.map((z, i) => `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:9px 0;${i < g.zeilen.length - 1 ? 'border-bottom:1px solid var(--stroke)' : ''}">
-        <span style="font-size:0.82rem;color:var(--text);font-weight:600;flex-shrink:0">${esc(z.label)}</span>
-        <span style="font-size:0.82rem;color:var(--muted);text-align:right">${esc(z.wert)}</span>
+    const zeilen = g.zeilen.map((z, i) => `<div class="fg-zeile">
+        <span class="fg-zeile-label">${esc(z.label)}</span>
+        <span class="fg-zeile-wert">${esc(z.wert)}</span>
       </div>`).join('');
-    return `<div style="${gi > 0 ? 'margin-top:16px;padding-top:14px;border-top:1px solid var(--stroke)' : ''}">
-      <div style="font-size:0.66rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted-2);font-weight:700;margin-bottom:2px">${esc(g.titel)}</div>
+    return `<div class="fg-gruppe">
+      <div class="fg-gruppe-titel">${esc(g.titel)}</div>
       ${zeilen}
     </div>`;
   }).join('');
-  return `<div class="glass" style="padding:16px 18px;margin-bottom:12px">
-    <div class="bento-title" style="margin-bottom:2px">Kamera-Einstellungen</div>
+  return `<div class="glass fg-card">
+    <div class="bento-title">Kamera-Einstellungen</div>
     ${teile}
   </div>`;
 }
@@ -588,11 +588,11 @@ function fgOpenDetail(id){
     fgAbschnitt('Ausrichtung', s.ausrichtung) +
     fgListeAbschnitt('Komposition', s.komposition) +
     fgListeAbschnitt('Bearbeitung', s.bearbeitung) +
-    `<div class="glass" style="padding:16px 18px;margin-bottom:12px">
-      <div class="bento-title" style="margin-bottom:6px">Notizen</div>
+    `<div class="glass fg-card">
+      <div class="bento-title">Notizen</div>
       <textarea id="fg-notiz-feld" rows="4" placeholder="Eigene Beobachtungen, Ergebnisse, Anpassungen …"
-        style="width:100%;background:transparent;border:none;outline:none;resize:vertical;font:inherit;color:var(--text);line-height:1.55;padding:0">${esc(s.notizen || '')}</textarea>
-      <button class="btn btn-secondary" style="margin-top:10px" onclick="fgSaveNotiz()">Notiz speichern</button>
+        class="fg-notiz">${esc(s.notizen || '')}</textarea>
+      <button class="btn btn-secondary fg-notiz-btn" onclick="fgSaveNotiz()">Notiz speichern</button>
     </div>`;
   const sc = $('fg-detail-screen');
   sc.classList.add('open');
@@ -676,8 +676,8 @@ const FG_ICONS = {
 
 function fgMarkerHTML(typ, farbe){
   const icon = FG_ICONS[typ] || FG_ICONS.vollmond;
-  return `<span style="position:relative;display:flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;background:var(--bg);margin-top:1px;box-shadow:0 0 0 3px var(--bg)">
-    <span style="width:14px;height:14px;color:${farbe};display:flex">${icon}</span>
+  return `<span class="fg-marker">
+    <span class="fg-marker-icon" style="color:${farbe}">${icon}</span>
   </span>`;
 }
 

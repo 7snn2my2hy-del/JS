@@ -830,7 +830,33 @@ function renderOverviewTab(t){
       <div class="stat"><div class="stat-ic ic-foto">${ICON_CAMERA}</div><div class="stat-value">${activities.filter(x=>x.tripId===t.id&&x.type==='foto').length}</div></div>
     </div>
   </div>`;
-  return hero + renderTodosSection(t) + renderPackSection(t);
+  return hero + renderOperatorSection(t) + renderTodosSection(t) + renderPackSection(t);
+}
+/* Veranstalter-Kontakt. Gilt fuer die ganze Reise, nicht fuer eine einzelne Station -
+   deshalb auf Reise-Ebene und nicht am Hotel. Der Notruf ist abgesetzt, damit er im
+   Ernstfall nicht mit der Nummer fuer Geschaeftszeiten verwechselt wird. */
+function renderOperatorSection(t){
+  const hat = ['operator','opContact','opPhone','opEmergency','opOffice','opEmail','opNotes'].some(k=>String(t[k]||'').trim());
+  if (!hat) return '';
+  const zeile = (label, wert, klasse) => {
+    const v = String(wert||'').trim();
+    if (!v) return '';
+    return `<div class="dv-row${klasse?' '+klasse:''}"><span class="dv-k">${esc(label)}</span><span class="dv-v">${v}</span></div>`;
+  };
+  const tel = nr => `<a class="rt-tel" href="tel:${esc(String(nr).replace(/[^+0-9]/g,''))}">${esc(nr)}</a>`;
+  const mail = ad => `<a class="rt-tel" href="mailto:${esc(ad)}">${esc(ad)}</a>`;
+  const zeilen = [
+    zeile('Veranstalter', t.operator ? esc(t.operator) : ''),
+    zeile('Ansprechpartner', t.opContact ? esc(t.opContact) : ''),
+    zeile('Telefon', t.opPhone ? tel(t.opPhone) : ''),
+    zeile('Weiteres Büro', t.opOffice ? tel(t.opOffice) : ''),
+    zeile('Notruf', t.opEmergency ? tel(t.opEmergency) : '', 'dv-row-alarm'),
+    zeile('E-Mail', t.opEmail ? mail(t.opEmail) : '')
+  ].join('');
+  const hinweis = String(t.opNotes||'').trim()
+    ? `<div class="dv-card glass dv-prose">${String(t.opNotes).trim().split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x).replace(/\n/g,'<br>')}</p>`).join('')}</div>`
+    : '';
+  return `<div class="section-label">Veranstalter</div>${zeilen?`<div class="dv-card glass">${zeilen}</div>`:''}${hinweis}`;
 }
 /* Packliste – gleiche Mechanik wie die Checkliste, direkt in der Übersicht */
 function renderPackSection(t){
@@ -953,28 +979,41 @@ function rtDateCol(iso, small){
    und Wo; jede weiterfuehrende Angabe steht in der Eintrag-Ansicht. Die Funktion bleibt
    als eine Stelle erhalten, damit alle fuenf Zeilentypen gleich behandelt werden. */
 function rtNotesHTML(o){ return ''; }
+/* Telefonnummer als waehlbare Unterzeile. stopPropagation, weil ein Tipp auf die Zeile
+   sonst die Eintrag-Ansicht oeffnet statt zu waehlen. */
+/* Chevron am rechten Zeilenrand: einziger Weg in die Detailansicht. Die Zeile selbst
+   bleibt stumm, Bearbeiten und Loeschen laufen ueber das Wischen - damit verhaelt sich
+   der Zeitstrahl wie die Listen in Finanzen und Impfpass. */
+function rtChevron(type, id){
+  return `<button type="button" class="rt-chev" aria-label="Mehr Infos" onclick="event.stopPropagation();rpOpenDetail('${type}','${id}')">›</button>`;
+}
+function rtPhoneHTML(o){
+  const nr = String(o.phone||'').trim();
+  if (!nr) return '';
+  return `<div class="rt-sub"><a class="rt-tel" href="tel:${esc(nr.replace(/[^+0-9]/g,''))}" onclick="event.stopPropagation()">${esc(nr)}</a></div>`;
+}
 function renderRouteRow(item, last){
   const o = item.o, lc = last?' last':'';
   if (item.art === 'transfer'){
     const strecke = [o.from, o.to].filter(Boolean).join(' → ') || 'Transfer';
     const kurz = [o.distance, o.duration].filter(Boolean).join(' · ');
-    return swipeWrap('transfer', o.id, `<div class="rt-row transfer${lc}" onclick="rpOpenDetail('transfer','${o.id}')">
+    return swipeWrap('transfer', o.id, `<div class="rt-row transfer${lc}">
       ${rtDateCol(o.date)}
       <div class="rt-line"><span class="rt-transfer">${ICON_TRANSFER}</span></div>
       <div class="rt-body">
         <div class="rt-name">${esc(strecke)}</div>
-        <div class="rt-meta">
-          ${o.date?`<span>${displayDate(o.date)}${o.time?' · '+esc(o.time)+' Uhr':''}</span>`:''}
-          ${kurz?`<span>${esc(kurz)}</span>`:''}
-        </div>
+        ${o.time?`<div class="rt-meta"><span>${esc(o.time)} Uhr</span></div>`:''}
+        ${kurz?`<div class="rt-sub">${esc(kurz)}</div>`:''}
+        ${rtPhoneHTML(o)}
         ${rtNotesHTML(o)}
       </div>
+      ${rtChevron('transfer', o.id)}
     </div>`);
   }
   if (item.art === 'flight'){
     const a = splitAirport(o.from), b = splitAirport(o.to);
     const plus = arrivalDayOffset(o), dauer = o.duration || '';
-    return swipeWrap('flight', o.id, `<div class="rt-row flight${lc}" onclick="rpOpenDetail('flight','${o.id}')">
+    return swipeWrap('flight', o.id, `<div class="rt-row flight${lc}">
       ${rtDateCol(o.date)}
       <div class="rt-line"><span class="rt-plane">${ICON_PLANE}</span></div>
       <div class="rt-body">
@@ -984,15 +1023,17 @@ function renderRouteRow(item, last){
           ${dauer?`<span class="rt-nights">${esc(dauer)}</span>`:''}
         </div>
         ${(o.airline||o.flightNo)?`<div class="rt-sub">${esc([o.airline,o.flightNo].filter(Boolean).join(' · '))}</div>`:''}
+        ${rtPhoneHTML(o)}
         ${rtNotesHTML(o)}
       </div>
+      ${rtChevron('flight', o.id)}
     </div>`);
   }
   if (item.art === 'car'){
     const days = nightsBetween(o.pickupDate, o.dropoffDate);
     const route = [o.pickupPlace, o.dropoffPlace].filter(Boolean);
     const routeTxt = route.length ? (route.length===2 && route[0]!==route[1] ? route[0]+' → '+route[1] : route[0]) : '';
-    return swipeWrap('car', o.id, `<div class="rt-row car${lc}" onclick="rpOpenDetail('car','${o.id}')">
+    return swipeWrap('car', o.id, `<div class="rt-row car${lc}">
       ${rtDateCol(o.pickupDate)}
       <div class="rt-line"><span class="rt-car">${ICON_CAR}</span></div>
       <div class="rt-body">
@@ -1002,8 +1043,10 @@ function renderRouteRow(item, last){
           ${days?`<span class="rt-nights green">${days} ${days===1?'Tag':'Tage'}</span>`:''}
         </div>
         ${[o.vehicle, routeTxt].filter(Boolean).map(t=>`<div class="rt-sub">${esc(t)}</div>`).join('')}
+        ${rtPhoneHTML(o)}
         ${rtNotesHTML(o)}
       </div>
+      ${rtChevron('car', o.id)}
     </div>`);
   }
   if (item.art === 'hotel'){
@@ -1011,7 +1054,7 @@ function renderRouteRow(item, last){
     const ort = o.city || o.address || '';
     const child = item.child;
     const marker = child ? `<span class="rt-cmark bed">${ICON_BED}</span>` : `<span class="rt-bed">${ICON_BED}</span>`;
-    return swipeWrap('hotel', o.id, `<div class="rt-row hotel${child?' rt-child':''}${lc}" onclick="rpOpenDetail('hotel','${o.id}')">
+    return swipeWrap('hotel', o.id, `<div class="rt-row hotel${child?' rt-child':''}${lc}">
       ${rtDateCol(o.checkin, child)}
       <div class="rt-line">${marker}</div>
       <div class="rt-body">
@@ -1021,26 +1064,30 @@ function renderRouteRow(item, last){
           ${n?`<span class="rt-nights amber">${n} ${n===1?'Nacht':'Nächte'}</span>`:''}
         </div>
         ${(ort||o.board)?`<div class="rt-sub">${esc([ort,o.board].filter(Boolean).join(' · '))}</div>`:''}
+        ${rtPhoneHTML(o)}
         ${rtNotesHTML(o)}
       </div>
+      ${rtChevron('hotel', o.id)}
     </div>`);
   }
   if (item.art === 'activity'){
     const child = item.child;
     const marker = child ? `<span class="rt-cmark pin">${ICON_PIN}</span>` : `<span class="rt-pin">${ICON_PIN}</span>`;
-    return swipeWrap('activity', o.id, `<div class="rt-row activity${child?' rt-child':''}${lc}" onclick="rpOpenDetail('activity','${o.id}')">
+    return swipeWrap('activity', o.id, `<div class="rt-row activity${child?' rt-child':''}${lc}">
       ${rtDateCol(o.date, child)}
       <div class="rt-line">${marker}</div>
       <div class="rt-body">
         <div class="rt-name">${esc(o.name)}</div>
-        ${(o.date||o.time)?`<div class="rt-meta"><span>${displayDate(o.date)||'?'}${o.time?' · '+esc(o.time)+' Uhr':''}</span></div>`:''}
+        ${o.time?`<div class="rt-meta"><span>${esc(o.time)} Uhr</span></div>`:''}
+        ${rtPhoneHTML(o)}
         ${rtNotesHTML(o)}
       </div>
+      ${rtChevron('activity', o.id)}
     </div>`);
   }
   // stop (Gruppen-Header)
   const n = nightsBetween(o.arrival, o.departure);
-  return swipeWrap('stop', o.id, `<div class="rt-row${lc}" onclick="rpOpenDetail('stop','${o.id}')">
+  return swipeWrap('stop', o.id, `<div class="rt-row${lc}">
     ${rtDateCol(o.arrival)}
     <div class="rt-line"><span class="rt-dot"></span></div>
     <div class="rt-body">
@@ -1051,6 +1098,7 @@ function renderRouteRow(item, last){
       </div>
       ${rtNotesHTML(o)}
     </div>
+    ${rtChevron('stop', o.id)}
   </div>`);
 }
 /* Fotografie: immer offene Foto-Ort-Karten direkt im Tab.
@@ -1289,41 +1337,58 @@ function addTodoInline(silent){
 /* ===== EINTRAG-ANSICHT (nur lesen) =====
    Antippen einer Zeile im Zeitstrahl oeffnet diese Ansicht. Bearbeiten und Loeschen
    laufen unveraendert ueber das Wischen - deshalb steht hier bewusst kein Formular. */
+/* Ansicht eines Eintrags.
+   Grundsatz: Innerhalb einer Kategorie sieht JEDER Eintrag gleich aus. Fehlende Werte
+   werden nicht ausgeblendet, sondern als "—" gezeigt - sonst haette ein Hotel ohne GPS
+   eine Zeile weniger als eines mit, und die Karten waeren nie vergleichbar. */
+const DV_LEER = '<span class="dv-leer">—</span>';
+function dvWert(label, wert){
+  const v = (wert === undefined || wert === null) ? '' : String(wert).trim();
+  if (!v) return DV_LEER;
+  if (label === 'Telefon' || label === 'Notruf')
+    return `<a class="rt-tel" href="tel:${esc(v.replace(/[^+0-9]/g,''))}">${esc(v)}</a>`;
+  if (label === 'E-Mail') return `<a class="rt-tel" href="mailto:${esc(v)}">${esc(v)}</a>`;
+  return esc(v);
+}
 function dvKV(titel, paare){
   const zeilen = paare
-    .filter(([,v]) => v !== undefined && v !== null && String(v).trim() !== '')
-    .map(([k,v]) => `<div class="dv-row"><span class="dv-k">${esc(k)}</span><span class="dv-v">${esc(v)}</span></div>`)
+    .map(([k,v]) => `<div class="dv-row"><span class="dv-k">${esc(k)}</span><span class="dv-v">${dvWert(k, v)}</span></div>`)
     .join('');
-  if (!zeilen) return '';
   return (titel ? `<div class="section-label">${esc(titel)}</div>` : '') + `<div class="dv-card glass">${zeilen}</div>`;
 }
 /* Freitext mit echten Absaetzen: Leerzeile trennt Absaetze, einzelner Umbruch bleibt Umbruch. */
 function dvProse(titel, txt){
   const t = String(txt||'').trim();
-  if (!t) return '';
-  const absaetze = t.split(/\n\s*\n/).map(p=>p.trim()).filter(Boolean)
-    .map(p=>`<p>${esc(p).replace(/\n/g,'<br>')}</p>`).join('');
-  return `<div class="section-label">${esc(titel)}</div><div class="dv-card glass dv-prose">${absaetze}</div>`;
+  const inhalt = t
+    ? t.split(/\n\s*\n/).map(p=>p.trim()).filter(Boolean).map(p=>`<p>${esc(p).replace(/\n/g,'<br>')}</p>`).join('')
+    : `<p>${DV_LEER}</p>`;
+  return `<div class="section-label">${esc(titel)}</div><div class="dv-card glass dv-prose">${inhalt}</div>`;
 }
 /* Eine Zeile pro Punkt -> Aufzaehlung */
 function dvListe(titel, txt){
   const zeilen = String(txt||'').split('\n').map(s=>s.trim()).filter(Boolean);
-  if (!zeilen.length) return '';
-  return `<div class="section-label">${esc(titel)}</div><div class="dv-card glass"><ul class="dv-bullets">${zeilen.map(z=>`<li>${esc(z)}</li>`).join('')}</ul></div>`;
+  const inhalt = zeilen.length
+    ? `<ul class="dv-bullets">${zeilen.map(z=>`<li>${esc(z)}</li>`).join('')}</ul>`
+    : `<div class="dv-prose"><p>${DV_LEER}</p></div>`;
+  return `<div class="section-label">${esc(titel)}</div><div class="dv-card glass">${inhalt}</div>`;
 }
 function dvZeitraum(a, b){
   if (!a && !b) return '';
   return `${displayDate(a)||'?'} – ${displayDate(b)||'?'}`;
 }
+function dvNaechte(a, b){
+  const n = nightsBetween(a, b);
+  return n ? `${n} ${n===1?'Nacht':'Nächte'}` : '';
+}
+function dvUhr(v){ const t = String(v||'').trim(); return t ? t+' Uhr' : ''; }
 function dvBody(type, o){
   if (type==='hotel'){
-    const n = nightsBetween(o.checkin, o.checkout);
     return dvKV('Aufenthalt', [
         ['Zeitraum', dvZeitraum(o.checkin, o.checkout)],
-        ['Nächte', n ? `${n} ${n===1?'Nacht':'Nächte'}` : ''],
+        ['Nächte', dvNaechte(o.checkin, o.checkout)],
         ['Zimmer', o.room], ['Verpflegung', o.board],
-        ['Check-in ab', o.checkinTime ? o.checkinTime+' Uhr' : ''],
-        ['Check-out bis', o.checkoutTime ? o.checkoutTime+' Uhr' : '']
+        ['Check-in ab', dvUhr(o.checkinTime)],
+        ['Check-out bis', dvUhr(o.checkoutTime)]
       ])
       + dvListe('Inklusive', o.included)
       + dvKV('Ort & Kontakt', [['Ort', o.city], ['GPS', o.gps], ['Telefon', o.phone], ['Ansprechpartner', o.contact]])
@@ -1332,7 +1397,7 @@ function dvBody(type, o){
   if (type==='transfer'){
     return dvKV('Fahrt', [
         ['Von', o.from], ['Nach', o.to],
-        ['Datum', displayDate(o.date)], ['Abfahrt', o.time ? o.time+' Uhr' : ''],
+        ['Datum', displayDate(o.date)], ['Abfahrt', dvUhr(o.time)],
         ['Entfernung', o.distance], ['Fahrzeit', o.duration]
       ])
       + dvProse('Wegbeschreibung', o.notes);
@@ -1341,8 +1406,8 @@ function dvBody(type, o){
     const plus = arrivalDayOffset(o);
     return dvKV('Flug', [
         ['Von', o.from], ['Nach', o.to],
-        ['Abflug', [displayDate(o.date), o.time ? o.time+' Uhr' : ''].filter(Boolean).join(' · ')],
-        ['Ankunft', [displayDate(o.arrivalDate), o.arrivalTime ? o.arrivalTime+' Uhr' : '', plus>0?`(+${plus} Tag${plus===1?'':'e'})`:''].filter(Boolean).join(' · ')],
+        ['Abflug', [displayDate(o.date), dvUhr(o.time)].filter(Boolean).join(' · ')],
+        ['Ankunft', [displayDate(o.arrivalDate), dvUhr(o.arrivalTime), plus>0?`(+${plus} Tag${plus===1?'':'e'})`:''].filter(Boolean).join(' · ')],
         ['Flugdauer', o.duration], ['Airline', o.airline], ['Flugnummer', o.flightNo],
         ['Klasse', o.cabin], ['Sitzplatz', o.seat], ['Buchungsnummer', o.bookingRef]
       ])
@@ -1351,19 +1416,18 @@ function dvBody(type, o){
   if (type==='car'){
     return dvKV('Mietwagen', [
         ['Anbieter', o.company], ['Fahrzeug', o.vehicle],
-        ['Abholung', [o.pickupPlace, displayDate(o.pickupDate), o.pickupTime ? o.pickupTime+' Uhr' : ''].filter(Boolean).join(' · ')],
-        ['Rückgabe', [o.dropoffPlace, displayDate(o.dropoffDate), o.dropoffTime ? o.dropoffTime+' Uhr' : ''].filter(Boolean).join(' · ')],
-        ['Buchungsnummer', o.bookingRef]
+        ['Abholung', [o.pickupPlace, displayDate(o.pickupDate), dvUhr(o.pickupTime)].filter(Boolean).join(' · ')],
+        ['Rückgabe', [o.dropoffPlace, displayDate(o.dropoffDate), dvUhr(o.dropoffTime)].filter(Boolean).join(' · ')],
+        ['Buchungsnummer', o.bookingRef], ['Telefon', o.phone]
       ])
       + dvProse('Notizen', o.notes);
   }
   if (type==='activity'){
-    return dvKV('Aktivität', [['Datum', displayDate(o.date)], ['Uhrzeit', o.time ? o.time+' Uhr' : '']])
+    return dvKV('Aktivität', [['Datum', displayDate(o.date)], ['Uhrzeit', dvUhr(o.time)], ['Telefon', o.phone]])
       + dvProse('Notizen', o.notes);
   }
   // stop
-  const n = nightsBetween(o.arrival, o.departure);
-  return dvKV('Stopp', [['Zeitraum', dvZeitraum(o.arrival, o.departure)], ['Nächte', n ? `${n} ${n===1?'Nacht':'Nächte'}` : '']])
+  return dvKV('Stopp', [['Zeitraum', dvZeitraum(o.arrival, o.departure)], ['Nächte', dvNaechte(o.arrival, o.departure)]])
     + dvProse('Beschreibung', o.notes);
 }
 function dvKopf(type, o){
@@ -1375,8 +1439,7 @@ function rpOpenDetail(type, id){
   const o = arr(type).find(x=>x.id===id); if(!o) return;
   $('dv-title').textContent = dvKopf(type, o);
   $('dv-sub').textContent = TITLES[type] || '\u00A0';
-  const html = dvBody(type, o);
-  $('dv-body').innerHTML = html || `<div class="empty glass"><b>Keine weiteren Angaben</b>Zum Ergänzen die Zeile in der Route nach links wischen und „Bearbeiten“ wählen.</div>`;
+  $('dv-body').innerHTML = dvBody(type, o);
   $('detail-screen').classList.add('open');
 }
 function rpCloseDetail(){ $('detail-screen').classList.remove('open','settled'); }
@@ -1392,7 +1455,14 @@ const SCHEMAS = {
     { key:'name', label:'Reisename', type:'text', required:true, placeholder:'z.B. Namibia' },
     { key:'country', label:'Land', type:'text', placeholder:'z.B. Namibia' },
     { key:'start', label:'Start', type:'text', date:true, placeholder:'z.B. 09.09.2026', pair:'start' },
-    { key:'end', label:'Ende', type:'text', date:true, placeholder:'z.B. 23.09.2026', pair:'end' }
+    { key:'end', label:'Ende', type:'text', date:true, placeholder:'z.B. 23.09.2026', pair:'end' },
+    { key:'operator', label:'Veranstalter', type:'text', placeholder:'z.B. Wilderness Safaris Namibia' },
+    { key:'opContact', label:'Ansprechpartner', type:'text', placeholder:'z.B. Daleen Steyn, Reiseberaterin' },
+    { key:'opPhone', label:'Telefon', type:'text', placeholder:'z.B. +264 61 274 500', pair:'start' },
+    { key:'opEmergency', label:'Notruf', type:'text', placeholder:'z.B. +264 81 124 3066', pair:'end' },
+    { key:'opOffice', label:'Weiteres Büro', type:'text', placeholder:'z.B. +264 62 540 055' },
+    { key:'opEmail', label:'E-Mail', type:'text', placeholder:'z.B. notruf@anbieter.com' },
+    { key:'opNotes', label:'Hinweise zum Veranstalter', type:'textarea' }
   ],
   stop: [
     { key:'name', label:'Ort', type:'text', required:true, placeholder:'z.B. NamibRand' },
@@ -1448,13 +1518,15 @@ const SCHEMAS = {
     { key:'pickupTime', label:'Abholung um', type:'time', pair:'end' },
     { key:'dropoffDate', label:'Rückgabe am', type:'text', date:true, placeholder:'z.B. 22.09.2026', pair:'start' },
     { key:'dropoffTime', label:'Rückgabe um', type:'time', pair:'end' },
-    { key:'bookingRef', label:'Buchungsnummer', type:'text', placeholder:'z.B. 9DXP4O' },
+    { key:'bookingRef', label:'Buchungsnummer', type:'text', placeholder:'z.B. 9DXP4O', pair:'start' },
+    { key:'phone', label:'Telefon', type:'text', placeholder:'z.B. +264 62 543700', pair:'end' },
     { key:'notes', label:'Notizen', type:'textarea' }
   ],
   activity: [
     { key:'name', label:'Aktivität', type:'text', required:true, placeholder:'z.B. Sundowner Düne 45' },
     { key:'date', label:'Datum', type:'text', date:true, placeholder:'z.B. 09.09.2026', pair:'start' },
     { key:'time', label:'Uhrzeit', type:'time', pair:'end' },
+    { key:'phone', label:'Telefon', type:'text', placeholder:'z.B. +264 63 683 188' },
     { key:'notes', label:'Notizen', type:'textarea' }
   ],
   photo: [

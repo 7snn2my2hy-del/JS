@@ -621,7 +621,7 @@ function renderHeroBento() {
       const order = Object.entries(cats).sort((a,b) => b[1] - a[1]);
       const bar = posTotal > 0
         ? order.map(([cat,v]) => `<span class="bento-seg" style="flex:${(v/posTotal).toFixed(4)};background:${CAT_COL[cat]||'var(--muted)'}"></span>`).join('')
-        : `<span class="bento-seg" style="flex:1;background:var(--stroke)"></span>`;
+        : `<span class="bento-seg bento-seg-leer"></span>`;
       const zeile = (cat, v, farbe) => `<div class="bento-break-row"><span class="bl"><span class="bento-leg-dot" style="background:${farbe}"></span>${esc(cat)}</span><span class="bv">${fmt(v)}</span></div>`;
       const legend = order.map(([cat,v]) => zeile(cat, v, CAT_COL[cat] || 'var(--muted)')).join('')
         + Object.entries(negCats).sort((a,b) => a[1] - b[1]).map(([cat,v]) => zeile(cat, v, 'var(--danger)')).join('');
@@ -671,7 +671,7 @@ function renderHeroBento() {
         const dots = punkte.map(p => `<circle cx="${p.xy[0]}" cy="${p.xy[1]}" r="13" fill="${p.col}"/><circle cx="${p.xy[0]}" cy="${p.xy[1]}" r="24" fill="${p.col}" opacity="0.25"/>`).join('');
         map = `<div class="bento-map-wrap"><svg class="bento-map" viewBox="0 11.8 1000 406.5" preserveAspectRatio="xMidYMid meet">
           <path d="${rest}" fill="rgba(255,255,255,0.12)"/>${laender}${dots}
-        </svg><div class="bento-map-legend"><span><i style="background:var(--violet)"></i>${String(yearNow).slice(2)}</span><span><i style="background:var(--petrol)"></i>${String(yearNext).slice(2)}</span></div></div>`;
+        </svg><div class="bento-map-legend"><span><i class="jahr-1"></i>${String(yearNow).slice(2)}</span><span><i class="jahr-2"></i>${String(yearNext).slice(2)}</span></div></div>`;
       }
       tiles.push(`<div class="bento-tile" onclick="openDetail('urlaub')">
         <div class="bento-head"><span class="bento-title">Urlaubsbudget ${jahr}</span></div>
@@ -815,7 +815,7 @@ function renderDashboard() {
       return `<div class="legend-row"><span class="legend-dot" style="background:${s.color}"></span><span class="legend-name">${s.name}</span><span class="legend-val">${fmt(s.val)}</span><span class="legend-pct">${pct}%</span></div>`;
     }).join('');
     if (income > 0 && totalExpenses > income) {
-      legend.innerHTML += `<div class="legend-row over"><span class="legend-dot" style="background:var(--danger)"></span><span class="legend-name">Über Budget</span><span class="legend-val">${fmt(totalExpenses - income)}</span><span class="legend-pct"></span></div>`;
+      legend.innerHTML += `<div class="legend-row over"><span class="legend-dot legend-dot-ueber"></span><span class="legend-name">Über Budget</span><span class="legend-val">${fmt(totalExpenses - income)}</span><span class="legend-pct"></span></div>`;
     }
   } else {
     legend.innerHTML = '<div class="dash-empty">Noch keine Daten.</div>';
@@ -2092,7 +2092,7 @@ function renderUrlaubKontingentRows() {
   if (!wrap) return;
   const { years } = urlaubGroups();
   const numYears = years.filter(y => y !== 'ohne').map(Number).filter(Boolean).sort((a, b) => a - b);
-  if (!numYears.length) { wrap.innerHTML = '<div class="ub-label" style="padding:2px 0">Noch keine Reisejahre angelegt.</div>'; return; }
+  if (!numYears.length) { wrap.innerHTML = '<div class="ub-label" class="fin-row-tight">Noch keine Reisejahre angelegt.</div>'; return; }
   // "Kontingent" nur einmal, auf derselben Zeile wie das erste Jahr - wie bei
   // "Jahresbudget (pro Jahr)" darunter (Beschriftung links, Wert rechts). Weitere Jahre
   // folgen als eigene Zeilen, rechtsbuendig auf derselben Kante, ohne wiederholte
@@ -2101,7 +2101,7 @@ function renderUrlaubKontingentRows() {
     const anspruch = urlaubAnspruchJahr(y);
     const wert = `<span class="ub-auto-val">${y} | <span class="kv-editable" onclick="startInlineUrlaubAnspruch(${y}, this)">${ruZahl(anspruch)}</span> Tage</span>`;
     if (i === 0) return `<div class="uc-budget-row"><span class="ub-label">Urlaubstage</span>${wert}</div>`;
-    return `<div class="uc-budget-row" style="justify-content:flex-end">${wert}</div>`;
+    return `<div class="uc-budget-row" class="fin-row-right">${wert}</div>`;
   }).join('');
 }
 
