@@ -204,13 +204,13 @@
 
   /* Reise-Kacheln (kompakt, 2-spaltig wie Finanzen-Bento) */
   /* Swipe-Architektur wie Finanzen: tile-wrap clippt, tile-slider verschiebt sich */
-  .tile-wrap { position: relative; border-radius: 26px; overflow: hidden; touch-action: pan-y; }
-  .tile-slider { display: flex; flex-direction: row; width: 100%; touch-action: pan-y; transition: transform 0.42s var(--spring); }
+  .tile-wrap { position: relative; border-radius: 26px; overflow: hidden; touch-action: pan-y; min-width: 0; }
+  .tile-slider { display: flex; flex-direction: row; width: 100%; min-width: 0; touch-action: pan-y; transition: transform 0.42s var(--spring); }
   .tile-slider.swiping { will-change: transform; }
   .tile-slider.no-transition { transition: none; }
   .tile-slider .trip-tile { flex: 0 0 100%; width: 100%; }
   /* Einträge (Hotels, Flüge, Stopps …) nutzen dieselbe Swipe-Mechanik wie die Reisekacheln */
-  .tile-slider .entry, .tile-slider .rt-row { flex: 0 0 100%; width: 100%; }
+  .tile-slider .entry, .tile-slider .rt-row { flex: 0 0 100%; width: 100%; min-width: 0; }
   .entry-wrap { border-radius: var(--r-entry); margin-bottom: 10px; }
   .entry-wrap:last-child { margin-bottom: 0; }
   .list .entry-wrap .entry { margin: 0; }
@@ -292,7 +292,7 @@
   /* Listen-Einträge (Detail-Tabs) */
   .list { display: flex; flex-direction: column; gap: 10px; }
   /* ===== ROUTE ALS ZEITLEISTE ===== */
-  .rt-list { margin-top: 4px; }
+  .rt-list { margin-top: 4px; min-width: 0; }
   .rt-row { display: grid; grid-template-columns: 38px 22px 1fr; align-items: start; cursor: pointer; transition: transform 0.3s var(--spring); }
   .rt-row:active { transform: scale(0.99); }
   /* Datumsspalte */
@@ -412,9 +412,10 @@
   /* Inhalt */
   .rt-body { min-width: 0; padding: 0 2px 24px 8px; }
   .rt-row.last .rt-body { padding-bottom: 6px; }
-  .rt-name { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; }
-  .rt-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; font-size: 0.76rem; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .rt-nights { padding: 2px 7px; border-radius: var(--r-pill); background: rgba(0,179,184,0.15); color: var(--petrol); font-weight: 600; font-size: 0.7rem; }
+  .rt-name { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; min-width: 0; overflow-wrap: anywhere; }
+  .rt-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; font-size: 0.76rem; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 0; }
+  .rt-meta > * { min-width: 0; overflow-wrap: anywhere; }
+  .rt-nights { padding: 2px 7px; border-radius: var(--r-pill); background: rgba(0,179,184,0.15); color: var(--petrol); font-weight: 600; font-size: 0.7rem; white-space: normal; overflow-wrap: anywhere; }
   /* Nur ein Vorgeschmack. Der vollstaendige Text steht in der Eintrag-Ansicht (Antippen),
      sonst waelzt sich eine Wegbeschreibung ueber den halben Zeitstrahl. */
   .rt-notes { margin-top: 6px; font-size: 0.79rem; color: var(--muted-2); line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
