@@ -338,11 +338,11 @@
   /* Mietwagen im Zeitstrahl: Auto-Marker in Grün */
   .rt-car { position: relative; display: flex; align-items: center; justify-content: center; width: 19px; height: 19px; border-radius: 50%; background: var(--bg); margin-top: 1px; box-shadow: 0 0 0 3px var(--bg); }
   .rt-car svg { width: 15px; height: 15px; color: var(--green); }
-  .rt-row.car .rt-name { color: var(--green); }
+  .rt-row.car .rt-name { font-size: 0.92rem; font-weight: 600; color: var(--green); }
   /* Transfer (Fahrt zwischen zwei Orten) im Zeitstrahl: Routen-Marker in Cyan */
   .rt-transfer { position: relative; display: flex; align-items: center; justify-content: center; width: 19px; height: 19px; border-radius: 50%; background: var(--bg); margin-top: 1px; box-shadow: 0 0 0 3px var(--bg); }
   .rt-transfer svg { width: 15px; height: 15px; color: var(--cyan); }
-  .rt-row.transfer .rt-name { color: var(--cyan); }
+  .rt-row.transfer .rt-name { font-size: 0.92rem; font-weight: 600; color: var(--cyan); }
   .ac-transfer .ac-ic { background: rgba(100,210,255,0.16); color: var(--cyan); }
   /* Unter-Einträge (Hotels/Aktivitäten) eingerückt unter ihrem Stopp */
   .rt-row.rt-child .rt-body { padding-left: 12px; }
@@ -419,7 +419,6 @@
   /* Nur ein Vorgeschmack. Der vollstaendige Text steht in der Eintrag-Ansicht (Antippen),
      sonst waelzt sich eine Wegbeschreibung ueber den halben Zeitstrahl. */
   .rt-notes { margin-top: 6px; font-size: 0.79rem; color: var(--muted-2); line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .rt-more { margin-top: 4px; font-size: 0.72rem; font-weight: 600; color: var(--muted-2); }
 
   /* ===== EINTRAG-ANSICHT (nur lesen) ===== */
   .dv-card { padding: 4px 16px; margin-bottom: 4px; border-radius: var(--r-entry); }
