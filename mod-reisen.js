@@ -482,11 +482,16 @@ function parseImport(){
   importItems=[]; importTripMeta=null;
   // Reisedaten (optional)
   if(p.trip && typeof p.trip==='object'){
+    // Laeuft ueber das Reise-Schema statt ueber eine feste Liste. Vorher waren nur
+    // Name, Land, Start und Ende vorgesehen - neue Felder (z.B. der Veranstalter-
+    // Kontakt) waeren beim Import stillschweigend unter den Tisch gefallen.
     const m={};
-    if(p.trip.name) m.name=String(p.trip.name).trim();
-    if(p.trip.country) m.country=String(p.trip.country).trim();
-    const st=importDate(p.trip.start), en=importDate(p.trip.end);
-    if(st) m.start=st; if(en) m.end=en;
+    for(const f of SCHEMAS.trip){
+      const v=p.trip[f.key];
+      if(v===undefined || v===null) continue;
+      if(f.date){ const dv=importDate(v); if(dv) m[f.key]=dv; continue; }
+      const t=String(v).trim(); if(t) m[f.key]=t;
+    }
     if(Object.keys(m).length){
       importTripMeta=m;
       const parts=[m.country, (m.start||m.end)?`${displayDate(m.start)||'?'} – ${displayDate(m.end)||'?'}`:''].filter(Boolean);
