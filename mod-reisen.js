@@ -954,9 +954,8 @@ function rtDateCol(iso, small){
 function rtNotesHTML(o){
   const txt = String(o.notes||'').trim();
   if (!txt) return '';
-  const eine = txt.split(/\s*\n\s*/).filter(Boolean).join(' ');
-  const lang = eine.length > 150;
-  return `<div class="rt-notes">${esc(eine)}</div>${lang?'<div class="rt-more">Antippen für alle Angaben</div>':''}`;
+  const eine = (txt.split(/\n\s*\n/)[0] || '').split(/\s*\n\s*/).filter(Boolean).join(' ');
+  return `<div class="rt-notes">${esc(eine)}</div>`;
 }
 function renderRouteRow(item, last){
   const o = item.o, lc = last?' last':'';
@@ -970,7 +969,7 @@ function renderRouteRow(item, last){
         <div class="rt-name">${esc(strecke)}</div>
         <div class="rt-meta">
           ${o.date?`<span>${displayDate(o.date)}${o.time?' · '+esc(o.time)+' Uhr':''}</span>`:''}
-          ${kurz?`<span class="rt-nights cyan">${esc(kurz)}</span>`:''}
+          ${kurz?`<span>${esc(kurz)}</span>`:''}
         </div>
         ${rtNotesHTML(o)}
       </div>
@@ -1001,12 +1000,12 @@ function renderRouteRow(item, last){
       ${rtDateCol(o.pickupDate)}
       <div class="rt-line"><span class="rt-car">${ICON_CAR}</span></div>
       <div class="rt-body">
-        <div class="rt-name">${esc(o.company||'Mietwagen')}${o.vehicle?' · '+esc(o.vehicle):''}</div>
+        <div class="rt-name">${esc(o.company||'Mietwagen')}</div>
         <div class="rt-meta">
           ${(o.pickupDate||o.dropoffDate)?`<span>${displayDate(o.pickupDate)||'?'} – ${displayDate(o.dropoffDate)||'?'}</span>`:''}
           ${days?`<span class="rt-nights green">${days} ${days===1?'Tag':'Tage'}</span>`:''}
         </div>
-        ${routeTxt?`<div class="rt-sub">${esc(routeTxt)}</div>`:''}
+        ${[o.vehicle, routeTxt].filter(Boolean).map(t=>`<div class="rt-sub">${esc(t)}</div>`).join('')}
         ${rtNotesHTML(o)}
       </div>
     </div>`);
