@@ -6,7 +6,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#12121c">
 <link rel="manifest" href="manifest.json?v=2608241000">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
@@ -16,8 +16,18 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
   :root {
-    --bg:        #000000;
-    --bg-2:      #0a0a0c;
+    --bg:        #08080b;   /* bewusst kein reines Schwarz - sonst wirkt die untere
+                               Bildhaelfte wie ein abgeschnittener Rand */
+    --bg-2:      #12121c;
+    --bg-3:      #0d0d16;
+    /* Eine einzige Quelle fuer die Hintergrundstimmung. Der Verlauf stand vorher drei Mal
+       im Blatt (body::before, .mod-container, .screen) mit abweichenden Deckkraeften.
+       Das dritte Licht sitzt unten und fuellt die Haelfte, die vorher schwarz blieb. */
+    --ambient:
+      radial-gradient(1100px 700px at 12% -8%, rgba(10,132,255,0.20), transparent 60%),
+      radial-gradient(900px 600px at 105% 10%, rgba(191,90,242,0.14), transparent 55%),
+      radial-gradient(1000px 800px at 15% 102%, rgba(0,179,184,0.13), transparent 62%),
+      linear-gradient(180deg, var(--bg-2), var(--bg) 50%, var(--bg-3) 100%);
     --glass:     rgba(28, 28, 32, 0.5);
     --glass-hi:  rgba(44, 44, 50, 0.58);
     --stroke:    rgba(255, 255, 255, 0.08);
@@ -66,13 +76,11 @@
   body::before {
     content: "";
     position: fixed;
-    inset: -20% 0;
+    inset: 0;
     z-index: -1;
     pointer-events: none;
-    background:
-      radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.16), transparent 60%),
-      radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.12), transparent 55%),
-      linear-gradient(180deg, var(--bg-2), var(--bg) 55%, var(--bg-2) 100%);
+    background: var(--ambient);
+    background-repeat: no-repeat;
   }
 
   .wrap { max-width: 720px; margin: 0 auto; }
@@ -444,12 +452,12 @@
   .entry-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; min-width: 0; }
 
   /* Vollbild-Screens */
-  .screen { position: fixed; inset: 0; z-index: 400; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 18px calc(14px + env(safe-area-inset-bottom)); visibility: hidden; background: var(--bg); background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2), var(--bg) 55%, var(--bg-2) 100%); }
+  .screen { position: fixed; inset: 0; z-index: 400; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 18px calc(14px + env(safe-area-inset-bottom)); visibility: hidden; background: var(--bg); background-image: var(--ambient); }
   .screen.open { transform: translateX(0); visibility: visible; transition: transform 0.4s var(--ease-ios), visibility 0s; }
   /* Nach der Öffnen-Animation die Transform entfernen – ein dauerhaftes transform auf einem
      position:fixed-Scrollcontainer bringt iOS-Safari beim Momentum-Scrollen zum Haken. */
   .screen.settled { transform: none; }
-  html.ebene-offen, body.ebene-offen { overflow: hidden; height: 100%; overscroll-behavior: none; }
+  html.ebene-offen, body.ebene-offen { overflow: hidden; overscroll-behavior: none; }
   /* Zurück-Geste: der Bildschirm folgt dem Finger, darunter wird die vorige Ebene sichtbar */
   .screen.dragging, .mod-container.dragging, #mod-finanzen .detail-sheet.dragging { transition: none !important; will-change: transform; }
   /* Statt eines grossen weichen Schlagschattens (46px Radius, muesste iOS bei jedem
@@ -695,10 +703,8 @@
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     background: var(--bg);
-    background-image:
-      radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%),
-      radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%),
-      linear-gradient(180deg, var(--bg-2), var(--bg) 55%, var(--bg-2) 100%);
+    background-image: var(--ambient);
+    background-repeat: no-repeat;
     padding: max(24px, env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
   }
   .mod-container[hidden] { display: none !important; }
@@ -768,7 +774,7 @@
 /* Hero: Gesamtvermögen */
   #mod-finanzen .hero{ text-align: center; padding: 32px 0 34px; cursor: pointer; }
 /* Detail-Sheet (öffnet über Hero/Bento) */
-  #mod-finanzen .detail-sheet{ position: fixed; inset: 0; z-index: 380; overscroll-behavior: contain; background: var(--bg); background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2), var(--bg) 55%, var(--bg-2) 100%); overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 16px calc(14px + env(safe-area-inset-bottom)); visibility: hidden; }
+  #mod-finanzen .detail-sheet{ position: fixed; inset: 0; z-index: 380; overscroll-behavior: contain; background: var(--bg); background-image: var(--ambient); overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 16px calc(14px + env(safe-area-inset-bottom)); visibility: hidden; }
 #mod-finanzen .detail-sheet.open{ transform: translateX(0); visibility: visible; transition: transform 0.4s var(--ease-ios), visibility 0s; }
 #mod-finanzen .detail-sheet.settled{ transform: none; }
 #mod-finanzen .detail-panel{ display: none; }
