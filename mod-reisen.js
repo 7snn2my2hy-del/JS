@@ -917,13 +917,13 @@ function renderRouteTab(t){
 
   // Top-Level-Knoten (Stopps als Gruppen, Flüge & Mietwagen als eigene Ebene)
   const top = [];
-  tripStops.forEach(s=> top.push({art:'stop',datum:s.arrival||'',zeit:'',prio:2,o:s}));
+  tripStops.forEach(s=> top.push({art:'stop',datum:s.arrival||'',zeit:'',prio:3,o:s}));
   tripFlights.forEach(f=> top.push({art:'flight',datum:f.date||'',zeit:f.time||'',prio:0,o:f}));
+  // Reihenfolge innerhalb eines Tages: Flug (0), Mietwagen (1), Transfer (2), Stopp (3)
   tripCars.forEach(c=> top.push({art:'car',datum:c.pickupDate||'',zeit:c.pickupTime||'',prio:1,o:c}));
-  // Transfers stehen vor dem Stopp, an dem die Fahrt endet (prio 1 < stop prio 2)
-  tripTrans.forEach(x=> top.push({art:'transfer',datum:x.date||'',zeit:x.time||'',prio:1,o:x}));
-  ungrouped.forEach(n=> top.push({...n, prio: n.art==='hotel'?3:4}));
-  top.sort((a,b)=> ((a.datum||'9999-99-99')+(a.zeit||'~~')+a.prio).localeCompare((b.datum||'9999-99-99')+(b.zeit||'~~')+b.prio));
+  tripTrans.forEach(x=> top.push({art:'transfer',datum:x.date||'',zeit:x.time||'',prio:2,o:x}));
+  ungrouped.forEach(n=> top.push({...n, prio: n.art==='hotel'?4:5}));
+  top.sort((a,b)=> ((a.datum||'9999-99-99')+a.prio+(a.zeit||'~~')).localeCompare((b.datum||'9999-99-99')+b.prio+(b.zeit||'~~')));
 
   if(!top.length) return `<div class="empty glass"><b>Noch keine Route</b>Leg Stopps, Flüge, Transfers, Hotels, Mietwagen und Aktivitäten an – Hotels und Aktivitäten ordnen sich automatisch unter dem passenden Stopp ein.</div>`
     + `<button class="add-btn" onclick="openAddPicker()">＋ Hinzufügen</button>`;
@@ -949,14 +949,10 @@ function rtDateCol(iso, small){
     ? `<div class="${cls}"><span class="rt-day">${String(d.getDate()).padStart(2,'0')}</span>${small?'':`<span class="rt-mon">${['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'][d.getMonth()]}</span>`}</div>`
     : `<div class="${cls}"><span class="rt-day">–</span></div>`;
 }
-/* Notizen im Zeitstrahl: erste Zeilen als Vorgeschmack, Rest steht in der Ansicht.
-   Absaetze werden zu einer Zeile zusammengezogen, damit die CSS-Kuerzung greift. */
-function rtNotesHTML(o){
-  const txt = String(o.notes||'').trim();
-  if (!txt) return '';
-  const eine = (txt.split(/\n\s*\n/)[0] || '').split(/\s*\n\s*/).filter(Boolean).join(' ');
-  return `<div class="rt-notes">${esc(eine)}</div>`;
-}
+/* Im Zeitstrahl steht bewusst kein Notiztext mehr. Die Zeile beantwortet nur Was, Wann
+   und Wo; jede weiterfuehrende Angabe steht in der Eintrag-Ansicht. Die Funktion bleibt
+   als eine Stelle erhalten, damit alle fuenf Zeilentypen gleich behandelt werden. */
+function rtNotesHTML(o){ return ''; }
 function renderRouteRow(item, last){
   const o = item.o, lc = last?' last':'';
   if (item.art === 'transfer'){
