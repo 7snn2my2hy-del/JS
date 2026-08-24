@@ -2,7 +2,7 @@
    Eigenständiges Modul. Nutzt den gemeinsamen Unterbau aus index.html.
    Änderungen hier betreffen nur diesen Bereich. */
 
-document.getElementById('mod-reisen').insertAdjacentHTML('beforeend', "<div class=\"wrap\" id=\"home-wrap\">\n  \n\n  <div class=\"app-header\"><button class=\"screen-back\" aria-label=\"Zurück\" onclick=\"closeModule()\">‹</button><span>Jörg's Reisen</span></div>\n\n    <div class=\"glass world-card\" id=\"world-card\"></div>\n\n  <div class=\"section-label\">Meine Reisen</div>\n  <div id=\"trip-tiles\"></div>\n  <button class=\"add-btn\" onclick=\"rpOpenModal('trip')\">＋ Reise hinzufügen</button>\n  <div id=\"done-section\"></div>\n</div>\n\n<!-- ============ LÄNDER-AUSWAHL (Vollbild, damit die Tastatur nichts verdeckt) ============ -->\n<div class=\"screen picker-screen\" id=\"picker-screen\">\n  <div class=\"picker-head\">\n    <div class=\"screen-topbar\">\n      <button class=\"screen-back\" onclick=\"closePicker()\">‹</button>\n      <div class=\"screen-title\">\n        <h2>Wo warst du schon?</h2>\n        <p id=\"picker-count\">&nbsp;</p>\n      </div>\n    </div>\n    <input class=\"picker-search\" id=\"picker-search\" type=\"search\" placeholder=\"Land suchen …\" autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"off\" spellcheck=\"false\" oninput=\"filterPicker(this.value)\">\n  </div>\n  <div class=\"picker-list\" id=\"picker-list\"></div>\n</div>\n\n<!-- ============ REISE-DETAIL SCREEN ============ -->\n<div class=\"screen\" id=\"trip-screen\">\n  <div class=\"screen-topbar\">\n    <button class=\"screen-back\" onclick=\"closeTripScreen()\">‹</button>\n    <div class=\"screen-title\">\n      <h2 id=\"ts-name\">Reise</h2>\n      <p id=\"ts-dest\">&nbsp;</p>\n    </div>\n    <button class=\"icon-btn ts-import\" onclick=\"openImport()\" aria-label=\"Reiseplan importieren\">＋</button>\n  </div>\n  <div class=\"tab-bar\" id=\"tab-bar\"></div>\n  <div id=\"tab-content\"></div>\n</div>\n\n<!-- ============ AKTIVITÄTS-DETAIL SCREEN ============ -->\n<!-- ============ REISEPLAN-IMPORT ============ -->\n<div class=\"screen\" id=\"import-screen\">\n  <div class=\"screen-topbar\">\n    <button class=\"screen-back\" onclick=\"closeImport()\">‹</button>\n    <div class=\"screen-title\">\n      <h2>Reiseplan importieren</h2>\n      <p id=\"import-sub\">&nbsp;</p>\n    </div>\n  </div>\n  <div id=\"import-body\"></div>\n</div>\n\n<!-- ============ EINSTELLUNGEN (exakt wie Finanzen) ============ -->\n\n\n<!-- Lock-Screen -->\n\n\n<!-- Formular-Modal -->\n<div class=\"overlay\" id=\"form-overlay\" onclick=\"if(event.target===this)rpCloseModal()\">\n  <div class=\"modal\">\n    <div class=\"grabber\"></div>\n    <h2 id=\"form-title\">Eintrag</h2>\n    <div class=\"field-stack\" id=\"form-fields\"></div>\n    <div class=\"modal-actions\">\n      <button class=\"btn btn-secondary\" onclick=\"rpCloseModal()\">Abbrechen</button>\n      <button class=\"btn btn-primary\" onclick=\"saveModal()\">Speichern</button>\n    </div>\n  </div>\n</div>\n\n<!-- Dialog -->\n\n\n<!-- Kategorie-Wahl beim Neu-Anlegen -->\n<div class=\"overlay\" id=\"add-overlay\" onclick=\"if(event.target===this)closeAddPicker()\">\n  <div class=\"modal\" style=\"max-width:420px\">\n    <div class=\"grabber\"></div>\n    <h2>Neu anlegen</h2>\n    <div class=\"add-choices\" id=\"add-choices\"></div>\n    <div class=\"modal-actions\"><button class=\"btn btn-secondary\" onclick=\"closeAddPicker()\">Abbrechen</button></div>\n  </div>\n</div>\n\n<!-- Fotografie: versteckter Datei-Input + Vollbild-Viewer -->\n<input type=\"file\" id=\"foto-file-input\" accept=\"image/*\" multiple style=\"display:none\" onchange=\"handleFotoFiles(this.files)\">\n<div class=\"overlay img-viewer\" id=\"img-viewer\" onclick=\"closeImgViewer()\"><img id=\"img-viewer-img\" src=\"\" alt=\"\"></div>\n\n<!-- Equipment-Auswahl (pro Foto-Ort aus der globalen Liste) -->\n<div class=\"overlay\" id=\"gear-overlay\" onclick=\"if(event.target===this)closeGearPicker()\">\n  <div class=\"modal\" style=\"max-width:480px\">\n    <div class=\"grabber\" onclick=\"closeGearPicker()\"></div>\n    <h2>Ausrüstung wählen</h2>\n    <div class=\"gear-choices\" id=\"gear-choices\"></div>\n    <div class=\"modal-actions\"><button class=\"btn btn-primary\" onclick=\"closeGearPicker()\">Fertig</button></div>\n  </div>\n</div>");
+document.getElementById('mod-reisen').insertAdjacentHTML('beforeend', "<div class=\"wrap\" id=\"home-wrap\">\n  \n\n  <div class=\"app-header\"><button class=\"screen-back\" aria-label=\"Zurück\" onclick=\"closeModule()\">‹</button><span>Jörg's Reisen</span></div>\n\n    <div class=\"glass world-card\" id=\"world-card\"></div>\n\n  <div class=\"section-label\">Meine Reisen</div>\n  <div id=\"trip-tiles\"></div>\n  <button class=\"add-btn\" onclick=\"rpOpenModal('trip')\">＋ Reise hinzufügen</button>\n  <div id=\"done-section\"></div>\n</div>\n\n<!-- ============ LÄNDER-AUSWAHL (Vollbild, damit die Tastatur nichts verdeckt) ============ -->\n<div class=\"screen picker-screen\" id=\"picker-screen\">\n  <div class=\"picker-head\">\n    <div class=\"screen-topbar\">\n      <button class=\"screen-back\" onclick=\"closePicker()\">‹</button>\n      <div class=\"screen-title\">\n        <h2>Wo warst du schon?</h2>\n        <p id=\"picker-count\">&nbsp;</p>\n      </div>\n    </div>\n    <input class=\"picker-search\" id=\"picker-search\" type=\"search\" placeholder=\"Land suchen …\" autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"off\" spellcheck=\"false\" oninput=\"filterPicker(this.value)\">\n  </div>\n  <div class=\"picker-list\" id=\"picker-list\"></div>\n</div>\n\n<!-- ============ REISE-DETAIL SCREEN ============ -->\n<div class=\"screen\" id=\"trip-screen\">\n  <div class=\"screen-topbar\">\n    <button class=\"screen-back\" onclick=\"closeTripScreen()\">‹</button>\n    <div class=\"screen-title\">\n      <h2 id=\"ts-name\">Reise</h2>\n      <p id=\"ts-dest\">&nbsp;</p>\n    </div>\n    <button class=\"icon-btn ts-import\" onclick=\"openImport()\" aria-label=\"Reiseplan importieren\">＋</button>\n  </div>\n  <div class=\"tab-bar\" id=\"tab-bar\"></div>\n  <div id=\"tab-content\"></div>\n</div>\n\n<!-- ============ AKTIVITÄTS-DETAIL SCREEN ============ -->\n<!-- ============ REISEPLAN-IMPORT ============ -->\n<div class=\"screen\" id=\"import-screen\">\n  <div class=\"screen-topbar\">\n    <button class=\"screen-back\" onclick=\"closeImport()\">‹</button>\n    <div class=\"screen-title\">\n      <h2>Reiseplan importieren</h2>\n      <p id=\"import-sub\">&nbsp;</p>\n    </div>\n  </div>\n  <div id=\"import-body\"></div>\n</div>\n\n<!-- ============ EINTRAG-ANSICHT (nur lesen; Bearbeiten/Löschen weiterhin per Wischen) ============ -->\n<div class=\"screen\" id=\"detail-screen\">\n  <div class=\"screen-topbar\">\n    <button class=\"screen-back\" onclick=\"closeDetail()\">‹</button>\n    <div class=\"screen-title\">\n      <h2 id=\"dv-title\">Eintrag</h2>\n      <p id=\"dv-sub\">&nbsp;</p>\n    </div>\n  </div>\n  <div id=\"dv-body\"></div>\n</div>\n\n<!-- ============ EINSTELLUNGEN (exakt wie Finanzen) ============ -->\n\n\n<!-- Lock-Screen -->\n\n\n<!-- Formular-Modal -->\n<div class=\"overlay\" id=\"form-overlay\" onclick=\"if(event.target===this)rpCloseModal()\">\n  <div class=\"modal\">\n    <div class=\"grabber\"></div>\n    <h2 id=\"form-title\">Eintrag</h2>\n    <div class=\"field-stack\" id=\"form-fields\"></div>\n    <div class=\"modal-actions\">\n      <button class=\"btn btn-secondary\" onclick=\"rpCloseModal()\">Abbrechen</button>\n      <button class=\"btn btn-primary\" onclick=\"saveModal()\">Speichern</button>\n    </div>\n  </div>\n</div>\n\n<!-- Dialog -->\n\n\n<!-- Kategorie-Wahl beim Neu-Anlegen -->\n<div class=\"overlay\" id=\"add-overlay\" onclick=\"if(event.target===this)closeAddPicker()\">\n  <div class=\"modal\" style=\"max-width:420px\">\n    <div class=\"grabber\"></div>\n    <h2>Neu anlegen</h2>\n    <div class=\"add-choices\" id=\"add-choices\"></div>\n    <div class=\"modal-actions\"><button class=\"btn btn-secondary\" onclick=\"closeAddPicker()\">Abbrechen</button></div>\n  </div>\n</div>\n\n<!-- Fotografie: versteckter Datei-Input + Vollbild-Viewer -->\n<input type=\"file\" id=\"foto-file-input\" accept=\"image/*\" multiple style=\"display:none\" onchange=\"handleFotoFiles(this.files)\">\n<div class=\"overlay img-viewer\" id=\"img-viewer\" onclick=\"closeImgViewer()\"><img id=\"img-viewer-img\" src=\"\" alt=\"\"></div>\n\n<!-- Equipment-Auswahl (pro Foto-Ort aus der globalen Liste) -->\n<div class=\"overlay\" id=\"gear-overlay\" onclick=\"if(event.target===this)closeGearPicker()\">\n  <div class=\"modal\" style=\"max-width:480px\">\n    <div class=\"grabber\" onclick=\"closeGearPicker()\"></div>\n    <h2>Ausrüstung wählen</h2>\n    <div class=\"gear-choices\" id=\"gear-choices\"></div>\n    <div class=\"modal-actions\"><button class=\"btn btn-primary\" onclick=\"closeGearPicker()\">Fertig</button></div>\n  </div>\n</div>");
 
 
 /* ===== STORAGE ===== */
@@ -210,12 +210,16 @@ function tripMapSVG(country, begrenzt){
 }
 
 /* ===== DATENMODELL ===== */
-const KEYS = { trips:'rp_trips_v1', stops:'rp_stops_v1', hotels:'rp_hotels_v1', flights:'rp_flights_v1', cars:'rp_cars_v1', activities:'rp_activities_v1', packing:'rp_packing_v1', todos:'rp_todos_v1', visited:'rp_visited_v1', autoTrips:'rp_autotrips_v1', gear:'rp_gear_v1' };
+const KEYS = { trips:'rp_trips_v1', stops:'rp_stops_v1', hotels:'rp_hotels_v1', flights:'rp_flights_v1', cars:'rp_cars_v1', transfers:'rp_transfers_v1', activities:'rp_activities_v1', packing:'rp_packing_v1', todos:'rp_todos_v1', visited:'rp_visited_v1', autoTrips:'rp_autotrips_v1', gear:'rp_gear_v1' };
 let trips      = safeParse(store.get(KEYS.trips), []);
 let stops      = safeParse(store.get(KEYS.stops), []);
 let hotels     = safeParse(store.get(KEYS.hotels), []);
 let flights    = safeParse(store.get(KEYS.flights), []);
 let cars       = safeParse(store.get(KEYS.cars), []);
+/* Transfer = eine Fahrt zwischen zwei Orten (Wegbeschreibung, Entfernung, Fahrzeit).
+   Bewusst ein eigener Typ und keine Notiz am Hotel: die Fahrt gehoert zu keinem der
+   beiden Orte, sondern liegt dazwischen. */
+let transfers  = safeParse(store.get(KEYS.transfers), []);
 let activities = safeParse(store.get(KEYS.activities), []);
 let packing    = safeParse(store.get(KEYS.packing), []);
 let todos      = safeParse(store.get(KEYS.todos), []);
@@ -261,13 +265,14 @@ function rpMigrate(){
   for (const h of hotels){ if (h.address && !h.city){ h.city = h.address; delete h.address; hotelChanged=true; } }
   if (hotelChanged) store.set(KEYS.hotels, JSON.stringify(hotels));
 }
-const DATA = { trip:['trips',KEYS.trips], stop:['stops',KEYS.stops], hotel:['hotels',KEYS.hotels], flight:['flights',KEYS.flights], car:['cars',KEYS.cars], activity:['activities',KEYS.activities], photo:['activities',KEYS.activities], pack:['packing',KEYS.packing], todo:['todos',KEYS.todos] };
-const REFS = { trips:()=>trips, stops:()=>stops, hotels:()=>hotels, flights:()=>flights, cars:()=>cars, activities:()=>activities, packing:()=>packing, todos:()=>todos };
+const DATA = { trip:['trips',KEYS.trips], stop:['stops',KEYS.stops], hotel:['hotels',KEYS.hotels], flight:['flights',KEYS.flights], car:['cars',KEYS.cars], transfer:['transfers',KEYS.transfers], activity:['activities',KEYS.activities], photo:['activities',KEYS.activities], pack:['packing',KEYS.packing], todo:['todos',KEYS.todos] };
+const REFS = { trips:()=>trips, stops:()=>stops, hotels:()=>hotels, flights:()=>flights, cars:()=>cars, transfers:()=>transfers, activities:()=>activities, packing:()=>packing, todos:()=>todos };
 function arr(type){ return REFS[DATA[type][0]](); }
 function setArr(type, val){
   const name = DATA[type][0];
   if (name==='trips') trips=val; else if (name==='stops') stops=val; else if (name==='hotels') hotels=val;
-  else if (name==='flights') flights=val; else if (name==='cars') cars=val; else if (name==='activities') activities=val;
+  else if (name==='flights') flights=val; else if (name==='cars') cars=val; else if (name==='transfers') transfers=val;
+  else if (name==='activities') activities=val;
   else if (name==='packing') packing=val; else if (name==='todos') todos=val;
 }
 function persist(type){ store.set(DATA[type][1], JSON.stringify(arr(type))); }
@@ -433,7 +438,7 @@ function renderPickerList(){
    die Einträge in die AKTUELLE Reise ein. Nichts wird ohne Vorschau übernommen. */
 const IMPORT_TYPES = [
   ['stops','stop','Stopps'], ['flights','flight','Flüge'], ['hotels','hotel','Hotels'],
-  ['cars','car','Mietwagen'],
+  ['cars','car','Mietwagen'], ['transfers','transfer','Transfers'],
   ['activities','activity','Aktivitäten'], ['photos','photo','Fotografie'],
   ['packing','pack','Packliste'], ['todos','todo','Checkliste']
 ];
@@ -507,7 +512,7 @@ function parseImport(){
       // Pflichtfelder prüfen – unvollständige Einträge überspringen
       const fehlt=schema.filter(f=>f.required && !obj[f.key]);
       if(fehlt.length) continue;
-      const label = type==='flight' ? `${obj.from} → ${obj.to}` : (type==='car' ? [obj.company, obj.vehicle].filter(Boolean).join(' · ') : obj.name);
+      const label = (type==='flight'||type==='transfer') ? `${obj.from} → ${obj.to}` : (type==='car' ? [obj.company, obj.vehicle].filter(Boolean).join(' · ') : obj.name);
       const datum = obj.date||obj.checkin||obj.arrival||obj.pickupDate||'';
       // Schon vorhanden? Gleicher Name (und Datum, falls vorhanden) in derselben Reise.
       // Dann nicht vorauswählen – sonst legt ein zweiter Import alles doppelt an.
@@ -516,7 +521,7 @@ function parseImport(){
         if (x.tripId !== t.id) return false;
         if (type==='photo' && x.type!=='foto') return false;
         if (type==='activity' && x.type==='foto') return false;
-        const gleich = type==='flight'
+        const gleich = (type==='flight'||type==='transfer')
           ? (x.from===obj.from && x.to===obj.to)
           : type==='car'
             ? ((x.company||'').trim().toLowerCase() === (obj.company||'').trim().toLowerCase())
@@ -536,7 +541,7 @@ function parseImport(){
 function renderImportStep2(){
   const gruppen={};
   importItems.forEach((it,i)=>{ (gruppen[it.type]=gruppen[it.type]||[]).push(i); });
-  const titel={ '__meta':'Reisedaten', stop:'Stopps', flight:'Flüge', hotel:'Hotels', activity:'Aktivitäten', photo:'Fotografie', pack:'Packliste', todo:'Checkliste' };
+  const titel={ '__meta':'Reisedaten', stop:'Stopps', flight:'Flüge', hotel:'Hotels', car:'Mietwagen', transfer:'Transfers', activity:'Aktivitäten', photo:'Fotografie', pack:'Packliste', todo:'Checkliste' };
   const dop = importItems.filter(i=>i.doppelt).length;
   let html=`<p class="import-hint">${importItems.length} Einträge erkannt. Hake ab, was übernommen werden soll.</p>`
     + (dop?`<div class="import-warn">${dop} ${dop===1?'Eintrag ist':'Einträge sind'} in dieser Reise schon vorhanden und ${dop===1?'wurde':'wurden'} abgewählt. Ankreuzen legt ${dop===1?'ihn':'sie'} ein zweites Mal an.</div>`:'');
@@ -604,6 +609,7 @@ const ICON_PLANE = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 16
 const ICON_BED = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 7a1 1 0 0 0-2 0v11a1 1 0 0 0 2 0v-2h16v2a1 1 0 0 0 2 0v-7a4 4 0 0 0-4-4H4V7Zm0 4h5a2 2 0 0 1 2 2v1H4v-3Zm9 3v-1a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v1h-7Z"/></svg>';
 const ICON_PIN = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 4.7 6.2 12.3 6.4 12.6a.8.8 0 0 0 1.2 0C12.8 21.3 19 13.7 19 9a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>';
 const ICON_CAR = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 11l1.5-4.3A2 2 0 0 1 8.4 5.3h7.2a2 2 0 0 1 1.9 1.4L19 11h.5a1.5 1.5 0 0 1 1.5 1.5V17a1 1 0 0 1-1 1h-1v.5a1.5 1.5 0 0 1-3 0V18H8v.5a1.5 1.5 0 0 1-3 0V18H4a1 1 0 0 1-1-1v-4.5A1.5 1.5 0 0 1 4.5 11H5Zm2.1-.5h9.8l-1-2.9a.5.5 0 0 0-.5-.35H8.6a.5.5 0 0 0-.5.35L7.1 10.5ZM6.5 13.2a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2Zm11 0a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2Z"/></svg>';
+const ICON_TRANSFER = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 2.5a3.2 3.2 0 0 0-.9 6.27V15a2 2 0 0 0 2 2h6.19l-1.35 1.35a1 1 0 0 0 1.42 1.42l3.05-3.06a1 1 0 0 0 0-1.42l-3.05-3.05a1 1 0 1 0-1.42 1.42L13.79 15H7.6V8.77A3.2 3.2 0 0 0 6.5 2.5Zm0 2a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4Z"/></svg>';
 const ICON_CAMERA = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 3l-1.4 2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.6L15 3H9Zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6Z"/></svg>';
 
 /* Baut eine Reise-Kachel. Bei abgeschlossenen Reisen steht statt des Countdowns Jahr + Dauer. */
@@ -696,7 +702,7 @@ async function rpDeleteTripSilently(id){
   const t = trips.find(x=>x.id===id); if(!t) return;
   if (idbReady) { for (const a of activities.filter(x=>x.tripId===id)) for (const ref of (a.images||[])) if(!isDataUri(ref)) await idbDelete(ref); }
   setArr('trip', trips.filter(x=>x.id!==id)); persist('trip');
-  ['stop','hotel','flight','car','activity','pack','todo'].forEach(tp=>{ setArr(tp, arr(tp).filter(x=>x.tripId!==id)); persist(tp); });
+  ['stop','hotel','flight','car','transfer','activity','pack','todo'].forEach(tp=>{ setArr(tp, arr(tp).filter(x=>x.tripId!==id)); persist(tp); });
   // Merkliste aufräumen; besuchte Länder bleiben erhalten
   if (autoTrips.includes(id)) { autoTrips = autoTrips.filter(x=>x!==id); store.set(KEYS.autoTrips, JSON.stringify(autoTrips)); }
 }
@@ -901,6 +907,7 @@ function renderRouteTab(t){
   const tripActs    = activities.filter(a=>a.tripId===t.id && a.type!=='foto');
   const tripFlights = flights.filter(f=>f.tripId===t.id);
   const tripCars    = cars.filter(c=>c.tripId===t.id);
+  const tripTrans   = transfers.filter(x=>x.tripId===t.id);
 
   // Hotels & Aktivitäten automatisch per Datum einem Stopp zuordnen
   const childOf = {}; tripStops.forEach(s=> childOf[s.id]=[]);
@@ -913,10 +920,12 @@ function renderRouteTab(t){
   tripStops.forEach(s=> top.push({art:'stop',datum:s.arrival||'',zeit:'',prio:2,o:s}));
   tripFlights.forEach(f=> top.push({art:'flight',datum:f.date||'',zeit:f.time||'',prio:0,o:f}));
   tripCars.forEach(c=> top.push({art:'car',datum:c.pickupDate||'',zeit:c.pickupTime||'',prio:1,o:c}));
+  // Transfers stehen vor dem Stopp, an dem die Fahrt endet (prio 1 < stop prio 2)
+  tripTrans.forEach(x=> top.push({art:'transfer',datum:x.date||'',zeit:x.time||'',prio:1,o:x}));
   ungrouped.forEach(n=> top.push({...n, prio: n.art==='hotel'?3:4}));
   top.sort((a,b)=> ((a.datum||'9999-99-99')+(a.zeit||'~~')+a.prio).localeCompare((b.datum||'9999-99-99')+(b.zeit||'~~')+b.prio));
 
-  if(!top.length) return `<div class="empty glass"><b>Noch keine Route</b>Leg Stopps, Flüge, Hotels, Mietwagen und Aktivitäten an – Hotels und Aktivitäten ordnen sich automatisch unter dem passenden Stopp ein.</div>`
+  if(!top.length) return `<div class="empty glass"><b>Noch keine Route</b>Leg Stopps, Flüge, Transfers, Hotels, Mietwagen und Aktivitäten an – Hotels und Aktivitäten ordnen sich automatisch unter dem passenden Stopp ein.</div>`
     + `<button class="add-btn" onclick="openAddPicker()">＋ Hinzufügen</button>`;
 
   // Flache Render-Sequenz: Kinder direkt hinter ihren Stopp
@@ -940,12 +949,37 @@ function rtDateCol(iso, small){
     ? `<div class="${cls}"><span class="rt-day">${String(d.getDate()).padStart(2,'0')}</span>${small?'':`<span class="rt-mon">${['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'][d.getMonth()]}</span>`}</div>`
     : `<div class="${cls}"><span class="rt-day">–</span></div>`;
 }
+/* Notizen im Zeitstrahl: erste Zeilen als Vorgeschmack, Rest steht in der Ansicht.
+   Absaetze werden zu einer Zeile zusammengezogen, damit die CSS-Kuerzung greift. */
+function rtNotesHTML(o){
+  const txt = String(o.notes||'').trim();
+  if (!txt) return '';
+  const eine = txt.split(/\s*\n\s*/).filter(Boolean).join(' ');
+  const lang = eine.length > 150;
+  return `<div class="rt-notes">${esc(eine)}</div>${lang?'<div class="rt-more">Antippen für alle Angaben</div>':''}`;
+}
 function renderRouteRow(item, last){
   const o = item.o, lc = last?' last':'';
+  if (item.art === 'transfer'){
+    const strecke = [o.from, o.to].filter(Boolean).join(' → ') || 'Transfer';
+    const kurz = [o.distance, o.duration].filter(Boolean).join(' · ');
+    return swipeWrap('transfer', o.id, `<div class="rt-row transfer${lc}" onclick="openDetail('transfer','${o.id}')">
+      ${rtDateCol(o.date)}
+      <div class="rt-line"><span class="rt-transfer">${ICON_TRANSFER}</span></div>
+      <div class="rt-body">
+        <div class="rt-name">${esc(strecke)}</div>
+        <div class="rt-meta">
+          ${o.date?`<span>${displayDate(o.date)}${o.time?' · '+esc(o.time)+' Uhr':''}</span>`:''}
+          ${kurz?`<span class="rt-nights cyan">${esc(kurz)}</span>`:''}
+        </div>
+        ${rtNotesHTML(o)}
+      </div>
+    </div>`);
+  }
   if (item.art === 'flight'){
     const a = splitAirport(o.from), b = splitAirport(o.to);
     const plus = arrivalDayOffset(o), dauer = o.duration || '';
-    return swipeWrap('flight', o.id, `<div class="rt-row flight${lc}" onclick="rpOpenModal('flight','${o.id}')">
+    return swipeWrap('flight', o.id, `<div class="rt-row flight${lc}" onclick="openDetail('flight','${o.id}')">
       ${rtDateCol(o.date)}
       <div class="rt-line"><span class="rt-plane">${ICON_PLANE}</span></div>
       <div class="rt-body">
@@ -955,7 +989,7 @@ function renderRouteRow(item, last){
           ${dauer?`<span class="rt-nights">${esc(dauer)}</span>`:''}
         </div>
         ${(o.airline||o.flightNo)?`<div class="rt-sub">${esc([o.airline,o.flightNo].filter(Boolean).join(' · '))}</div>`:''}
-        ${o.notes?`<div class="rt-notes">${esc(o.notes)}</div>`:''}
+        ${rtNotesHTML(o)}
       </div>
     </div>`);
   }
@@ -963,7 +997,7 @@ function renderRouteRow(item, last){
     const days = nightsBetween(o.pickupDate, o.dropoffDate);
     const route = [o.pickupPlace, o.dropoffPlace].filter(Boolean);
     const routeTxt = route.length ? (route.length===2 && route[0]!==route[1] ? route[0]+' → '+route[1] : route[0]) : '';
-    return swipeWrap('car', o.id, `<div class="rt-row car${lc}" onclick="rpOpenModal('car','${o.id}')">
+    return swipeWrap('car', o.id, `<div class="rt-row car${lc}" onclick="openDetail('car','${o.id}')">
       ${rtDateCol(o.pickupDate)}
       <div class="rt-line"><span class="rt-car">${ICON_CAR}</span></div>
       <div class="rt-body">
@@ -973,7 +1007,7 @@ function renderRouteRow(item, last){
           ${days?`<span class="rt-nights green">${days} ${days===1?'Tag':'Tage'}</span>`:''}
         </div>
         ${routeTxt?`<div class="rt-sub">${esc(routeTxt)}</div>`:''}
-        ${o.notes?`<div class="rt-notes">${esc(o.notes)}</div>`:''}
+        ${rtNotesHTML(o)}
       </div>
     </div>`);
   }
@@ -982,7 +1016,7 @@ function renderRouteRow(item, last){
     const ort = o.city || o.address || '';
     const child = item.child;
     const marker = child ? `<span class="rt-cmark bed">${ICON_BED}</span>` : `<span class="rt-bed">${ICON_BED}</span>`;
-    return swipeWrap('hotel', o.id, `<div class="rt-row hotel${child?' rt-child':''}${lc}" onclick="rpOpenModal('hotel','${o.id}')">
+    return swipeWrap('hotel', o.id, `<div class="rt-row hotel${child?' rt-child':''}${lc}" onclick="openDetail('hotel','${o.id}')">
       ${rtDateCol(o.checkin, child)}
       <div class="rt-line">${marker}</div>
       <div class="rt-body">
@@ -992,26 +1026,26 @@ function renderRouteRow(item, last){
           ${n?`<span class="rt-nights amber">${n} ${n===1?'Nacht':'Nächte'}</span>`:''}
         </div>
         ${(ort||o.board)?`<div class="rt-sub">${esc([ort,o.board].filter(Boolean).join(' · '))}</div>`:''}
-        ${o.notes?`<div class="rt-notes">${esc(o.notes)}</div>`:''}
+        ${rtNotesHTML(o)}
       </div>
     </div>`);
   }
   if (item.art === 'activity'){
     const child = item.child;
     const marker = child ? `<span class="rt-cmark pin">${ICON_PIN}</span>` : `<span class="rt-pin">${ICON_PIN}</span>`;
-    return swipeWrap('activity', o.id, `<div class="rt-row activity${child?' rt-child':''}${lc}" onclick="rpOpenModal('activity','${o.id}')">
+    return swipeWrap('activity', o.id, `<div class="rt-row activity${child?' rt-child':''}${lc}" onclick="openDetail('activity','${o.id}')">
       ${rtDateCol(o.date, child)}
       <div class="rt-line">${marker}</div>
       <div class="rt-body">
         <div class="rt-name">${esc(o.name)}</div>
         ${(o.date||o.time)?`<div class="rt-meta"><span>${displayDate(o.date)||'?'}${o.time?' · '+esc(o.time)+' Uhr':''}</span></div>`:''}
-        ${o.notes?`<div class="rt-notes">${esc(o.notes)}</div>`:''}
+        ${rtNotesHTML(o)}
       </div>
     </div>`);
   }
   // stop (Gruppen-Header)
   const n = nightsBetween(o.arrival, o.departure);
-  return swipeWrap('stop', o.id, `<div class="rt-row${lc}" onclick="rpOpenModal('stop','${o.id}')">
+  return swipeWrap('stop', o.id, `<div class="rt-row${lc}" onclick="openDetail('stop','${o.id}')">
     ${rtDateCol(o.arrival)}
     <div class="rt-line"><span class="rt-dot"></span></div>
     <div class="rt-body">
@@ -1020,7 +1054,7 @@ function renderRouteRow(item, last){
         ${(o.arrival||o.departure)?`<span>${displayDate(o.arrival)||'?'} – ${displayDate(o.departure)||'?'}</span>`:''}
         ${n?`<span class="rt-nights">${n} ${n===1?'Nacht':'Nächte'}</span>`:''}
       </div>
-      ${o.notes?`<div class="rt-notes">${esc(o.notes)}</div>`:''}
+      ${rtNotesHTML(o)}
     </div>
   </div>`);
 }
@@ -1257,10 +1291,105 @@ function addTodoInline(silent){
   if (!silent) { const next=$('todo-new'); if(next) next.focus(); }
 }
 
+/* ===== EINTRAG-ANSICHT (nur lesen) =====
+   Antippen einer Zeile im Zeitstrahl oeffnet diese Ansicht. Bearbeiten und Loeschen
+   laufen unveraendert ueber das Wischen - deshalb steht hier bewusst kein Formular. */
+function dvKV(titel, paare){
+  const zeilen = paare
+    .filter(([,v]) => v !== undefined && v !== null && String(v).trim() !== '')
+    .map(([k,v]) => `<div class="dv-row"><span class="dv-k">${esc(k)}</span><span class="dv-v">${esc(v)}</span></div>`)
+    .join('');
+  if (!zeilen) return '';
+  return (titel ? `<div class="section-label">${esc(titel)}</div>` : '') + `<div class="dv-card glass">${zeilen}</div>`;
+}
+/* Freitext mit echten Absaetzen: Leerzeile trennt Absaetze, einzelner Umbruch bleibt Umbruch. */
+function dvProse(titel, txt){
+  const t = String(txt||'').trim();
+  if (!t) return '';
+  const absaetze = t.split(/\n\s*\n/).map(p=>p.trim()).filter(Boolean)
+    .map(p=>`<p>${esc(p).replace(/\n/g,'<br>')}</p>`).join('');
+  return `<div class="section-label">${esc(titel)}</div><div class="dv-card glass dv-prose">${absaetze}</div>`;
+}
+/* Eine Zeile pro Punkt -> Aufzaehlung */
+function dvListe(titel, txt){
+  const zeilen = String(txt||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  if (!zeilen.length) return '';
+  return `<div class="section-label">${esc(titel)}</div><div class="dv-card glass"><ul class="dv-bullets">${zeilen.map(z=>`<li>${esc(z)}</li>`).join('')}</ul></div>`;
+}
+function dvZeitraum(a, b){
+  if (!a && !b) return '';
+  return `${displayDate(a)||'?'} – ${displayDate(b)||'?'}`;
+}
+function dvBody(type, o){
+  if (type==='hotel'){
+    const n = nightsBetween(o.checkin, o.checkout);
+    return dvKV('Aufenthalt', [
+        ['Zeitraum', dvZeitraum(o.checkin, o.checkout)],
+        ['Nächte', n ? `${n} ${n===1?'Nacht':'Nächte'}` : ''],
+        ['Zimmer', o.room], ['Verpflegung', o.board],
+        ['Check-in ab', o.checkinTime ? o.checkinTime+' Uhr' : ''],
+        ['Check-out bis', o.checkoutTime ? o.checkoutTime+' Uhr' : '']
+      ])
+      + dvListe('Inklusive', o.included)
+      + dvKV('Ort & Kontakt', [['Ort', o.city], ['GPS', o.gps], ['Telefon', o.phone], ['Ansprechpartner', o.contact]])
+      + dvProse('Notizen', o.notes);
+  }
+  if (type==='transfer'){
+    return dvKV('Fahrt', [
+        ['Von', o.from], ['Nach', o.to],
+        ['Datum', displayDate(o.date)], ['Abfahrt', o.time ? o.time+' Uhr' : ''],
+        ['Entfernung', o.distance], ['Fahrzeit', o.duration]
+      ])
+      + dvProse('Wegbeschreibung', o.notes);
+  }
+  if (type==='flight'){
+    const plus = arrivalDayOffset(o);
+    return dvKV('Flug', [
+        ['Von', o.from], ['Nach', o.to],
+        ['Abflug', [displayDate(o.date), o.time ? o.time+' Uhr' : ''].filter(Boolean).join(' · ')],
+        ['Ankunft', [displayDate(o.arrivalDate), o.arrivalTime ? o.arrivalTime+' Uhr' : '', plus>0?`(+${plus} Tag${plus===1?'':'e'})`:''].filter(Boolean).join(' · ')],
+        ['Flugdauer', o.duration], ['Airline', o.airline], ['Flugnummer', o.flightNo],
+        ['Klasse', o.cabin], ['Sitzplatz', o.seat], ['Buchungsnummer', o.bookingRef]
+      ])
+      + dvProse('Notizen', o.notes);
+  }
+  if (type==='car'){
+    return dvKV('Mietwagen', [
+        ['Anbieter', o.company], ['Fahrzeug', o.vehicle],
+        ['Abholung', [o.pickupPlace, displayDate(o.pickupDate), o.pickupTime ? o.pickupTime+' Uhr' : ''].filter(Boolean).join(' · ')],
+        ['Rückgabe', [o.dropoffPlace, displayDate(o.dropoffDate), o.dropoffTime ? o.dropoffTime+' Uhr' : ''].filter(Boolean).join(' · ')],
+        ['Buchungsnummer', o.bookingRef]
+      ])
+      + dvProse('Notizen', o.notes);
+  }
+  if (type==='activity'){
+    return dvKV('Aktivität', [['Datum', displayDate(o.date)], ['Uhrzeit', o.time ? o.time+' Uhr' : '']])
+      + dvProse('Notizen', o.notes);
+  }
+  // stop
+  const n = nightsBetween(o.arrival, o.departure);
+  return dvKV('Stopp', [['Zeitraum', dvZeitraum(o.arrival, o.departure)], ['Nächte', n ? `${n} ${n===1?'Nacht':'Nächte'}` : '']])
+    + dvProse('Beschreibung', o.notes);
+}
+function dvKopf(type, o){
+  if (type==='flight' || type==='transfer') return [o.from, o.to].filter(Boolean).join(' → ') || TITLES[type];
+  if (type==='car') return [o.company, o.vehicle].filter(Boolean).join(' · ') || TITLES[type];
+  return o.name || TITLES[type];
+}
+function openDetail(type, id){
+  const o = arr(type).find(x=>x.id===id); if(!o) return;
+  $('dv-title').textContent = dvKopf(type, o);
+  $('dv-sub').textContent = TITLES[type] || '\u00A0';
+  const html = dvBody(type, o);
+  $('dv-body').innerHTML = html || `<div class="empty glass"><b>Keine weiteren Angaben</b>Zum Ergänzen die Zeile in der Route nach links wischen und „Bearbeiten“ wählen.</div>`;
+  $('detail-screen').classList.add('open');
+}
+function closeDetail(){ $('detail-screen').classList.remove('open','settled'); }
+
 /* ===== FORMULAR-MODAL ===== */
-const TITLES = { trip:'Reise', stop:'Stopp', hotel:'Hotel', flight:'Flug', car:'Mietwagen', activity:'Aktivität', photo:'Fotografie', pack:'Gegenstand', todo:'Aufgabe' };
+const TITLES = { trip:'Reise', stop:'Stopp', hotel:'Hotel', flight:'Flug', car:'Mietwagen', transfer:'Transfer', activity:'Aktivität', photo:'Fotografie', pack:'Gegenstand', todo:'Aufgabe' };
 /* Überschriften der Formulare – „Neuer Stopp" / „Stopp bearbeiten" statt „Neu – Stopp" */
-const TITLE_NEW = { trip:'Neue Reise', stop:'Neuer Stopp', hotel:'Neues Hotel', flight:'Neuer Flug', car:'Neuer Mietwagen',
+const TITLE_NEW = { trip:'Neue Reise', stop:'Neuer Stopp', hotel:'Neues Hotel', flight:'Neuer Flug', car:'Neuer Mietwagen', transfer:'Neuer Transfer',
   activity:'Neue Aktivität', photo:'Neue Foto-Session', pack:'Neuer Gegenstand', todo:'Neue Aufgabe' };
 function modalTitle(type, id){ return id ? `${TITLES[type]} bearbeiten` : (TITLE_NEW[type] || 'Neuer Eintrag'); }
 const SCHEMAS = {
@@ -1280,9 +1409,25 @@ const SCHEMAS = {
     { key:'name', label:'Hotel', type:'text', required:true, placeholder:'z.B. Kulala Desert Lodge' },
     { key:'checkin', label:'Check-in', type:'text', date:true, placeholder:'z.B. 09.09.2026', pair:'start' },
     { key:'checkout', label:'Check-out', type:'text', date:true, placeholder:'z.B. 12.09.2026', pair:'end' },
-    { key:'city', label:'Ort', type:'text', placeholder:'z.B. Windhoek, Namibia' },
+    { key:'checkinTime', label:'Check-in ab', type:'time', pair:'start' },
+    { key:'checkoutTime', label:'Check-out bis', type:'time', pair:'end' },
+    { key:'city', label:'Ort', type:'text', placeholder:'z.B. Windhoek, Namibia', pair:'start' },
+    { key:'room', label:'Zimmer', type:'text', placeholder:'z.B. Standard Zelt', pair:'end' },
     { key:'board', label:'Verpflegung', type:'text', placeholder:'z.B. Frühstück' },
+    { key:'included', label:'Inklusive (eine Zeile pro Leistung)', type:'textarea', placeholder:'z.B. Übernachtung und Frühstück' },
+    { key:'gps', label:'GPS', type:'text', placeholder:'z.B. S 22° 33\' 24.6", E 17° 05\' 50.3"' },
+    { key:'phone', label:'Telefon', type:'text', placeholder:'z.B. (+264) 61 123 456', pair:'start' },
+    { key:'contact', label:'Ansprechpartner', type:'text', placeholder:'z.B. Edna Mohrmann', pair:'end' },
     { key:'notes', label:'Notizen', type:'textarea' }
+  ],
+  transfer: [
+    { key:'from', label:'Von', type:'text', required:true, placeholder:'z.B. Windhoek', pair:'start' },
+    { key:'to', label:'Nach', type:'text', required:true, placeholder:'z.B. Wolwedans', pair:'end' },
+    { key:'date', label:'Datum', type:'text', date:true, placeholder:'z.B. 11.09.2026', pair:'start' },
+    { key:'time', label:'Abfahrt', type:'time', pair:'end' },
+    { key:'distance', label:'Entfernung', type:'text', placeholder:'z.B. ca. 422 km', pair:'start' },
+    { key:'duration', label:'Fahrzeit', type:'text', placeholder:'z.B. ca. 6 Std. 45 Min.', pair:'end' },
+    { key:'notes', label:'Wegbeschreibung', type:'textarea', placeholder:'Leerzeile trennt die Absätze' }
   ],
   flight: [
     { key:'from', label:'Von', type:'text', required:true, placeholder:'z.B. Frankfurt (FRA)', pair:'start' },
@@ -1379,6 +1524,7 @@ function openAddPicker(){
     ['flight','Flug',ICON_PLANE,'ac-flight'],
     ['hotel','Hotel',ICON_BED,'ac-hotel'],
     ['car','Mietwagen',ICON_CAR,'ac-car'],
+    ['transfer','Transfer',ICON_TRANSFER,'ac-transfer'],
     ['activity','Aktivität',ICON_PIN,'ac-activity']
   ];
   $('add-choices').innerHTML = opts.map(([type,label,icon,cls])=>
@@ -1475,7 +1621,7 @@ async function persistFormImages(){
 }
 
 /* ===== BACKUP (Payload) – von Cloud-Backup genutzt ===== */
-function rpBuildBackupPayload(){ return { app:'reiseplaner', version:1, exportedAt:new Date().toISOString(), trips, stops, hotels, flights, cars, activities, packing, todos, visited, autoTrips, gear }; }
+function rpBuildBackupPayload(){ return { app:'reiseplaner', version:1, exportedAt:new Date().toISOString(), trips, stops, hotels, flights, cars, transfers, activities, packing, todos, visited, autoTrips, gear }; }
 async function rpBuildBackupPayloadFull(){ const base=rpBuildBackupPayload(); if(idbReady) base.imageStore = await idbAll(); return base; }
 /* Uebernimmt nur noch Daten. Rueckfrage, Erfolgsmeldung und das Neuzeichnen macht der
    Kern in applyCombined – vorher fragte dieser Bereich zusaetzlich selbst nach, sodass
@@ -1483,11 +1629,11 @@ async function rpBuildBackupPayloadFull(){ const base=rpBuildBackupPayload(); if
 async function rpApplyBackup(rawText){
   let p; try { p=JSON.parse(rawText); } catch(e){ return false; }
   if (!p || !Array.isArray(p.trips)) return false;
-  trips=p.trips||[]; stops=p.stops||[]; hotels=p.hotels||[]; flights=p.flights||[]; cars=p.cars||[]; activities=p.activities||[]; packing=p.packing||[]; todos=p.todos||[];
+  trips=p.trips||[]; stops=p.stops||[]; hotels=p.hotels||[]; flights=p.flights||[]; cars=p.cars||[]; transfers=p.transfers||[]; activities=p.activities||[]; packing=p.packing||[]; todos=p.todos||[];
   visited=Array.isArray(p.visited)?p.visited:[]; store.set(KEYS.visited, JSON.stringify(visited));
   autoTrips=Array.isArray(p.autoTrips)?p.autoTrips:[]; store.set(KEYS.autoTrips, JSON.stringify(autoTrips));
   if (p.gear){ if (Array.isArray(p.gear)){ const flat=p.gear; gear=emptyGear(); flat.forEach(n=>{ if(n) gear[gearClassify(n)].push(n); }); } else { gear=normalizeGear(p.gear); } store.set(KEYS.gear, JSON.stringify(gear)); }
-  ['trip','stop','hotel','flight','car','activity','pack','todo'].forEach(persist);
+  ['trip','stop','hotel','flight','car','transfer','activity','pack','todo'].forEach(persist);
   if (idbReady) { await idbClear(); if (Array.isArray(p.imageStore)) { for (const rec of p.imageStore) { if (rec && rec.id) await idbPut(rec.id, rec.data); } } }
   await migrateInlineImages();
   return true;
