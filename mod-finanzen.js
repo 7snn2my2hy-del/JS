@@ -510,7 +510,14 @@ function openDetail(which) {
   const sheet = $('detail-sheet'); if (sheet) sheet.classList.add('open');
 }
 function closeDetail() {
-  const sheet = $('detail-sheet'); if (sheet) sheet.classList.remove('open');
+  // 'settled' hebt den Transform auf (sonst scrollt das fixe Blatt auf iOS nicht).
+  // Beim Schliessen muss es zuerst weg, sonst faehrt das Blatt nicht zurueck, sondern
+  // verschwindet uebergangslos. Der erzwungene Umbruch dazwischen stellt sicher, dass
+  // der Browser den Zwischenstand tatsaechlich uebernimmt.
+  const sheet = $('detail-sheet'); if (!sheet) return;
+  sheet.classList.remove('settled');
+  void sheet.offsetHeight;
+  sheet.classList.remove('open');
 }
 
 function renderHeroBento() {

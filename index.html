@@ -394,7 +394,7 @@
   .foto-equip-empty.inset { padding: 8px 4px; }
   .foto-equip-chevron { color: var(--muted-2); font-size: 1.1rem; }
   /* Equipment-Auswahl-Sheet */
-  .gear-choices { display: flex; flex-direction: column; gap: 8px; max-height: 52dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .gear-choices { display: flex; flex-direction: column; gap: 8px; max-height: 52dvh; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
   .gear-choice { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border-radius: var(--r-control); background: rgba(255,255,255,0.05); border: 1px solid var(--stroke); color: var(--text); font: inherit; font-size: 0.95rem; cursor: pointer; text-align: left; }
   .gear-choice:active { background: rgba(255,255,255,0.09); }
   .gear-choice .gc-check { flex: 0 0 22px; width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid var(--stroke-hi); display: flex; align-items: center; justify-content: center; }
@@ -444,11 +444,12 @@
   .entry-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; min-width: 0; }
 
   /* Vollbild-Screens */
-  .screen { position: fixed; inset: 0; z-index: 400; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 18px calc(14px + env(safe-area-inset-bottom)); visibility: hidden; background: var(--bg); background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2), var(--bg) 55%, var(--bg-2) 100%); }
+  .screen { position: fixed; inset: 0; z-index: 400; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 18px calc(14px + env(safe-area-inset-bottom)); visibility: hidden; background: var(--bg); background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2), var(--bg) 55%, var(--bg-2) 100%); }
   .screen.open { transform: translateX(0); visibility: visible; transition: transform 0.4s var(--ease-ios), visibility 0s; }
   /* Nach der Öffnen-Animation die Transform entfernen – ein dauerhaftes transform auf einem
      position:fixed-Scrollcontainer bringt iOS-Safari beim Momentum-Scrollen zum Haken. */
   .screen.settled { transform: none; }
+  html.ebene-offen, body.ebene-offen { overflow: hidden; height: 100%; overscroll-behavior: none; }
   /* Zurück-Geste: der Bildschirm folgt dem Finger, darunter wird die vorige Ebene sichtbar */
   .screen.dragging, .mod-container.dragging, #mod-finanzen .detail-sheet.dragging { transition: none !important; will-change: transform; }
   /* Statt eines grossen weichen Schlagschattens (46px Radius, muesste iOS bei jedem
@@ -569,7 +570,7 @@
   .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); z-index: 500; align-items: flex-end; justify-content: center; padding: 0; }
   .overlay.open { display: flex; }
   #dialog-overlay { z-index: 600; }
-  .modal { background: rgba(30, 30, 34, 0.68); -webkit-backdrop-filter: blur(48px) saturate(190%); backdrop-filter: blur(48px) saturate(190%); border: 1px solid var(--stroke-hi); border-bottom: none; border-radius: 34px 34px 0 0; box-shadow: 0 1.5px 1px rgba(255,255,255,0.12) inset, 0 -20px 60px rgba(0,0,0,0.4); padding: 26px 22px calc(26px + env(safe-area-inset-bottom)); width: 100%; max-width: 720px; max-height: 92dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; animation: slideUp 0.45s var(--spring); }
+  .modal { background: rgba(30, 30, 34, 0.68); -webkit-backdrop-filter: blur(48px) saturate(190%); backdrop-filter: blur(48px) saturate(190%); border: 1px solid var(--stroke-hi); border-bottom: none; border-radius: 34px 34px 0 0; box-shadow: 0 1.5px 1px rgba(255,255,255,0.12) inset, 0 -20px 60px rgba(0,0,0,0.4); padding: 26px 22px calc(26px + env(safe-area-inset-bottom)); width: 100%; max-width: 720px; max-height: 92dvh; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; animation: slideUp 0.45s var(--spring); }
   @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
   .grabber { width: 38px; height: 5px; border-radius: var(--r-pill); background: rgba(255,255,255,0.22); margin: -8px auto 18px; }
   .modal h2 { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 20px; }
@@ -691,6 +692,7 @@
   .mod-container {
     position: fixed; inset: 0; z-index: 400;
     overflow-y: auto; overflow-x: hidden;
+    overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     background: var(--bg);
     background-image:
@@ -766,8 +768,9 @@
 /* Hero: Gesamtvermögen */
   #mod-finanzen .hero{ text-align: center; padding: 32px 0 34px; cursor: pointer; }
 /* Detail-Sheet (öffnet über Hero/Bento) */
-  #mod-finanzen .detail-sheet{ position: fixed; inset: 0; z-index: 380; background: var(--bg); background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2), var(--bg) 55%, var(--bg-2) 100%); overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 16px calc(14px + env(safe-area-inset-bottom)); visibility: hidden; }
+  #mod-finanzen .detail-sheet{ position: fixed; inset: 0; z-index: 380; overscroll-behavior: contain; background: var(--bg); background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2), var(--bg) 55%, var(--bg-2) 100%); overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 16px calc(14px + env(safe-area-inset-bottom)); visibility: hidden; }
 #mod-finanzen .detail-sheet.open{ transform: translateX(0); visibility: visible; transition: transform 0.4s var(--ease-ios), visibility 0s; }
+#mod-finanzen .detail-sheet.settled{ transform: none; }
 #mod-finanzen .detail-panel{ display: none; }
 #mod-finanzen .detail-panel .dashboard, #mod-finanzen .detail-panel .av-dash{ margin: 0 0 14px; }
 #mod-finanzen .detail-panel.on{ display: block; }
@@ -2442,6 +2445,43 @@ MODULES.forEach(m => { if (m.init) { try { m.init(); } catch(e){} } });
   if(el && m) el.textContent = 'Stand ' + m[1];
 })();
 initScreenTracking();
+
+/* Solange ein Bereich oder ein Blatt offen ist, darf das Dokument darunter nicht mehr
+   scrollen. Auf iOS wanderte sonst die Wischbewegung ins Dokument: das fixe Blatt schien
+   unten abgeschnitten und liess sich nur widerwillig bewegen. Zusaetzlich bekommt jedes
+   offene .screen zuverlaessig 'settled' - ein fixer Container MIT Transform scrollt auf
+   iOS nicht, und bisher haing das Entfernen des Transforms allein am Reisen-Bereich. */
+(function initEbenenSperre(){
+  /* Der Sperrbildschirm wird ueber style.display geschaltet, nicht ueber das
+     hidden-Attribut - ein Selektor wie :not([hidden]) haette hier immer angeschlagen
+     und die Seite dauerhaft stillgelegt. Deshalb hier gesondert abgefragt. */
+  const offen = () => {
+    if (document.querySelector('.mod-container:not([hidden]), .screen.open, .detail-sheet.open, .overlay.open')) return true;
+    const ls = document.getElementById('lock-screen');
+    return !!(ls && ls.style.display && ls.style.display !== 'none');
+  };
+  const pruefe = () => {
+    const an = offen();
+    document.documentElement.classList.toggle('ebene-offen', an);
+    document.body.classList.toggle('ebene-offen', an);
+  };
+  const setzeSettled = (el) => {
+    if (!el.classList.contains('open') || el.classList.contains('settled')) return;
+    setTimeout(() => { if (el.classList.contains('open')) el.classList.add('settled'); }, 460);
+  };
+  /* Bewusst der ganze Baum statt einer festen Liste: Blaetter werden teils erst
+     spaeter erzeugt, eine beim Start eingesammelte Liste wuerde die verpassen. */
+  const beob = new MutationObserver(ms => {
+    pruefe();
+    for (const m of ms) {
+      const el = m.target;
+      if (el.classList && (el.classList.contains('screen') || el.classList.contains('detail-sheet'))) setzeSettled(el);
+    }
+  });
+  beob.observe(document.body, { attributes:true, attributeFilter:['class','hidden'], subtree:true });
+  document.querySelectorAll('.screen, .detail-sheet').forEach(setzeSettled);
+  pruefe();
+})();
 document.getElementById('core-settings-screen').addEventListener('transitionend', function(e){
   if (e.target === this && e.propertyName === 'transform' && this.classList.contains('open')) this.classList.add('settled');
 });

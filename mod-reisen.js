@@ -2,7 +2,7 @@
    Eigenständiges Modul. Nutzt den gemeinsamen Unterbau aus index.html.
    Änderungen hier betreffen nur diesen Bereich. */
 
-document.getElementById('mod-reisen').insertAdjacentHTML('beforeend', "<div class=\"wrap\" id=\"home-wrap\">\n  \n\n  <div class=\"app-header\"><button class=\"screen-back\" aria-label=\"Zurück\" onclick=\"closeModule()\">‹</button><span>Jörg's Reisen</span></div>\n\n    <div class=\"glass world-card\" id=\"world-card\"></div>\n\n  <div class=\"section-label\">Meine Reisen</div>\n  <div id=\"trip-tiles\"></div>\n  <button class=\"add-btn\" onclick=\"rpOpenModal('trip')\">＋ Reise hinzufügen</button>\n  <div id=\"done-section\"></div>\n</div>\n\n<!-- ============ LÄNDER-AUSWAHL (Vollbild, damit die Tastatur nichts verdeckt) ============ -->\n<div class=\"screen picker-screen\" id=\"picker-screen\">\n  <div class=\"picker-head\">\n    <div class=\"screen-topbar\">\n      <button class=\"screen-back\" onclick=\"closePicker()\">‹</button>\n      <div class=\"screen-title\">\n        <h2>Wo warst du schon?</h2>\n        <p id=\"picker-count\">&nbsp;</p>\n      </div>\n    </div>\n    <input class=\"picker-search\" id=\"picker-search\" type=\"search\" placeholder=\"Land suchen …\" autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"off\" spellcheck=\"false\" oninput=\"filterPicker(this.value)\">\n  </div>\n  <div class=\"picker-list\" id=\"picker-list\"></div>\n</div>\n\n<!-- ============ REISE-DETAIL SCREEN ============ -->\n<div class=\"screen\" id=\"trip-screen\">\n  <div class=\"screen-topbar\">\n    <button class=\"screen-back\" onclick=\"closeTripScreen()\">‹</button>\n    <div class=\"screen-title\">\n      <h2 id=\"ts-name\">Reise</h2>\n      <p id=\"ts-dest\">&nbsp;</p>\n    </div>\n    <button class=\"icon-btn ts-import\" onclick=\"openImport()\" aria-label=\"Reiseplan importieren\">＋</button>\n  </div>\n  <div class=\"tab-bar\" id=\"tab-bar\"></div>\n  <div id=\"tab-content\"></div>\n</div>\n\n<!-- ============ AKTIVITÄTS-DETAIL SCREEN ============ -->\n<!-- ============ REISEPLAN-IMPORT ============ -->\n<div class=\"screen\" id=\"import-screen\">\n  <div class=\"screen-topbar\">\n    <button class=\"screen-back\" onclick=\"closeImport()\">‹</button>\n    <div class=\"screen-title\">\n      <h2>Reiseplan importieren</h2>\n      <p id=\"import-sub\">&nbsp;</p>\n    </div>\n  </div>\n  <div id=\"import-body\"></div>\n</div>\n\n<!-- ============ EINTRAG-ANSICHT (nur lesen; Bearbeiten/Löschen weiterhin per Wischen) ============ -->\n<div class=\"screen\" id=\"detail-screen\">\n  <div class=\"screen-topbar\">\n    <button class=\"screen-back\" onclick=\"closeDetail()\">‹</button>\n    <div class=\"screen-title\">\n      <h2 id=\"dv-title\">Eintrag</h2>\n      <p id=\"dv-sub\">&nbsp;</p>\n    </div>\n  </div>\n  <div id=\"dv-body\"></div>\n</div>\n\n<!-- ============ EINSTELLUNGEN (exakt wie Finanzen) ============ -->\n\n\n<!-- Lock-Screen -->\n\n\n<!-- Formular-Modal -->\n<div class=\"overlay\" id=\"form-overlay\" onclick=\"if(event.target===this)rpCloseModal()\">\n  <div class=\"modal\">\n    <div class=\"grabber\"></div>\n    <h2 id=\"form-title\">Eintrag</h2>\n    <div class=\"field-stack\" id=\"form-fields\"></div>\n    <div class=\"modal-actions\">\n      <button class=\"btn btn-secondary\" onclick=\"rpCloseModal()\">Abbrechen</button>\n      <button class=\"btn btn-primary\" onclick=\"saveModal()\">Speichern</button>\n    </div>\n  </div>\n</div>\n\n<!-- Dialog -->\n\n\n<!-- Kategorie-Wahl beim Neu-Anlegen -->\n<div class=\"overlay\" id=\"add-overlay\" onclick=\"if(event.target===this)closeAddPicker()\">\n  <div class=\"modal\" style=\"max-width:420px\">\n    <div class=\"grabber\"></div>\n    <h2>Neu anlegen</h2>\n    <div class=\"add-choices\" id=\"add-choices\"></div>\n    <div class=\"modal-actions\"><button class=\"btn btn-secondary\" onclick=\"closeAddPicker()\">Abbrechen</button></div>\n  </div>\n</div>\n\n<!-- Fotografie: versteckter Datei-Input + Vollbild-Viewer -->\n<input type=\"file\" id=\"foto-file-input\" accept=\"image/*\" multiple style=\"display:none\" onchange=\"handleFotoFiles(this.files)\">\n<div class=\"overlay img-viewer\" id=\"img-viewer\" onclick=\"closeImgViewer()\"><img id=\"img-viewer-img\" src=\"\" alt=\"\"></div>\n\n<!-- Equipment-Auswahl (pro Foto-Ort aus der globalen Liste) -->\n<div class=\"overlay\" id=\"gear-overlay\" onclick=\"if(event.target===this)closeGearPicker()\">\n  <div class=\"modal\" style=\"max-width:480px\">\n    <div class=\"grabber\" onclick=\"closeGearPicker()\"></div>\n    <h2>Ausrüstung wählen</h2>\n    <div class=\"gear-choices\" id=\"gear-choices\"></div>\n    <div class=\"modal-actions\"><button class=\"btn btn-primary\" onclick=\"closeGearPicker()\">Fertig</button></div>\n  </div>\n</div>");
+document.getElementById('mod-reisen').insertAdjacentHTML('beforeend', "<div class=\"wrap\" id=\"home-wrap\">\n  \n\n  <div class=\"app-header\"><button class=\"screen-back\" aria-label=\"Zurück\" onclick=\"closeModule()\">‹</button><span>Jörg's Reisen</span></div>\n\n    <div class=\"glass world-card\" id=\"world-card\"></div>\n\n  <div class=\"section-label\">Meine Reisen</div>\n  <div id=\"trip-tiles\"></div>\n  <button class=\"add-btn\" onclick=\"rpOpenModal('trip')\">＋ Reise hinzufügen</button>\n  <div id=\"done-section\"></div>\n</div>\n\n<!-- ============ LÄNDER-AUSWAHL (Vollbild, damit die Tastatur nichts verdeckt) ============ -->\n<div class=\"screen picker-screen\" id=\"picker-screen\">\n  <div class=\"picker-head\">\n    <div class=\"screen-topbar\">\n      <button class=\"screen-back\" onclick=\"closePicker()\">‹</button>\n      <div class=\"screen-title\">\n        <h2>Wo warst du schon?</h2>\n        <p id=\"picker-count\">&nbsp;</p>\n      </div>\n    </div>\n    <input class=\"picker-search\" id=\"picker-search\" type=\"search\" placeholder=\"Land suchen …\" autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"off\" spellcheck=\"false\" oninput=\"filterPicker(this.value)\">\n  </div>\n  <div class=\"picker-list\" id=\"picker-list\"></div>\n</div>\n\n<!-- ============ REISE-DETAIL SCREEN ============ -->\n<div class=\"screen\" id=\"trip-screen\">\n  <div class=\"screen-topbar\">\n    <button class=\"screen-back\" onclick=\"closeTripScreen()\">‹</button>\n    <div class=\"screen-title\">\n      <h2 id=\"ts-name\">Reise</h2>\n      <p id=\"ts-dest\">&nbsp;</p>\n    </div>\n    <button class=\"icon-btn ts-import\" onclick=\"openImport()\" aria-label=\"Reiseplan importieren\">＋</button>\n  </div>\n  <div class=\"tab-bar\" id=\"tab-bar\"></div>\n  <div id=\"tab-content\"></div>\n</div>\n\n<!-- ============ AKTIVITÄTS-DETAIL SCREEN ============ -->\n<!-- ============ REISEPLAN-IMPORT ============ -->\n<div class=\"screen\" id=\"import-screen\">\n  <div class=\"screen-topbar\">\n    <button class=\"screen-back\" onclick=\"closeImport()\">‹</button>\n    <div class=\"screen-title\">\n      <h2>Reiseplan importieren</h2>\n      <p id=\"import-sub\">&nbsp;</p>\n    </div>\n  </div>\n  <div id=\"import-body\"></div>\n</div>\n\n<!-- ============ EINTRAG-ANSICHT (nur lesen; Bearbeiten/Löschen weiterhin per Wischen) ============ -->\n<div class=\"screen\" id=\"detail-screen\">\n  <div class=\"screen-topbar\">\n    <button class=\"screen-back\" onclick=\"rpCloseDetail()\">‹</button>\n    <div class=\"screen-title\">\n      <h2 id=\"dv-title\">Eintrag</h2>\n      <p id=\"dv-sub\">&nbsp;</p>\n    </div>\n  </div>\n  <div id=\"dv-body\"></div>\n</div>\n\n<!-- ============ EINSTELLUNGEN (exakt wie Finanzen) ============ -->\n\n\n<!-- Lock-Screen -->\n\n\n<!-- Formular-Modal -->\n<div class=\"overlay\" id=\"form-overlay\" onclick=\"if(event.target===this)rpCloseModal()\">\n  <div class=\"modal\">\n    <div class=\"grabber\"></div>\n    <h2 id=\"form-title\">Eintrag</h2>\n    <div class=\"field-stack\" id=\"form-fields\"></div>\n    <div class=\"modal-actions\">\n      <button class=\"btn btn-secondary\" onclick=\"rpCloseModal()\">Abbrechen</button>\n      <button class=\"btn btn-primary\" onclick=\"saveModal()\">Speichern</button>\n    </div>\n  </div>\n</div>\n\n<!-- Dialog -->\n\n\n<!-- Kategorie-Wahl beim Neu-Anlegen -->\n<div class=\"overlay\" id=\"add-overlay\" onclick=\"if(event.target===this)closeAddPicker()\">\n  <div class=\"modal\" style=\"max-width:420px\">\n    <div class=\"grabber\"></div>\n    <h2>Neu anlegen</h2>\n    <div class=\"add-choices\" id=\"add-choices\"></div>\n    <div class=\"modal-actions\"><button class=\"btn btn-secondary\" onclick=\"closeAddPicker()\">Abbrechen</button></div>\n  </div>\n</div>\n\n<!-- Fotografie: versteckter Datei-Input + Vollbild-Viewer -->\n<input type=\"file\" id=\"foto-file-input\" accept=\"image/*\" multiple style=\"display:none\" onchange=\"handleFotoFiles(this.files)\">\n<div class=\"overlay img-viewer\" id=\"img-viewer\" onclick=\"closeImgViewer()\"><img id=\"img-viewer-img\" src=\"\" alt=\"\"></div>\n\n<!-- Equipment-Auswahl (pro Foto-Ort aus der globalen Liste) -->\n<div class=\"overlay\" id=\"gear-overlay\" onclick=\"if(event.target===this)closeGearPicker()\">\n  <div class=\"modal\" style=\"max-width:480px\">\n    <div class=\"grabber\" onclick=\"closeGearPicker()\"></div>\n    <h2>Ausrüstung wählen</h2>\n    <div class=\"gear-choices\" id=\"gear-choices\"></div>\n    <div class=\"modal-actions\"><button class=\"btn btn-primary\" onclick=\"closeGearPicker()\">Fertig</button></div>\n  </div>\n</div>");
 
 
 /* ===== STORAGE ===== */
@@ -963,7 +963,7 @@ function renderRouteRow(item, last){
   if (item.art === 'transfer'){
     const strecke = [o.from, o.to].filter(Boolean).join(' → ') || 'Transfer';
     const kurz = [o.distance, o.duration].filter(Boolean).join(' · ');
-    return swipeWrap('transfer', o.id, `<div class="rt-row transfer${lc}" onclick="openDetail('transfer','${o.id}')">
+    return swipeWrap('transfer', o.id, `<div class="rt-row transfer${lc}" onclick="rpOpenDetail('transfer','${o.id}')">
       ${rtDateCol(o.date)}
       <div class="rt-line"><span class="rt-transfer">${ICON_TRANSFER}</span></div>
       <div class="rt-body">
@@ -979,7 +979,7 @@ function renderRouteRow(item, last){
   if (item.art === 'flight'){
     const a = splitAirport(o.from), b = splitAirport(o.to);
     const plus = arrivalDayOffset(o), dauer = o.duration || '';
-    return swipeWrap('flight', o.id, `<div class="rt-row flight${lc}" onclick="openDetail('flight','${o.id}')">
+    return swipeWrap('flight', o.id, `<div class="rt-row flight${lc}" onclick="rpOpenDetail('flight','${o.id}')">
       ${rtDateCol(o.date)}
       <div class="rt-line"><span class="rt-plane">${ICON_PLANE}</span></div>
       <div class="rt-body">
@@ -997,7 +997,7 @@ function renderRouteRow(item, last){
     const days = nightsBetween(o.pickupDate, o.dropoffDate);
     const route = [o.pickupPlace, o.dropoffPlace].filter(Boolean);
     const routeTxt = route.length ? (route.length===2 && route[0]!==route[1] ? route[0]+' → '+route[1] : route[0]) : '';
-    return swipeWrap('car', o.id, `<div class="rt-row car${lc}" onclick="openDetail('car','${o.id}')">
+    return swipeWrap('car', o.id, `<div class="rt-row car${lc}" onclick="rpOpenDetail('car','${o.id}')">
       ${rtDateCol(o.pickupDate)}
       <div class="rt-line"><span class="rt-car">${ICON_CAR}</span></div>
       <div class="rt-body">
@@ -1016,7 +1016,7 @@ function renderRouteRow(item, last){
     const ort = o.city || o.address || '';
     const child = item.child;
     const marker = child ? `<span class="rt-cmark bed">${ICON_BED}</span>` : `<span class="rt-bed">${ICON_BED}</span>`;
-    return swipeWrap('hotel', o.id, `<div class="rt-row hotel${child?' rt-child':''}${lc}" onclick="openDetail('hotel','${o.id}')">
+    return swipeWrap('hotel', o.id, `<div class="rt-row hotel${child?' rt-child':''}${lc}" onclick="rpOpenDetail('hotel','${o.id}')">
       ${rtDateCol(o.checkin, child)}
       <div class="rt-line">${marker}</div>
       <div class="rt-body">
@@ -1033,7 +1033,7 @@ function renderRouteRow(item, last){
   if (item.art === 'activity'){
     const child = item.child;
     const marker = child ? `<span class="rt-cmark pin">${ICON_PIN}</span>` : `<span class="rt-pin">${ICON_PIN}</span>`;
-    return swipeWrap('activity', o.id, `<div class="rt-row activity${child?' rt-child':''}${lc}" onclick="openDetail('activity','${o.id}')">
+    return swipeWrap('activity', o.id, `<div class="rt-row activity${child?' rt-child':''}${lc}" onclick="rpOpenDetail('activity','${o.id}')">
       ${rtDateCol(o.date, child)}
       <div class="rt-line">${marker}</div>
       <div class="rt-body">
@@ -1045,7 +1045,7 @@ function renderRouteRow(item, last){
   }
   // stop (Gruppen-Header)
   const n = nightsBetween(o.arrival, o.departure);
-  return swipeWrap('stop', o.id, `<div class="rt-row${lc}" onclick="openDetail('stop','${o.id}')">
+  return swipeWrap('stop', o.id, `<div class="rt-row${lc}" onclick="rpOpenDetail('stop','${o.id}')">
     ${rtDateCol(o.arrival)}
     <div class="rt-line"><span class="rt-dot"></span></div>
     <div class="rt-body">
@@ -1376,7 +1376,7 @@ function dvKopf(type, o){
   if (type==='car') return [o.company, o.vehicle].filter(Boolean).join(' · ') || TITLES[type];
   return o.name || TITLES[type];
 }
-function openDetail(type, id){
+function rpOpenDetail(type, id){
   const o = arr(type).find(x=>x.id===id); if(!o) return;
   $('dv-title').textContent = dvKopf(type, o);
   $('dv-sub').textContent = TITLES[type] || '\u00A0';
@@ -1384,7 +1384,7 @@ function openDetail(type, id){
   $('dv-body').innerHTML = html || `<div class="empty glass"><b>Keine weiteren Angaben</b>Zum Ergänzen die Zeile in der Route nach links wischen und „Bearbeiten“ wählen.</div>`;
   $('detail-screen').classList.add('open');
 }
-function closeDetail(){ $('detail-screen').classList.remove('open','settled'); }
+function rpCloseDetail(){ $('detail-screen').classList.remove('open','settled'); }
 
 /* ===== FORMULAR-MODAL ===== */
 const TITLES = { trip:'Reise', stop:'Stopp', hotel:'Hotel', flight:'Flug', car:'Mietwagen', transfer:'Transfer', activity:'Aktivität', photo:'Fotografie', pack:'Gegenstand', todo:'Aufgabe' };
