@@ -166,7 +166,7 @@
   .imp-row.dup .imp-name { color: var(--muted-2); }
   .imp-dup { color: var(--orange); font-weight: 600; }
   .import-err { font-size: 0.82rem; color: var(--danger); background: rgba(255,69,58,0.1); border: 1px solid rgba(255,69,58,0.25); border-radius: 14px; padding: 11px 13px; margin-bottom: 12px; line-height: 1.45; }
-  .import-input { width: 100%; min-height: 190px; padding: 13px 14px; border-radius: 18px; border: 1px solid var(--stroke); background: rgba(255,255,255,0.05); color: var(--text); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.78rem; line-height: 1.45; outline: none; resize: vertical; -webkit-appearance: none; }
+  .import-input { width: 100%; min-height: 190px; padding: 13px 14px; border-radius: 18px; border: 1px solid var(--stroke); background: rgba(255,255,255,0.05); color: var(--text); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1rem; line-height: 1.45; outline: none; resize: vertical; -webkit-appearance: none; }
   .import-input:focus { border-color: var(--accent); background: rgba(10,132,255,0.06); }
   .import-btn { width: 100%; margin-top: 14px; }
   .import-list { display: flex; flex-direction: column; }
@@ -368,7 +368,7 @@
   .foto-field { display: flex; flex-direction: column; gap: 8px; }
   .foto-field > label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted-2); }
   .foto-pills { display: flex; flex-wrap: wrap; gap: 6px; }
-  .foto-textarea { background: rgba(255,255,255,0.05); border: 1px solid var(--stroke); border-radius: var(--r-control); padding: 11px 13px; color: var(--text); font: inherit; font-size: 0.92rem; width: 100%; resize: vertical; min-height: 46px; line-height: 1.45; }
+  .foto-textarea { background: rgba(255,255,255,0.05); border: 1px solid var(--stroke); border-radius: var(--r-control); padding: 11px 13px; color: var(--text); font: inherit; font-size: 1rem; width: 100%; resize: vertical; min-height: 46px; line-height: 1.45; }
   .foto-textarea:focus { outline: none; border-color: var(--accent); background: rgba(10,132,255,0.08); }
   .foto-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
   .foto-thumb { position: relative; flex: 0 0 auto; width: 92px; height: 92px; border-radius: 14px; overflow: hidden; border: 1px solid var(--stroke); background: rgba(255,255,255,0.04) center/cover no-repeat; cursor: pointer; }
@@ -384,7 +384,7 @@
   .gear-manage { display: flex; flex-direction: column; }
   .gear-row { display: flex; align-items: center; gap: 10px; padding: 11px 14px; }
   .gear-row + .gear-row { border-top: 1px solid var(--stroke); }
-  .gear-row input { flex: 1; min-width: 0; background: transparent; border: none; color: var(--text); font: inherit; font-size: 0.92rem; padding: 2px 0; }
+  .gear-row input { flex: 1; min-width: 0; background: transparent; border: none; color: var(--text); font: inherit; font-size: 1rem; padding: 2px 0; }
   .gear-row input:focus { outline: none; }
   .gear-row .gear-del { flex: 0 0 auto; width: 26px; height: 26px; border-radius: var(--r-pill); background: rgba(255,255,255,0.06); border: 1px solid var(--stroke); color: var(--muted); font-size: 0.78rem; cursor: pointer; }
   .gear-row.gear-new .gear-plus { flex: 0 0 auto; width: 22px; color: var(--muted-2); text-align: center; }
@@ -641,6 +641,10 @@
 
   .field-stack { display: flex; flex-direction: column; gap: 14px; }
   .field label { display: block; font-size: 0.76rem; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.01em; }
+  /* Untergrenze fuer ALLE Eingabefelder: iOS zoomt beim Hineintippen hinein, sobald ein
+     Feld kleiner als 16px schreibt - und zoomt danach nicht zurueck. Die Seite bleibt
+     dann vergroessert stehen. 1rem entspricht hier 16px. */
+  input, select, textarea { font-size: max(1rem, 1em); }
   .field input, .field select, .field textarea { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid var(--stroke); border-radius: var(--r-control); color: var(--text); font: inherit; font-size: 1rem; padding: 12px 14px; outline: none; transition: border-color 0.15s, background 0.15s; }
   .field textarea { resize: vertical; min-height: 70px; line-height: 1.4; }
   .field input::placeholder, .field textarea::placeholder { color: var(--muted-2); }
@@ -1039,7 +1043,7 @@
 #mod-finanzen .av-mode-btn{ flex: 1; border: none; background: transparent; color: var(--muted); font: inherit; font-size: 0.74rem; font-weight: 600; padding: 6px; border-radius: 7px; cursor: pointer; transition: all 0.15s; }
 #mod-finanzen .av-mode-btn.active{ background: var(--accent); color: #fff; }
 #mod-finanzen .av-card-total-scenario{ display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-#mod-finanzen .av-scenario-select{ background: rgba(255,255,255,0.08); border: 1px solid var(--stroke); border-radius: 8px; color: var(--muted); font: inherit; font-size: 0.72rem; padding: 4px 8px; outline: none; cursor: pointer; flex-shrink: 0; }
+#mod-finanzen .av-scenario-select{ background: rgba(255,255,255,0.08); border: 1px solid var(--stroke); border-radius: 8px; color: var(--muted); font: inherit; font-size: 1rem; padding: 4px 8px; outline: none; cursor: pointer; flex-shrink: 0; }
 #mod-finanzen .av-card-total-val{ font-size: 0.82rem; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; flex: 1; text-align: right; }
 #mod-finanzen .field-group-label{ font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-2); margin: 0 0 -4px; font-weight: 600; }
 /* Jahresblock. Linie darueber trennt ihn vom vorigen Jahr, Abstand beidseitig gleich. */
@@ -1138,7 +1142,7 @@
 #mod-finanzen .f-toggle .f-toggle-lab{ white-space: nowrap; }
 #mod-finanzen #urlaub-payments{ display: flex; flex-direction: column; gap: 8px; }
 #mod-finanzen .pay-row{ display: flex; gap: 8px; align-items: center; }
-#mod-finanzen .pay-row input{ padding: 10px 10px; font-size: 0.95rem; }
+#mod-finanzen .pay-row input{ padding: 10px 10px; font-size: 1rem; }
 #mod-finanzen .pay-row .pay-month{ flex: 0 0 52px; width: 52px; text-align: center; }
 #mod-finanzen .pay-row .pay-year{ flex: 0 0 64px; width: 64px; text-align: center; }
 #mod-finanzen .pay-row .pay-amount{ flex: 1 1 auto; min-width: 0; text-align: right; font-variant-numeric: tabular-nums; }
