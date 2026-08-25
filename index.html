@@ -205,8 +205,9 @@
   /* Reise-Kacheln (kompakt, 2-spaltig wie Finanzen-Bento) */
   /* Swipe-Architektur wie Finanzen: tile-wrap clippt, tile-slider verschiebt sich */
   .tile-wrap { position: relative; border-radius: 26px; overflow: hidden; touch-action: pan-y; min-width: 0; }
-  .tile-slider { display: flex; flex-direction: row; width: 100%; min-width: 0; touch-action: pan-y; transition: transform 0.42s var(--spring); }
+  .tile-slider { display: flex; flex-direction: row; width: 100%; min-width: 0; touch-action: pan-y; transition: transform 0.42s var(--spring); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
   .tile-slider.swiping { will-change: transform; }
+  .tile-slider.swiping .rt-row, .tile-slider.swiping .entry { -webkit-backface-visibility: hidden; backface-visibility: hidden; transform: translateZ(0); }
   .tile-slider.no-transition { transition: none; }
   .tile-slider .trip-tile { flex: 0 0 100%; width: 100%; }
   /* Einträge (Hotels, Flüge, Stopps …) nutzen dieselbe Swipe-Mechanik wie die Reisekacheln */
@@ -1449,11 +1450,16 @@ function attachSwipeGeneric(wrap, onDelete, onEdit) {
   };
   const settle = (open) => {
     const px = open ? -getReveal() : 0;
+    slider.classList.add('swiping');
     setSlider(px, true);
     slider._openPx = open ? px : 0;
     if (open) _openSwipe = slider;
     else if (_openSwipe === slider) _openSwipe = null;
   };
+  // Erst wenn die Bewegung wirklich steht, darf die Zeichenebene wieder weg.
+  slider.addEventListener('transitionend', (ev) => {
+    if (ev.target === slider && ev.propertyName === 'transform') slider.classList.remove('swiping');
+  });
 
   wrap.addEventListener('touchstart', (ev) => {
     if (_openSwipe && _openSwipe !== slider) closeOpenSwipe();
@@ -1491,7 +1497,6 @@ function attachSwipeGeneric(wrap, onDelete, onEdit) {
   wrap.addEventListener('touchend', () => {
     if (!dragging) return;
     dragging = false;
-    slider.classList.remove('swiping');
     if (!horizontal) { settle(openAtStart); return; }
     const R = getReveal();
     settle(openAtStart ? curX < -R / 2 : curX < -THRESHOLD);
@@ -1532,6 +1537,7 @@ function closeOpenSwipe() {
   if (_openSwipe) {
     const slider = _openSwipe;
     slider.classList.remove('no-transition');
+    slider.classList.add('swiping');   // Ebene halten, bis die Ruecklaufbewegung steht
     slider.style.transform = '';
     slider._openPx = 0;
     _openSwipe = null;
