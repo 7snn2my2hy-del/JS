@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2608241000">
+<link rel="manifest" href="manifest.json?v=2608261900">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -616,7 +616,10 @@
   .todo-text { flex: 1; min-width: 0; background: transparent; border: none; outline: none; color: var(--text); font: inherit; font-size: 0.95rem; padding: 9px 0; }
   .todo-text::placeholder { color: var(--muted-2); }
   .todo-row.checked .todo-text { color: var(--muted-2); text-decoration: line-through; }
-  .todo-del { flex: 0 0 28px; width: 28px; height: 28px; border: none; background: transparent; color: transparent; cursor: pointer; font-size: 0.9rem; border-radius: var(--r-pill); transition: color 0.2s; }
+  /* War bisher dauerhaft transparent (color: transparent) - eine Hover-Idee, die es auf
+     dem iPhone ohne Maus nie gab. Der Knopf war unsichtbar, nicht nur schwer zu treffen. */
+  .todo-del { flex: 0 0 28px; width: 28px; height: 28px; border: none; background: transparent; color: var(--muted-2); cursor: pointer; font-size: 0.9rem; border-radius: var(--r-pill); transition: color 0.2s, background 0.2s; }
+  .todo-del:active { color: var(--danger); background: rgba(255,69,58,0.12); }
 
   .checkbox { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--stroke-hi); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s var(--spring); }
   .checkbox.checked { background: var(--green); border-color: var(--green); }
@@ -2499,11 +2502,11 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2608241000"></script>
-<script src="mod-reisen.js?v=2608241000"></script>
-<script src="mod-finanzen.js?v=2608241000"></script>
-<script src="mod-impfpass.js?v=2608241000"></script>
-<script src="mod-fotografie.js?v=2608241000"></script>
+<script src="data-laender.js?v=2608261900"></script>
+<script src="mod-reisen.js?v=2608261900"></script>
+<script src="mod-finanzen.js?v=2608261900"></script>
+<script src="mod-impfpass.js?v=2608261900"></script>
+<script src="mod-fotografie.js?v=2608261900"></script>
 
 <!-- ===== Start ===== -->
 <script>

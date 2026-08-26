@@ -949,10 +949,13 @@ function renderRouteTab(t){
   // Top-Level-Knoten (Stopps als Gruppen, Flüge & Mietwagen als eigene Ebene)
   const top = [];
   tripStops.forEach(s=> top.push({art:'stop',datum:s.arrival||'',zeit:'',prio:3,o:s}));
-  tripFlights.forEach(f=> top.push({art:'flight',datum:f.date||'',zeit:f.time||'',prio:0,o:f}));
-  // Reihenfolge innerhalb eines Tages: Flug (0), Mietwagen (1), Transfer (2), Stopp (3)
-  tripCars.forEach(c=> top.push({art:'car',datum:c.pickupDate||'',zeit:c.pickupTime||'',prio:1,o:c}));
-  tripTrans.forEach(x=> top.push({art:'transfer',datum:x.date||'',zeit:x.time||'',prio:2,o:x}));
+  tripFlights.forEach(f=> top.push({art:'flight',datum:f.date||'',zeit:f.time||'',prio:2,o:f}));
+  // Reihenfolge innerhalb eines Tages: Mietwagen (0), Transfer (1), Flug (2), Stopp (3).
+  // Am Ankunftstag: erst das Auto uebernehmen, dann losfahren (Transfer). Am Abreisetag:
+  // erst zum Flughafen fahren (Transfer), dann fliegen - vorher stand der Flug vor der
+  // Anfahrt dorthin. Diese eine Rangfolge deckt beide Faelle richtig ab.
+  tripCars.forEach(c=> top.push({art:'car',datum:c.pickupDate||'',zeit:c.pickupTime||'',prio:0,o:c}));
+  tripTrans.forEach(x=> top.push({art:'transfer',datum:x.date||'',zeit:x.time||'',prio:1,o:x}));
   ungrouped.forEach(n=> top.push({...n, prio: n.art==='hotel'?4:5}));
   top.sort((a,b)=> ((a.datum||'9999-99-99')+a.prio+(a.zeit||'~~')).localeCompare((b.datum||'9999-99-99')+b.prio+(b.zeit||'~~')));
 
@@ -973,12 +976,19 @@ function renderRouteTab(t){
   const body = seq.map((item,i)=> renderRouteRow(item, i===seq.length-1)).join('');
   return `<div class="rt-list">${body}</div><button class="add-btn" onclick="openAddPicker()">＋ Hinzufügen</button>`;
 }
-function rtDateCol(iso, small){
+/* Dauer (Naechte/Tage) steht jetzt unter Tag und Monat statt als Pille in der Meta-Zeile -
+   ruhiger als eine zusaetzliche farbige Flaeche neben dem Text, und an derselben Stelle
+   fuer alle drei Typen, die eine Dauer haben (Hotel, Stopp, Mietwagen). */
+function rtDateCol(iso, opts){
+  const small = opts === true || (opts && opts.small);
+  const dauer = (opts && typeof opts === 'object') ? opts.dauer : null;
   const d = iso ? new Date(iso+'T00:00:00') : null;
   const cls = small ? 'rt-date rt-cdate' : 'rt-date';
-  return (d && !isNaN(d))
-    ? `<div class="${cls}"><span class="rt-day">${String(d.getDate()).padStart(2,'0')}</span>${small?'':`<span class="rt-mon">${['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'][d.getMonth()]}</span>`}</div>`
-    : `<div class="${cls}"><span class="rt-day">–</span></div>`;
+  const kopf = (d && !isNaN(d))
+    ? `<span class="rt-day">${String(d.getDate()).padStart(2,'0')}</span>${small?'':`<span class="rt-mon">${['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'][d.getMonth()]}</span>`}`
+    : `<span class="rt-day">–</span>`;
+  const dauerHtml = dauer ? `<span class="rt-dauer">${dauer.n}<em>${esc(dauer.label)}</em></span>` : '';
+  return `<div class="${cls}">${kopf}${dauerHtml}</div>`;
 }
 /* Im Zeitstrahl steht bewusst kein Notiztext mehr. Die Zeile beantwortet nur Was, Wann
    und Wo; jede weiterfuehrende Angabe steht in der Eintrag-Ansicht. Die Funktion bleibt
@@ -1039,13 +1049,12 @@ function renderRouteRow(item, last){
     const route = [o.pickupPlace, o.dropoffPlace].filter(Boolean);
     const routeTxt = route.length ? (route.length===2 && route[0]!==route[1] ? route[0]+' → '+route[1] : route[0]) : '';
     return swipeWrap('car', o.id, `<div class="rt-row car${lc}">
-      ${rtDateCol(o.pickupDate)}
+      ${rtDateCol(o.pickupDate, {dauer:days?{n:days, label:days===1?'Tag':'Tage'}:null})}
       <div class="rt-line"><span class="rt-car">${ICON_CAR}</span></div>
       <div class="rt-body">
         <div class="rt-name">${esc(o.company||'Mietwagen')}</div>
         <div class="rt-meta">
           ${(o.pickupDate||o.dropoffDate)?`<span>${displayDate(o.pickupDate)||'?'} – ${displayDate(o.dropoffDate)||'?'}</span>`:''}
-          ${days?`<span class="rt-nights green">${days} ${days===1?'Tag':'Tage'}</span>`:''}
         </div>
         ${[o.vehicle, routeTxt].filter(Boolean).map(t=>`<div class="rt-sub">${esc(t)}</div>`).join('')}
         ${rtPhoneHTML(o)}
@@ -1060,13 +1069,12 @@ function renderRouteRow(item, last){
     const child = item.child;
     const marker = child ? `<span class="rt-cmark bed">${ICON_BED}</span>` : `<span class="rt-bed">${ICON_BED}</span>`;
     return swipeWrap('hotel', o.id, `<div class="rt-row hotel${child?' rt-child':''}${lc}">
-      ${rtDateCol(o.checkin, child)}
+      ${rtDateCol(o.checkin, {small:child, dauer:n?{n, label:n===1?'Nacht':'Nächte'}:null})}
       <div class="rt-line">${marker}</div>
       <div class="rt-body">
         <div class="rt-name">${esc(o.name)}</div>
         <div class="rt-meta">
           ${(o.checkin||o.checkout)?`<span>${displayDate(o.checkin)||'?'} – ${displayDate(o.checkout)||'?'}</span>`:''}
-          ${n?`<span class="rt-nights amber">${n} ${n===1?'Nacht':'Nächte'}</span>`:''}
         </div>
         ${(ort||o.board)?`<div class="rt-sub">${esc([ort,o.board].filter(Boolean).join(' · '))}</div>`:''}
         ${rtPhoneHTML(o)}
@@ -1093,13 +1101,12 @@ function renderRouteRow(item, last){
   // stop (Gruppen-Header)
   const n = nightsBetween(o.arrival, o.departure);
   return swipeWrap('stop', o.id, `<div class="rt-row${lc}">
-    ${rtDateCol(o.arrival)}
+    ${rtDateCol(o.arrival, {dauer:n?{n, label:n===1?'Nacht':'Nächte'}:null})}
     <div class="rt-line"><span class="rt-dot"></span></div>
     <div class="rt-body">
       <div class="rt-name">${esc(o.name)}</div>
       <div class="rt-meta">
         ${(o.arrival||o.departure)?`<span>${displayDate(o.arrival)||'?'} – ${displayDate(o.departure)||'?'}</span>`:''}
-        ${n?`<span class="rt-nights">${n} ${n===1?'Nacht':'Nächte'}</span>`:''}
       </div>
       ${rtNotesHTML(o)}
     </div>
@@ -1395,7 +1402,7 @@ function dvBody(type, o){
         ['Check-in ab', dvUhr(o.checkinTime)],
         ['Check-out bis', dvUhr(o.checkoutTime)]
       ])
-      + dvListe('Inklusive', o.included)
+      + dvListe('Inklusive', dvOhneVerpflegung(o.included, o.board))
       + dvKV('Ort & Kontakt', [['Ort', o.city], ['GPS', o.gps], ['Telefon', o.phone], ['Ansprechpartner', o.contact]])
       + dvProse('Notizen', o.notes);
   }
@@ -1434,6 +1441,14 @@ function dvBody(type, o){
   // stop
   return dvKV('Stopp', [['Zeitraum', dvZeitraum(o.arrival, o.departure)], ['Nächte', dvNaechte(o.arrival, o.departure)]])
     + dvProse('Beschreibung', o.notes);
+}
+/* Steht die Verpflegung bereits oben als eigene Zeile, taucht sie oft zusaetzlich als
+   erste Inklusive-Zeile auf ("Übernachtung und Frühstück" doppelt). Entfernt genau die
+   Zeile, die dem Verpflegungstext entspricht - alle anderen Zeilen bleiben unberuehrt. */
+function dvOhneVerpflegung(included, board){
+  const b = String(board||'').trim().toLowerCase();
+  if (!b || !included) return included;
+  return String(included).split('\n').filter(z => z.trim().toLowerCase() !== b).join('\n');
 }
 function dvKopf(type, o){
   if (type==='flight' || type==='transfer') return [o.from, o.to].filter(Boolean).join(' → ') || TITLES[type];
