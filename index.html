@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.json?v=2608262130">
+<link rel="manifest" href="manifest.json?v=2608262210">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -189,8 +189,8 @@
   /* Bento */
   /* Kachelraster: alle Zeilen gleich hoch, Hoehe ergibt sich aus der inhaltsreichsten
      Kachel. Steht bewusst im Kern, damit jedes Modul dieselbe Kachel erbt. */
-  .bento { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: auto; align-items: start; gap: 12px; max-width: 100%; }
-  .bento-tile { height: auto; background: var(--glass); -webkit-backdrop-filter: blur(48px) saturate(190%); backdrop-filter: blur(48px) saturate(190%); border: 1px solid var(--stroke); border-radius: 26px; padding: 15px 16px; min-width: 0; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 10px 30px rgba(0,0,0,0.4); cursor: pointer; transition: transform 0.2s var(--spring); }
+  .bento { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: auto; gap: 12px; max-width: 100%; }
+  .bento-tile { height: 100%; background: var(--glass); -webkit-backdrop-filter: blur(48px) saturate(190%); backdrop-filter: blur(48px) saturate(190%); border: 1px solid var(--stroke); border-radius: 26px; padding: 15px 16px; min-width: 0; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 10px 30px rgba(0,0,0,0.4); cursor: pointer; transition: transform 0.2s var(--spring); }
   .bento-tile:active { transform: scale(0.97); }
   /* Andeutung des naechsten Bereichs - rein optisch, nicht antippbar */
   .tile-ghost {
@@ -2502,11 +2502,11 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2608262130"></script>
-<script src="mod-reisen.js?v=2608262130"></script>
-<script src="mod-finanzen.js?v=2608262130"></script>
-<script src="mod-impfpass.js?v=2608262130"></script>
-<script src="mod-fotografie.js?v=2608262130"></script>
+<script src="data-laender.js?v=2608262210"></script>
+<script src="mod-reisen.js?v=2608262210"></script>
+<script src="mod-finanzen.js?v=2608262210"></script>
+<script src="mod-impfpass.js?v=2608262210"></script>
+<script src="mod-fotografie.js?v=2608262210"></script>
 
 <!-- ===== Start ===== -->
 <script>
