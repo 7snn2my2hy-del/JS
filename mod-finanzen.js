@@ -3307,9 +3307,9 @@ function renderKontenManage(){
       <input value="${esc(k.name)}" onchange="kontoRename(${i}, this.value)"
              onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">
       <button class="konto-flag${k.ueb ? ' on' : ''}" onclick="kontoFlag(${i},'ueb')"
-              title="In der Übersicht einrechnen">ÜB</button>
+              title="In der Kachel Überweisungen zeigen">ÜBERW.</button>
       <button class="konto-flag${k.stand ? ' on' : ''}" onclick="kontoFlag(${i},'stand')"
-              title="Kontostand anzeigen">STAND</button>
+              title="In den Kontoständen zeigen">STAND</button>
       <button class="gear-del" onclick="kontoRemove(${i})" aria-label="Löschen">✕</button>
     </div>`).join('') + `
     <div class="gear-row gear-new">
