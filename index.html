@@ -9,7 +9,7 @@
 <!-- Name unter dem Symbol auf dem Home-Bildschirm. iOS wertet dieses Tag aus,
      nicht short_name aus dem Manifest. -->
 <meta name="apple-mobile-web-app-title" content="Jörg">
-<link rel="manifest" href="manifest.json?v=2609063200">
+<link rel="manifest" href="manifest.json?v=2609063400">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg</title>
@@ -46,13 +46,21 @@
     --been:      #ff9f0a;   /* besuchte Länder – bewusst anders als das Blau der Reisen */
     --spring:    cubic-bezier(0.34, 1.35, 0.64, 1);
     --ease-ios:  cubic-bezier(0.32, 0.72, 0, 1);
-    --r-card:    28px;
+    /* Radienskala. Vorher standen neben vier Variablen noch 30 feste Zahlen im
+       Blatt - jede neue Karte erbte zufaellig den Wert ihres Nachbarn. Ab hier
+       gibt es fuenf Stufen, alles andere ist ein Fehler. */
+    --r-tile:    26px;   /* grosse Kachel */
+    --r-card:    18px;   /* Karte, Blattflaeche, Wischknopf */
     /* Konzentrisch: der Innenradius folgt aus Aussenradius minus Polster
        (26px Kachel - 15px Polster ~ 12px). Vorher standen 22px darin, dadurch
        lagen die Ecken der Eintraege sichtbar schief in ihrer Kachel. */
     --r-entry:   12px;
-    --r-control: 16px;
-    --r-pill:    99px;
+    --r-control: 16px;  /* Eingabefeld, Auswahl, kleiner Knopf */
+    --r-pill:    99px;  /* Pille */
+    /* Polsterung der Karten. Dieselbe Rolle stand vorher mit neun verschiedenen
+       Werten im Blatt, von 4px bis 22px, ohne Moeglichkeit zur zentralen Aenderung. */
+    --pad-card:  20px;   /* grosse Karte */
+    --pad-inner: 12px 14px;  /* Zeile, kleiner Block */
     /* Die Leiste ist 60px hoch und sitzt 10px ueber dem sicheren Bereich - macht
        70px, plus ein wenig Luft zum letzten Inhalt. */
     --dock-h:    66px;
@@ -215,11 +223,11 @@
   .ts-import { font-size: 1.05rem; font-weight: 600; color: var(--accent); }
   .ts-import:active { transform: scale(0.88); }
   .import-hint { font-size: 0.82rem; color: var(--muted); line-height: 1.5; margin: 4px 2px 14px; }
-  .import-warn { font-size: 0.8rem; color: var(--orange); background: rgba(255,159,10,0.1); border: 1px solid rgba(255,159,10,0.25); border-radius: 14px; padding: 11px 13px; margin: -6px 0 14px; line-height: 1.45; }
+  .import-warn { font-size: 0.8rem; color: var(--orange); background: rgba(255,159,10,0.1); border: 1px solid rgba(255,159,10,0.25); border-radius: var(--r-entry); padding: 11px 13px; margin: -6px 0 14px; line-height: 1.45; }
   .imp-row.dup .imp-name { color: var(--muted-2); }
   .imp-dup { color: var(--orange); font-weight: 600; }
-  .import-err { font-size: 0.82rem; color: var(--danger); background: rgba(255,69,58,0.1); border: 1px solid rgba(255,69,58,0.25); border-radius: 14px; padding: 11px 13px; margin-bottom: 12px; line-height: 1.45; }
-  .import-input { width: 100%; min-height: 190px; padding: 13px 14px; border-radius: 18px; border: 1px solid var(--stroke); background: rgba(255,255,255,0.05); color: var(--text); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1rem; line-height: 1.45; outline: none; resize: vertical; -webkit-appearance: none; }
+  .import-err { font-size: 0.82rem; color: var(--danger); background: rgba(255,69,58,0.1); border: 1px solid rgba(255,69,58,0.25); border-radius: var(--r-entry); padding: 11px 13px; margin-bottom: 12px; line-height: 1.45; }
+  .import-input { width: 100%; min-height: 190px; padding: 13px 14px; border-radius: var(--r-card); border: 1px solid var(--stroke); background: rgba(255,255,255,0.05); color: var(--text); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1rem; line-height: 1.45; outline: none; resize: vertical; -webkit-appearance: none; }
   .import-input:focus { border-color: var(--accent); background: rgba(10,132,255,0.06); }
   .import-btn { width: 100%; margin-top: 14px; }
   .import-list { display: flex; flex-direction: column; }
@@ -259,7 +267,7 @@
   /* Kachelraster: alle Zeilen gleich hoch, Hoehe ergibt sich aus der inhaltsreichsten
      Kachel. Steht bewusst im Kern, damit jedes Modul dieselbe Kachel erbt. */
   .bento { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: auto; gap: 12px; max-width: 100%; }
-  .bento-tile { height: 100%; background: var(--glass); -webkit-backdrop-filter: blur(48px) saturate(190%); backdrop-filter: blur(48px) saturate(190%); border: 1px solid var(--stroke); border-radius: 26px; padding: 15px 16px; min-width: 0; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 10px 30px rgba(0,0,0,0.4); cursor: pointer; transition: transform 0.2s var(--spring); }
+  .bento-tile { height: 100%; background: var(--glass); -webkit-backdrop-filter: blur(48px) saturate(190%); backdrop-filter: blur(48px) saturate(190%); border: 1px solid var(--stroke); border-radius: var(--r-tile); padding: 15px 16px; min-width: 0; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 10px 30px rgba(0,0,0,0.4); cursor: pointer; transition: transform 0.2s var(--spring); }
   .bento-tile:active { transform: scale(0.97); }
   /* Andeutung des naechsten Bereichs - rein optisch, nicht antippbar */
   .tile-ghost {
@@ -273,7 +281,7 @@
 
   /* Reise-Kacheln (kompakt, 2-spaltig wie Finanzen-Bento) */
   /* Swipe-Architektur wie Finanzen: tile-wrap clippt, tile-slider verschiebt sich */
-  .tile-wrap { position: relative; border-radius: 26px; overflow: hidden; touch-action: pan-y; min-width: 0; }
+  .tile-wrap { position: relative; border-radius: var(--r-tile); overflow: hidden; touch-action: pan-y; min-width: 0; }
   .tile-slider { display: flex; flex-direction: row; width: 100%; min-width: 0; touch-action: pan-y; transition: transform 0.42s var(--spring); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
   .tile-slider.swiping { will-change: transform; }
   .tile-slider.swiping .rt-row, .tile-slider.swiping .entry { -webkit-backface-visibility: hidden; backface-visibility: hidden; transform: translateZ(0); }
@@ -288,7 +296,7 @@
   .rt-list .entry-wrap { border-radius: 0; overflow: visible; }
   .rt-list .tile-wrap { overflow: hidden; }
   .tile-action-bg { display: flex; flex-direction: row; align-items: center; gap: 6px; padding: 6px 0 6px 6px; flex-shrink: 0; background: transparent; }
-  .swipe-edit, .swipe-del { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 64px; align-self: stretch; border-radius: 18px; color: #fff; cursor: pointer; flex-shrink: 0; transition: transform 0.3s var(--spring); border: none; outline: none; -webkit-appearance: none; appearance: none; font: inherit; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+  .swipe-edit, .swipe-del { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; width: 64px; align-self: stretch; border-radius: var(--r-card); color: #fff; cursor: pointer; flex-shrink: 0; transition: transform 0.3s var(--spring); border: none; outline: none; -webkit-appearance: none; appearance: none; font: inherit; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
   .swipe-edit:active, .swipe-del:active { transform: scale(0.92); }
   .swipe-edit { background: #E07A18; }
   .swipe-del  { background: #D93025; }
@@ -357,7 +365,7 @@
 
   .empty { text-align: center; color: var(--muted-2); font-size: 0.88rem; padding: 40px 16px; line-height: 1.6; }
   .empty b { color: var(--muted); display: block; font-size: 0.95rem; margin-bottom: 4px; }
-  .notice { display: none; padding: 12px 16px; margin-bottom: 18px; font-size: 0.8rem; line-height: 1.5; color: #ffd479; background: rgba(255,159,10,0.1); border: 1px solid rgba(255,159,10,0.25); border-radius: 14px; }
+  .notice { display: none; padding: 12px 16px; margin-bottom: 18px; font-size: 0.8rem; line-height: 1.5; color: #ffd479; background: rgba(255,159,10,0.1); border: 1px solid rgba(255,159,10,0.25); border-radius: var(--r-entry); }
 
   /* Listen-Einträge (Detail-Tabs) */
   .list { display: flex; flex-direction: column; gap: 10px; }
@@ -431,7 +439,7 @@
   .rt-cdate .rt-day { font-size: 0.9rem; font-weight: 700; color: var(--muted); }
   /* ===== FOTOGRAFIE: Foto-Ort-Karten ===== */
   .foto-list { display: flex; flex-direction: column; gap: 16px; margin-top: 4px; }
-  .foto-card { padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 16px; }
+  .foto-card { padding: var(--pad-card); display: flex; flex-direction: column; gap: 16px; }
   .foto-head { display: flex; align-items: center; gap: 10px; }
   .foto-ort { flex: 1; min-width: 0; background: transparent; border: none; color: var(--text); font: inherit; font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; padding: 2px 0; }
   .foto-ort:focus { outline: none; }
@@ -447,15 +455,15 @@
      einen Blick sichtbar statt seitlich wegzuscrollen. */
   .foto-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; }
   .foto-gallery .foto-thumb, .foto-gallery .foto-add { width: 100%; aspect-ratio: 1 / 1; height: auto; }
-  .foto-thumb { position: relative; flex: 0 0 auto; width: 92px; height: 92px; border-radius: 14px; overflow: hidden; border: 1px solid var(--stroke); background: rgba(255,255,255,0.04) center/cover no-repeat; cursor: pointer; }
+  .foto-thumb { position: relative; flex: 0 0 auto; width: 92px; height: 92px; border-radius: var(--r-entry); overflow: hidden; border: 1px solid var(--stroke); background: rgba(255,255,255,0.04) center/cover no-repeat; cursor: pointer; }
   .foto-thumb-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--muted-2); }
   .foto-thumb .img-del { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: var(--r-pill); background: rgba(0,0,0,0.65); color: #fff; border: none; font-size: 0.8rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-  .foto-add { flex: 0 0 auto; width: 92px; height: 92px; border-radius: 14px; border: 1px dashed var(--stroke-hi); background: rgba(255,255,255,0.03); color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .foto-add { flex: 0 0 auto; width: 92px; height: 92px; border-radius: var(--r-entry); border: 1px dashed var(--stroke-hi); background: rgba(255,255,255,0.03); color: var(--muted); display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .foto-add:active { transform: scale(0.96); }
   .foto-add .plus { font-size: 1.6rem; line-height: 1; }
   /* Bild-Viewer (Vollbild) */
   .img-viewer { z-index: 600; align-items: center; padding: 20px; }
-  .img-viewer img { max-width: 100%; max-height: 90dvh; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
+  .img-viewer img { max-width: 100%; max-height: 90dvh; border-radius: var(--r-entry); box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
   /* Ausrüstung: Verwaltung in Einstellungen */
   .gear-manage { display: flex; flex-direction: column; }
   .gear-row { display: flex; align-items: center; gap: 10px; padding: 11px 14px; }
@@ -477,7 +485,7 @@
   .gear-choices { display: flex; flex-direction: column; gap: 8px; max-height: 52dvh; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
   .gear-choice { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border-radius: var(--r-control); background: rgba(255,255,255,0.05); border: 1px solid var(--stroke); color: var(--text); font: inherit; font-size: 0.95rem; cursor: pointer; text-align: left; }
   .gear-choice:active { background: rgba(255,255,255,0.09); }
-  .gear-choice .gc-check { flex: 0 0 22px; width: 22px; height: 22px; border-radius: 6px; border: 1.5px solid var(--stroke-hi); display: flex; align-items: center; justify-content: center; }
+  .gear-choice .gc-check { flex: 0 0 22px; width: 22px; height: 22px; border-radius: 7px; border: 1.5px solid var(--stroke-hi); display: flex; align-items: center; justify-content: center; }
   .gear-choice.on .gc-check { background: var(--violet); border-color: var(--violet); }
   .gear-choice .gc-check svg { width: 14px; height: 14px; color: #fff; display: none; }
   .gear-choice.on .gc-check svg { display: block; }
@@ -674,7 +682,7 @@
   .tab-btn.active { background: var(--accent); color: #fff; border-color: transparent; }
 
   /* Übersicht: eine Karte mit Countdown + Weltkarte + Stats */
-  .ov-card { padding: 20px 20px 6px; margin-bottom: 4px; }
+  .ov-card { padding: var(--pad-card) var(--pad-card) 6px; margin-bottom: 4px; }
   .ov-top { display: flex; align-items: center; gap: 14px; }
   .ov-cd { flex: 1 1 auto; min-width: 0; }
   .ov-cd-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--petrol); font-weight: 700; }
@@ -729,11 +737,11 @@
 
   /* Bild-Upload */
   .img-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
-  .img-thumb { position: relative; aspect-ratio: 1; border-radius: 14px; overflow: hidden; border: 1px solid var(--stroke); background: rgba(255,255,255,0.04); }
+  .img-thumb { position: relative; aspect-ratio: 1; border-radius: var(--r-entry); overflow: hidden; border: 1px solid var(--stroke); background: rgba(255,255,255,0.04); }
   .img-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .img-thumb .img-loading { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--muted-2); font-size: 0.9rem; background: rgba(255,255,255,0.03); }
   .img-thumb .img-del { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: var(--r-pill); background: rgba(0,0,0,0.65); color: #fff; border: none; font-size: 0.8rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-  .img-upload-btn { aspect-ratio: 1; border-radius: 14px; border: 1px dashed var(--stroke-hi); background: rgba(255,255,255,0.03); color: var(--muted-2); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; font-size: 0.62rem; text-align: center; }
+  .img-upload-btn { aspect-ratio: 1; border-radius: var(--r-entry); border: 1px dashed var(--stroke-hi); background: rgba(255,255,255,0.03); color: var(--muted-2); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; font-size: 0.62rem; text-align: center; }
   .img-upload-btn span.plus { font-size: 1.3rem; line-height: 1; color: var(--muted); }
 
   /* Overlay / Modal */
@@ -766,7 +774,7 @@
 
   /* Inline-Eingabe fuer Geldbetraege (Kontostaende) inkl. Vorzeichen-Umschalter.
      Gehoert in den Kern, damit alle Module dieselbe Optik und Bedienung nutzen. */
-  .balance-inline { font-family: inherit; font-size: 0.74rem; font-weight: 600; line-height: 1.2; color: var(--petrol); background: rgba(0,179,184,0.10); border: 1px solid rgba(0,179,184,0.35); border-radius: 6px; padding: 2px 6px; width: 108px; max-width: 55%; outline: none; font-variant-numeric: tabular-nums; -webkit-appearance: none; box-sizing: border-box; }
+  .balance-inline { font-family: inherit; font-size: 0.74rem; font-weight: 600; line-height: 1.2; color: var(--petrol); background: rgba(0,179,184,0.10); border: 1px solid rgba(0,179,184,0.35); border-radius: 7px; padding: 2px 6px; width: 108px; max-width: 55%; outline: none; font-variant-numeric: tabular-nums; -webkit-appearance: none; box-sizing: border-box; }
   .balance-inline:focus { border-color: var(--petrol); }
   /* Haken und Beschriftung stehen als Paar mittig in der Zeile. */
   .f-toggle { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; }
@@ -979,7 +987,7 @@
   /* Abbild der beruehrten Kachel an ihrer Stelle - sie hebt ab, statt dass ein
      Menue ueber ihr aufgeht und sie verdeckt. */
   .kontext-klon {
-    position: absolute; border-radius: 26px; overflow: hidden;
+    position: absolute; border-radius: var(--r-tile); overflow: hidden;
     background: var(--glass-hi); border: 1px solid var(--stroke-hi);
     box-shadow: 0 24px 60px rgba(0,0,0,0.6);
     transform: scale(0.97); opacity: 0;
@@ -991,7 +999,7 @@
     position: absolute; width: 232px; padding: 5px;
     background: rgba(44, 44, 50, 0.72);
     -webkit-backdrop-filter: blur(44px) saturate(200%); backdrop-filter: blur(44px) saturate(200%);
-    border: 1px solid var(--stroke-hi); border-radius: 18px;
+    border: 1px solid var(--stroke-hi); border-radius: var(--r-card);
     box-shadow: 0 18px 50px rgba(0,0,0,0.55);
     opacity: 0; transform: scale(0.9); transform-origin: top center;
     transition: opacity 0.2s, transform 0.3s var(--spring);
@@ -1000,7 +1008,7 @@
   .kontext-zeile {
     width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
     padding: 13px 13px; border: none; background: transparent; color: var(--text);
-    font: inherit; font-size: 0.98rem; text-align: left; cursor: pointer; border-radius: 14px;
+    font: inherit; font-size: 0.98rem; text-align: left; cursor: pointer; border-radius: var(--r-control);
   }
   .kontext-zeile + .kontext-zeile { box-shadow: 0 -0.5px 0 var(--stroke); }
   .kontext-zeile:active { background: rgba(255,255,255,0.09); }
@@ -1015,7 +1023,7 @@
     min-width: 168px; padding: 26px 22px 20px;
     background: rgba(44, 44, 50, 0.72);
     -webkit-backdrop-filter: blur(48px) saturate(200%); backdrop-filter: blur(48px) saturate(200%);
-    border: 1px solid var(--stroke-hi); border-radius: 26px;
+    border: 1px solid var(--stroke-hi); border-radius: var(--r-tile);
     box-shadow: 0 20px 60px rgba(0,0,0,0.5);
     transition: opacity 0.2s, transform 0.34s var(--spring);
     pointer-events: none;
@@ -1173,7 +1181,7 @@
 /* Fortschrittsbalken bis 67 */
   #mod-finanzen .bento-progress{ height: 6px; border-radius: var(--r-pill); background: rgba(255,255,255,0.08); overflow: hidden; }
 #mod-finanzen .bento-progress-fill{ display: block; height: 100%; border-radius: var(--r-pill); background: var(--green); }
-#mod-finanzen .dashboard{ padding: 22px; margin: 40px 0 0; }
+#mod-finanzen .dashboard{ padding: var(--pad-card); margin: 40px 0 0; }
 /* Dashboard-Karten kraeftiger absetzen: tiefere Schatten, deutlichere Glaskante.
    Bewusst OHNE backdrop-filter (solider Hintergrund) - das haelt das Wischen fluessig,
    da Safari keinen Live-Blur der bewegten Karte berechnen muss. */
@@ -1218,7 +1226,7 @@
 #mod-finanzen .bal-acct-break{ font-size: 0.74rem; color: var(--muted); margin-top: 4px; display: flex; flex-direction: column; gap: 2px; }
 #mod-finanzen .bal-break-row{ display: flex; justify-content: space-between; align-items: baseline; }
 #mod-finanzen .bal-break-row span:last-child{ font-variant-numeric: tabular-nums; flex-shrink: 0; padding-left: 10px; }
-#mod-finanzen .balance-box{ padding: 14px 16px; margin-bottom: 6px; }
+#mod-finanzen .balance-box{ padding: var(--pad-inner); margin-bottom: 6px; }
 #mod-finanzen .bb-head{ display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--stroke); }
 #mod-finanzen .bb-head span:first-child{ font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted-2); }
 #mod-finanzen .bb-total{ font-size: 1.05rem; font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; }
@@ -1263,8 +1271,8 @@
 #mod-finanzen .entry-pension{ display: flex; flex-wrap: wrap; gap: 1px 12px; margin-top: 7px; font-size: 0.78rem; line-height: 1.35; font-variant-numeric: tabular-nums; }
 #mod-finanzen .entry-sub + .entry-pension{ margin-top: 1px; }
 #mod-finanzen .entry-pension .pv-date{ color: var(--muted); }
-#mod-finanzen .growth-auto-note{ font-size: 0.72rem; color: var(--muted); line-height: 1.4; background: rgba(255,255,255,0.03); border: 1px solid var(--stroke); border-radius: 10px; padding: 8px 10px; }
-#mod-finanzen .av-dash{ padding: 22px; margin-bottom: 14px; }
+#mod-finanzen .growth-auto-note{ font-size: 0.72rem; color: var(--muted); line-height: 1.4; background: rgba(255,255,255,0.03); border: 1px solid var(--stroke); border-radius: var(--r-entry); padding: 8px 10px; }
+#mod-finanzen .av-dash{ padding: var(--pad-card); margin-bottom: 14px; }
 #mod-finanzen .av-cards{ display: flex; flex-direction: column; gap: 10px; }
 #mod-finanzen .av-group{ display: flex; flex-direction: column; gap: 8px; }
 #mod-finanzen .av-group-head{ display: flex; justify-content: space-between; align-items: baseline; padding: 4px 2px 0; }
@@ -1276,7 +1284,10 @@
 #mod-finanzen .av-card{ background: rgba(255,255,255,0.04); border: 1px solid var(--stroke); border-radius: var(--r-control); padding: 14px 16px; }
 #mod-finanzen .vd-group{ margin-top: 18px; }
 /* .vd-group erbt jetzt denselben Abstand wie jede andere Ueberschrift. */
-#mod-finanzen .vd-card{ background: rgba(255,255,255,0.04); border: 1px solid var(--stroke); border-radius: 14px; padding: 11px 14px; margin-bottom: 8px; }
+/* Baute vorher das Glasmaterial mit eigenen Werten nach und waere bei jeder
+   Aenderung daran zurueckgeblieben. Nutzt jetzt dieselben Quellen wie alle
+   anderen Karten. */
+#mod-finanzen .vd-card{ background: var(--glass); border: 1px solid var(--stroke); border-radius: var(--r-entry); padding: var(--pad-inner); margin-bottom: 8px; }
 #mod-finanzen .vd-card:last-child{ margin-bottom: 0; }
 #mod-finanzen .vd-head{ display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 7px; }
 #mod-finanzen .vd-name{ font-size: 0.88rem; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
@@ -1291,7 +1302,7 @@
 #mod-finanzen .av-card-name{ text-transform: none; letter-spacing: 0; color: var(--text); font-size: 0.82rem; }
 #mod-finanzen .av-card-cur{ font-size: 0.78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 #mod-finanzen .av-card-metrics{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-#mod-finanzen .av-card-metric{ background: rgba(255,255,255,0.03); border-radius: 10px; padding: 8px 4px; text-align: center; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
+#mod-finanzen .av-card-metric{ background: rgba(255,255,255,0.03); border-radius: var(--r-entry); padding: 8px 4px; text-align: center; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
 #mod-finanzen .av-card-metric-label{ font-size: 0.56rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted-2); display: block; margin-bottom: 4px; }
 #mod-finanzen .av-card-metric-val{ font-size: 0.8rem; font-weight: 700; font-variant-numeric: tabular-nums; display: block; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 #mod-finanzen .av-card-metric-type{ font-size: 0.58rem; color: var(--muted-2); display: block; margin-top: 2px; }
@@ -1324,11 +1335,11 @@
 #mod-finanzen .hist-range-ctl{ display: flex; gap: 3px; background: rgba(0,0,0,0.25); border-radius: var(--r-pill); padding: 2px; }
 #mod-finanzen .hist-range-btn{ border: none; background: transparent; color: var(--muted-2); font: inherit; font-size: 0.6rem; font-weight: 600; padding: 3px 9px; border-radius: var(--r-pill); cursor: pointer; transition: all 0.2s var(--ease-ios); }
 #mod-finanzen .hist-range-btn.active{ background: var(--accent); color: #fff; }
-#mod-finanzen .av-mode-toggle{ display: flex; gap: 4px; background: rgba(0,0,0,0.25); border-radius: 9px; padding: 3px; margin-bottom: 10px; }
-#mod-finanzen .av-mode-btn{ flex: 1; border: none; background: transparent; color: var(--muted); font: inherit; font-size: 0.74rem; font-weight: 600; padding: 6px; border-radius: 7px; cursor: pointer; transition: all 0.15s; }
+#mod-finanzen .av-mode-toggle{ display: flex; gap: 4px; background: rgba(0,0,0,0.25); border-radius: var(--r-control); padding: 3px; margin-bottom: 10px; }
+#mod-finanzen .av-mode-btn{ flex: 1; border: none; background: transparent; color: var(--muted); font: inherit; font-size: 0.74rem; font-weight: 600; padding: 6px; border-radius: var(--r-entry); cursor: pointer; transition: all 0.15s; }
 #mod-finanzen .av-mode-btn.active{ background: var(--accent); color: #fff; }
 #mod-finanzen .av-card-total-scenario{ display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-#mod-finanzen .av-scenario-select{ background: rgba(255,255,255,0.08); border: 1px solid var(--stroke); border-radius: 8px; color: var(--muted); font: inherit; font-size: 1rem; padding: 4px 8px; outline: none; cursor: pointer; flex-shrink: 0; }
+#mod-finanzen .av-scenario-select{ background: rgba(255,255,255,0.08); border: 1px solid var(--stroke); border-radius: var(--r-entry); color: var(--muted); font: inherit; font-size: 1rem; padding: 4px 8px; outline: none; cursor: pointer; flex-shrink: 0; }
 #mod-finanzen .av-card-total-val{ font-size: 0.82rem; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; flex: 1; text-align: right; }
 #mod-finanzen .field-group-label{ font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-2); margin: 0 0 -4px; font-weight: 600; }
 /* Jahresblock. Linie darueber trennt ihn vom vorigen Jahr, Abstand beidseitig gleich. */
@@ -1370,7 +1381,7 @@
 #mod-finanzen .kv-mon{ font-size: 0.85rem; color: var(--text); font-weight: 600; }
 #mod-finanzen .kv-saldo{ font-size: 0.85rem; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
 #mod-finanzen .kv-saldo.negative{ color: var(--danger); }
-#mod-finanzen .kv-yearend{ padding: 11px 13px; margin: 14px 0 20px; border-radius: 12px; background: rgba(255,255,255,0.05); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); font-size: 0.78rem; }
+#mod-finanzen .kv-yearend{ padding: 11px 13px; margin: 14px 0 20px; border-radius: var(--r-entry); background: rgba(255,255,255,0.05); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); font-size: 0.78rem; }
 #mod-finanzen .kv-ye-row{ display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
 #mod-finanzen .kv-ye-row + .kv-ye-row{ margin-top: 4px; }
 #mod-finanzen .kv-ye-lbl.sub{ color: var(--muted); font-weight: 500; }
@@ -1382,7 +1393,7 @@
 #mod-finanzen .kv-lbl{ color: var(--muted-2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #mod-finanzen .kv-in{ color: var(--green); font-variant-numeric: tabular-nums; flex-shrink: 0; }
 #mod-finanzen .kv-out{ color: var(--muted); font-variant-numeric: tabular-nums; flex-shrink: 0; }
-#mod-finanzen .urlaub-combined{ padding: 16px 18px; margin-bottom: 12px; }
+#mod-finanzen .urlaub-combined{ padding: var(--pad-card); margin-bottom: 12px; }
 #mod-finanzen .uc-budget-row{ display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 /* Abstand zwischen mehreren gestapelten Kontingent-Zeilen (2026, 2027, ...) - die Zeile
    war bisher immer allein, jetzt koennen mehrere direkt untereinander stehen. */
@@ -1419,7 +1430,7 @@
 #mod-finanzen .uy-trip-meta{ color: var(--muted); font-variant-numeric: tabular-nums; }
 #mod-finanzen .urlaub-year-label{ font-size: 0.8rem; font-weight: 600; color: var(--muted); margin: 12px 2px 6px; }
 #mod-finanzen .urlaub-year-label:first-child{ margin-top: 2px; }
-#mod-finanzen .btn-icon{ background: none; border: none; cursor: pointer; color: var(--muted-2); width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; transition: color 0.15s, background 0.15s; }
+#mod-finanzen .btn-icon{ background: none; border: none; cursor: pointer; color: var(--muted-2); width: 32px; height: 32px; border-radius: var(--r-entry); display: flex; align-items: center; justify-content: center; transition: color 0.15s, background 0.15s; }
 #mod-finanzen .btn-icon svg{ width: 17px; height: 17px; }
 #mod-finanzen .field{ margin-bottom: 0; }
 #mod-finanzen .f-dyn-group{ display: flex; flex-direction: column; gap: 14px; }
@@ -1431,7 +1442,7 @@
 #mod-finanzen .pay-row .pay-month{ flex: 0 0 52px; width: 52px; text-align: center; }
 #mod-finanzen .pay-row .pay-year{ flex: 0 0 64px; width: 64px; text-align: center; }
 #mod-finanzen .pay-row .pay-amount{ flex: 1 1 auto; min-width: 0; text-align: right; font-variant-numeric: tabular-nums; }
-#mod-finanzen .pay-del{ flex: 0 0 auto; background: none; border: none; color: var(--muted-2); padding: 6px; cursor: pointer; border-radius: 8px; line-height: 0; }
+#mod-finanzen .pay-del{ flex: 0 0 auto; background: none; border: none; color: var(--muted-2); padding: 6px; cursor: pointer; border-radius: var(--r-entry); line-height: 0; }
 #mod-finanzen .pay-del svg{ width: 18px; height: 18px; display: block; }
 #mod-finanzen .btn-add-pay{ background: none; border: none; color: var(--accent); font: inherit; font-size: 0.85rem; font-weight: 600; padding: 8px 2px; cursor: pointer; }
 #mod-finanzen .pay-hint{ font-size: 0.8rem; color: var(--muted); margin-top: 6px; font-variant-numeric: tabular-nums; }
@@ -2899,11 +2910,11 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2609063200"></script>
-<script src="mod-reisen.js?v=2609063200"></script>
-<script src="mod-finanzen.js?v=2609063200"></script>
-<script src="mod-impfpass.js?v=2609063200"></script>
-<script src="mod-fotografie.js?v=2609063200"></script>
+<script src="data-laender.js?v=2609063400"></script>
+<script src="mod-reisen.js?v=2609063400"></script>
+<script src="mod-finanzen.js?v=2609063400"></script>
+<script src="mod-impfpass.js?v=2609063400"></script>
+<script src="mod-fotografie.js?v=2609063400"></script>
 
 <!-- ===== Start ===== -->
 <script>
