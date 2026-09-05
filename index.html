@@ -12,17 +12,17 @@
 <meta name="apple-mobile-web-app-title" content="Jörg">
 <!-- Startbilder: ohne sie zeigt iOS beim Kaltstart eine leere Flaeche, bis das
      Skript gelaufen ist. Je Geraet greift genau eine der Zeilen. -->
-<link rel="apple-touch-startup-image" href="splash/1320x2868.png?v=2609060900" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1290x2796.png?v=2609060900" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1284x2778.png?v=2609060900" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1206x2622.png?v=2609060900" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1179x2556.png?v=2609060900" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1170x2532.png?v=2609060900" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1242x2688.png?v=2609060900" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1125x2436.png?v=2609060900" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/828x1792.png?v=2609060900" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/750x1334.png?v=2609060900" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-<link rel="manifest" href="manifest.json?v=2609060900">
+<link rel="apple-touch-startup-image" href="splash/1320x2868.png?v=2609061130" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1290x2796.png?v=2609061130" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1284x2778.png?v=2609061130" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1206x2622.png?v=2609061130" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1179x2556.png?v=2609061130" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1170x2532.png?v=2609061130" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1242x2688.png?v=2609061130" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1125x2436.png?v=2609061130" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/828x1792.png?v=2609061130" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/750x1334.png?v=2609061130" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+<link rel="manifest" href="manifest.json?v=2609061130">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -64,7 +64,7 @@
     --r-pill:    99px;
     /* Die Leiste ist 60px hoch und sitzt 10px ueber dem sicheren Bereich - macht
        70px, plus ein wenig Luft zum letzten Inhalt. */
-    --dock-h:    74px;
+    --dock-h:    66px;
   }
 
   html { -webkit-text-size-adjust: 100%; overflow-x: hidden; background: #0a0a0c; }
@@ -831,7 +831,9 @@
   /* ---- Untere Leiste ---- */
   .dock {
     position: fixed; z-index: 480;
-    left: 50%; bottom: calc(10px + env(safe-area-inset-bottom));
+    /* Sitzt bewusst im Bereich des Home-Indikators statt darueber - der freie
+       Streifen darunter las sich als schwarzer Balken. */
+    left: 50%; bottom: max(8px, calc(env(safe-area-inset-bottom) - 2px));
     width: min(430px, calc(100vw - 28px));
     display: flex; align-items: center; gap: 2px; padding: 6px;
     border-radius: var(--r-pill);
@@ -854,6 +856,17 @@
   .dock-btn svg { width: 23px; height: 23px; display: block; }
   .dock-btn:active { transform: scale(0.86); }
   .dock-btn.an { color: var(--text); background: rgba(255,255,255,0.10); }
+
+  /* Unter und hinter der Leiste laeuft der Hintergrund nach unten aus. Ohne ihn
+     endet der Inhalt an der Leistenkante hart und der Rest bleibt leere Flaeche. */
+  .dock-saum {
+    position: fixed; z-index: 470; left: 0; right: 0; bottom: 0;
+    height: calc(112px + env(safe-area-inset-bottom));
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.55) 38%, var(--bg) 78%);
+    transition: opacity 0.28s var(--ease-ios);
+  }
+  .dock-saum.weg { opacity: 0; }
 
   /* ---- Schwebende Titelzeile ---- */
   /* Der grosse Titel scrollt weg, diese Leiste faengt ihn auf. Ein einziges
@@ -1446,8 +1459,6 @@
   </div>
 
   <p class="backup-hint" id="build-stamp" style="text-align:center;margin:22px 6px 0"></p>
-  <!-- Nur zur Fehlersuche am schwarzen Rand unten. Faellt wieder raus, sobald geklaert. -->
-  <p class="backup-hint" id="mess-stamp" style="text-align:center;margin:6px 6px 0;font-variant-numeric:tabular-nums"></p>
 </div>
 
 <div class="overlay" id="pass-overlay">
@@ -1479,6 +1490,7 @@
   <span class="navbar-title" id="navbar-title"></span>
 </div>
 
+<div class="dock-saum" id="dock-saum" aria-hidden="true"></div>
 <nav class="dock" id="dock" aria-label="Bereiche"></nav>
 
 <div class="kontext" id="kontext" onclick="schliesseKontext()">
@@ -2175,7 +2187,16 @@ async function _ghReadText(repo, token, file){
 async function buildCombinedPayload(){
   const mods = {};
   for(const m of MODULES){
-    try { mods[m.id] = await m.buildPayload(); } catch(e) { /* Bereich überspringen */ }
+    /* Frueher wurde ein Bereich bei einem Fehler stillschweigend uebersprungen und
+       trotzdem hochgeladen. In der Cloud lag dann eine Sicherung, die vollstaendig
+       aussah, aber einen Bereich nicht enthielt - beim Laden war er leer, ohne dass
+       je eine Warnung kam. Lieber gar keine Sicherung als eine unvollstaendige. */
+    try {
+      mods[m.id] = await m.buildPayload();
+    } catch(e) {
+      throw new Error('Bereich „' + (m.name || m.id) + '“ konnte nicht gesichert werden: '
+                      + (e && e.message ? e.message : e));
+    }
   }
   return { app: 'alles', version: 1, exportedAt: new Date().toISOString(), modules: mods };
 }
@@ -2767,11 +2788,11 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2609060900"></script>
-<script src="mod-reisen.js?v=2609060900"></script>
-<script src="mod-finanzen.js?v=2609060900"></script>
-<script src="mod-impfpass.js?v=2609060900"></script>
-<script src="mod-fotografie.js?v=2609060900"></script>
+<script src="data-laender.js?v=2609061130"></script>
+<script src="mod-reisen.js?v=2609061130"></script>
+<script src="mod-finanzen.js?v=2609061130"></script>
+<script src="mod-impfpass.js?v=2609061130"></script>
+<script src="mod-fotografie.js?v=2609061130"></script>
 
 <!-- ===== Start ===== -->
 <script>
@@ -3066,8 +3087,11 @@ function iosAktualisieren(){
   _iosWartet = true;
   requestAnimationFrame(() => {
     _iosWartet = false;
+    const sichtbar = dockSichtbar();
     const d = $('dock');
-    if(d) d.classList.toggle('weg', !dockSichtbar());
+    if(d) d.classList.toggle('weg', !sichtbar);
+    const saum = $('dock-saum');
+    if(saum) saum.classList.toggle('weg', !sichtbar);
     document.querySelectorAll('.dock-btn').forEach(b =>
       b.classList.toggle('an', b.dataset.id === (activeModule || 'home')));
     aktualisiereNavbar();
@@ -3126,25 +3150,6 @@ function initZustand(){
 }
 
 
-/* ---------------- Messzeile ----------------
-   Zeigt die vier Hoehen, die ueber die Position der unteren Leiste entscheiden.
-   Weichen sie voneinander ab, ist das Layout-Fenster kuerzer als der Bildschirm -
-   dann sitzt nicht die Leiste falsch, sondern die Seite ist zu kurz.
-   Diese Zeile ist ein Messwerkzeug und faellt wieder raus. */
-function messungZeigen(){
-  const el = $('mess-stamp'); if(!el) return;
-  const probe = document.createElement('div');
-  probe.style.cssText = 'position:fixed;bottom:0;height:env(safe-area-inset-bottom);width:1px;visibility:hidden';
-  document.body.appendChild(probe);
-  const sicher = Math.round(probe.getBoundingClientRect().height);
-  probe.remove();
-  const vv = window.visualViewport;
-  el.textContent = 'Schirm ' + Math.round(window.screen.height * (window.devicePixelRatio ? 1 : 1))
-    + ' · innen ' + Math.round(window.innerHeight)
-    + ' · sichtbar ' + (vv ? Math.round(vv.height) : '-')
-    + ' · unten ' + sicher;
-}
-
 function initIOS(){
   renderDock();
   initTastatur();
@@ -3158,8 +3163,6 @@ function initIOS(){
   window.addEventListener('resize', () => iosAktualisieren());
   initSchriftgroesse();
   initZustand();
-  messungZeigen();
-  window.addEventListener('resize', messungZeigen);
   history.replaceState({ tiefe: offeneEbenen() }, '');
   iosAktualisieren();
 }

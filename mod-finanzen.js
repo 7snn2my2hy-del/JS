@@ -2984,7 +2984,13 @@ function finBuildBackupPayload() {
     urlaubManualDays: manuelleUrlaubstage,
     urlaubKontoOverride: urlaubKontoOverrides,
     urlaubAnspruch: urlaubAnspruchOverride,
-    history: history
+    history: history,
+    /* Standen in FIN_KEYS und loesten damit eine Sicherung aus, fehlten aber in der
+       Sicherung selbst - eingeklappte Abschnitte und der gewaehlte Zeitraum waren
+       nach dem Wiederherstellen weg. */
+    collapsedSections: collapsedSections,
+    avViewMode: avViewMode,
+    histRange: histRange
   };
 }
 
@@ -3044,6 +3050,18 @@ function finApplyBackup(rawText) {
   if (Array.isArray(parsed.history)) {
     history = parsed.history;
     store.set(HISTORY_KEY, JSON.stringify(history));
+  }
+  if (Array.isArray(parsed.collapsedSections)) {
+    collapsedSections = parsed.collapsedSections;
+    store.set(COLLAPSE_KEY, JSON.stringify(collapsedSections));
+  }
+  if (parsed.avViewMode === 'nominal' || parsed.avViewMode === 'real') {
+    avViewMode = parsed.avViewMode;
+    store.set('fin_av_view_mode_v1', avViewMode);
+  }
+  if (typeof parsed.histRange === 'string' && parsed.histRange) {
+    histRange = parsed.histRange;
+    store.set('fin_hist_range_v1', histRange);
   }
   return true;
 }
