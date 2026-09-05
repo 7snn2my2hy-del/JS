@@ -24,7 +24,7 @@
 document.getElementById('mod-fotografie').insertAdjacentHTML('beforeend', `
 <div class="wrap">
 
-  <div class="app-header"><button class="screen-back" aria-label="Zurück" onclick="closeModule()">‹</button><span>Jörg's Fotografie</span></div>
+  <div class="app-header"><button class="screen-back" aria-label="Zurück" onclick="closeModule()">‹</button><span>Fotografie</span></div>
 
   <div id="fg-list"></div>
   <div class="empty" id="fg-empty" style="display:none">Noch keine Guides hinterlegt.</div>

@@ -4,7 +4,7 @@
    dieses Modul bringt keine eigene Gestaltung mit. Die dortigen Regeln sind mit
    #mod-finanzen auf diesen Bereich begrenzt, damit sie andere Module nicht beeinflussen. */
 
-document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', "<div class=\"wrap\">\n  \n\n  <div class=\"app-header\"><button class=\"screen-back\" aria-label=\"Zurück\" onclick=\"closeModule()\">‹</button><span>Jörg's Finanzen</span></div>\n\n  <div class=\"income-bar glass\">\n    <div class=\"income-top\">\n      <div class=\"income-left\">\n        <span class=\"income-label\">Netto / Monat</span>\n        <div class=\"income-input-wrap\">\n          <input type=\"text\" id=\"income-input\" placeholder=\"z.B. 0,00\" inputmode=\"text\" oninput=\"onIncomeInput()\">\n          <span class=\"income-eur\">€</span>\n        </div>\n      </div>\n      <div class=\"income-right\">\n        <span class=\"income-label\">Verfügbar</span>\n        <span class=\"income-avail\" id=\"income-avail\">0,00 €</span>\n      </div>\n    </div>\n    <div class=\"income-meta\" id=\"income-meta\" onclick=\"openIncomeMeta()\"></div>\n  </div>\n\n  <!-- Einkommens-Details (nur Info, keine Logik) -->\n  <div class=\"overlay\" id=\"income-meta-overlay\" onclick=\"if(event.target===this)closeIncomeMeta()\">\n    <div class=\"modal\">\n      <div class=\"grabber\"></div>\n      <h2>Einkommen</h2>\n      <div style=\"display:flex;flex-direction:column;gap:14px\">\n        <div class=\"field\">\n          <label>Arbeitgeber</label>\n          <input type=\"text\" id=\"im-employer\" placeholder=\"z.B. Siemens\" autocomplete=\"off\">\n        </div>\n        <div class=\"field field-row\">\n          <div>\n            <label>Zieleinkommen</label>\n            <input type=\"text\" id=\"im-target\" placeholder=\"z.B. 0,00\" inputmode=\"text\" autocomplete=\"transaction-amount\">\n          </div>\n          <div>\n            <label>Brutto / Monat</label>\n            <input type=\"text\" id=\"im-gross-m\" placeholder=\"z.B. 0,00\" inputmode=\"text\" autocomplete=\"transaction-amount\">\n          </div>\n        </div>\n        <div class=\"field\">\n          <label>Bonus</label>\n          <input type=\"text\" id=\"im-bonus\" placeholder=\"z.B. 0,00\" inputmode=\"text\" autocomplete=\"transaction-amount\">\n        </div>\n        <div class=\"field field-row\">\n          <div>\n            <label>Altersvorsorge</label>\n            <input type=\"text\" id=\"im-pension\" placeholder=\"z.B. 0,00\" inputmode=\"text\" autocomplete=\"transaction-amount\">\n          </div>\n          <div>\n            <label>Aktien</label>\n            <input type=\"text\" id=\"im-stocks\" placeholder=\"z.B. 0,00\" inputmode=\"text\" autocomplete=\"transaction-amount\">\n          </div>\n        </div>\n      </div>\n      <div class=\"modal-actions\">\n        <button class=\"btn btn-secondary\" onclick=\"closeIncomeMeta()\">Abbrechen</button>\n        <button class=\"btn btn-primary\" onclick=\"saveIncomeMeta()\">Speichern</button>\n      </div>\n    </div>\n  </div>\n\n  <!-- Hero: Gesamtvermögen -->\n  <div class=\"hero\" id=\"hero\" onclick=\"openDetail('uebersicht')\">\n    <div class=\"hero-label\">Gesamtvermögen</div>\n    <div class=\"hero-val\" id=\"hero-val\">–</div>\n    <div id=\"hero-spark\"></div>\n    <span class=\"hero-sub\" id=\"hero-sub\"></span>\n  </div>\n\n  <!-- Bento: Kennzahlen auf einen Blick -->\n  <div class=\"tag\" id=\"bento-tag\" style=\"display:none\">Auf einen Blick</div>\n  <div class=\"bento\" id=\"bento\" style=\"display:none\"></div>\n\n  <!-- Detail-Ansichten: werden über die Bento-Kacheln geöffnet (alle Render-Ziele unverändert) -->\n  <div class=\"detail-sheet\" id=\"detail-sheet\">\n    <div class=\"settings-topbar\">\n      <button class=\"settings-back\" aria-label=\"Zurück\" onclick=\"closeDetail()\">‹</button>\n      <h2 id=\"detail-title\">Details</h2>\n    </div>\n    <div class=\"detail-panel\" id=\"panel-uebersicht\">\n      <div class=\"dashboard glass\" id=\"dashboard\">\n        <div class=\"uy-konto-head\">\n          <span>Gesamtvermögen</span>\n          <b id=\"wealth-val\">–</b>\n          <span class=\"wealth-sub-row\"><span class=\"saverate-eur\" id=\"wealth-sub\"></span><button class=\"info-i\" aria-label=\"Info\" onclick=\"showWealthInfo()\">i</button></span>\n        </div>\n        <div class=\"dash-accounts first\">\n          <div class=\"dash-sub-label\">Ausgaben nach Kategorie</div>\n          <div class=\"dash-grid\">\n            <div class=\"dash-donut\">\n              <svg viewBox=\"0 0 120 120\" id=\"donut-svg\" width=\"100\" height=\"100\"></svg>\n              <div class=\"donut-center\">\n                <span class=\"donut-center-label\">Netto</span>\n                <span class=\"donut-center-val\" id=\"donut-center-val\">–</span>\n              </div>\n            </div>\n            <div class=\"dash-legend\" id=\"dash-legend\"></div>\n          </div>\n        </div>\n        <div class=\"dash-accounts\" id=\"dash-wealth-hist\" style=\"display:none\">\n          <div class=\"hist-head\"><span class=\"dash-sub-label\">Gesamtvermögensverlauf</span><span class=\"hist-range-ctl\" data-target=\"wealth\"></span></div>\n          <div id=\"wealth-hist-chart\"></div>\n        </div>\n        <div class=\"dash-accounts\" id=\"dash-balances\">\n          <div class=\"dash-sub-label\">Kontostände</div>\n          <div id=\"balance-bars\"></div>\n        </div>\n        <div class=\"dash-accounts\" id=\"dash-saverates\" style=\"display:none\">\n          <div class=\"dash-sub-label\">Sparquoten</div>\n          <div id=\"saverate-bars\"></div>\n        </div>\n        <div class=\"dash-accounts\" id=\"dash-accounts\">\n          <div class=\"dash-sub-label\">Ausgaben nach Konto</div>\n          <div id=\"account-bars\"></div>\n        </div>\n      </div>\n    </div>\n    <div class=\"detail-panel\" id=\"panel-a\">\n      <div class=\"av-dash glass\" id=\"av-dash\">\n        <div id=\"av-kontostand\"></div>\n        <div id=\"av-table\"></div>\n      </div>\n    </div>\n    <div class=\"detail-panel\" id=\"panel-urlaub\">\n      <div class=\"av-dash glass\" id=\"urlaub-dash\">\n        <div id=\"urlaub-dash-body\"></div>\n      </div>\n    </div>\n    <div class=\"detail-panel\" id=\"panel-v\">\n      <div class=\"av-dash glass\" id=\"vertrag-dash\">\n        <div id=\"vertrag-dash-body\"></div>\n      </div>\n    </div>\n  </div>\n\n  <div class=\"income-divider\"></div>\n\n  <header class=\"sub-header\" onclick=\"toggleSection('b')\">\n    <div class=\"sub-header-text\">\n      <h1>Konsum, Urlaub &amp; Sparen</h1>\n      <p>Sparpläne und monatliche Budgets im Blick</p>\n    </div>\n    <span class=\"section-chevron\" id=\"chev-b\">⌄</span>\n  </header>\n\n  <div class=\"section-body\" id=\"body-b\">\n  <div class=\"filter-row\">\n    <select class=\"account-filter\" id=\"filter-b\" onchange=\"renderSection('b')\"></select>\n  </div>\n  <div class=\"summary glass\">\n    <div class=\"stat\"><div class=\"stat-label\">Monatlich</div><div class=\"stat-value month\" id=\"sum-month-b\">0,00 €</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">Jährlich</div><div class=\"stat-value year\" id=\"sum-year-b\">0,00 €</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">Einträge</div><div class=\"stat-value count\" id=\"sum-count-b\">0</div></div>\n  </div>\n  <div class=\"balance-box glass\" id=\"balance-box-b\" style=\"display:none\"></div>\n\n  <div class=\"section-label\">Konsum, Urlaub &amp; Sparen</div>\n  <div class=\"list\" id=\"list-b\"></div>\n  <div class=\"empty\" id=\"empty-b\" style=\"display:none\">Noch keine Einträge. Tippe unten, um zu beginnen.</div>\n\n  <button class=\"add-btn\" onclick=\"finOpenModal('b')\">＋ Eintrag hinzufügen</button>\n  </div>\n\n  <div class=\"group-divider\"></div>\n\n  <header class=\"sub-header\" onclick=\"toggleSection('a')\">\n    <div class=\"sub-header-text\">\n      <h1>Altersvorsorge</h1>\n      <p>Vorsorge und Rente im Blick · Renteneintrittsalter 67</p>\n    </div>\n    <span class=\"section-chevron\" id=\"chev-a\">⌄</span>\n  </header>\n\n  <div class=\"section-body\" id=\"body-a\">\n  <div class=\"filter-row\">\n    <select class=\"account-filter\" id=\"filter-a\" onchange=\"renderSection('a')\"></select>\n  </div>\n  <div class=\"summary glass\">\n    <div class=\"stat\"><div class=\"stat-label\">Monatlich</div><div class=\"stat-value month\" id=\"sum-month-a\">0,00 €</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">Jährlich</div><div class=\"stat-value year\" id=\"sum-year-a\">0,00 €</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">Einträge</div><div class=\"stat-value count\" id=\"sum-count-a\">0</div></div>\n  </div>\n\n  <div class=\"section-label\">Altersvorsorge</div>\n  <div class=\"list\" id=\"list-a\"></div>\n  <div class=\"empty\" id=\"empty-a\" style=\"display:none\">Noch keine Einträge. Tippe unten, um zu beginnen.</div>\n\n  <button class=\"add-btn\" onclick=\"finOpenModal('a')\">＋ Eintrag hinzufügen</button>\n  </div>\n\n  <div class=\"group-divider\"></div>\n\n  <header class=\"sub-header\" onclick=\"toggleSection('v')\">\n    <div class=\"sub-header-text\">\n      <h1>Versicherungen &amp; Verträge</h1>\n      <p>Alle laufenden Ausgaben im Blick</p>\n    </div>\n    <span class=\"section-chevron\" id=\"chev-v\">⌄</span>\n  </header>\n\n  <div class=\"section-body\" id=\"body-v\">\n  <div class=\"filter-row\">\n    <select class=\"account-filter\" id=\"filter-v\" onchange=\"renderSection('v')\"></select>\n  </div>\n  <div class=\"summary glass\">\n    <div class=\"stat\"><div class=\"stat-label\">Monatlich</div><div class=\"stat-value month\" id=\"sum-month\">0,00 €</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">Jährlich</div><div class=\"stat-value year\" id=\"sum-year\">0,00 €</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">Einträge</div><div class=\"stat-value count\" id=\"sum-count\">0</div></div>\n  </div>\n\n  <div class=\"section-label\">Versicherungen &amp; Verträge</div>\n  <div class=\"list\" id=\"list-v\"></div>\n  <div class=\"empty\" id=\"empty-v\" style=\"display:none\">Noch keine Einträge. Tippe unten, um zu beginnen.</div>\n\n  <button class=\"add-btn\" onclick=\"finOpenModal('v')\">＋ Eintrag hinzufügen</button>\n  </div>\n\n  <div class=\"group-divider\"></div>\n\n  <header class=\"sub-header\" onclick=\"toggleSection('urlaub')\">\n    <div class=\"sub-header-text\">\n      <h1>Urlaube</h1>\n      <p>Geplante Reisen &amp; Jahresbudget im Blick</p>\n    </div>\n    <span class=\"section-chevron\" id=\"chev-urlaub\">⌄</span>\n  </header>\n\n  <div class=\"section-body\" id=\"body-urlaub\">\n  <div class=\"section-label\">Urlaube</div>\n  <div class=\"urlaub-combined glass\">\n    <div class=\"uc-budget-row\">\n      <span class=\"ub-label\">Urlaubsbudget</span>\n      <span class=\"ub-auto-val\" id=\"urlaub-budget-auto\">0,00 €</span>\n    </div>\n    <div class=\"uc-divider\"></div>\n    <div class=\"ud-head\">\n      <span class=\"ub-label\">Einzahlung</span>\n      <button class=\"ud-add\" onclick=\"openDepositModal()\">＋ Einzahlung</button>\n    </div>\n    <div id=\"deposit-list\"></div>\n    <div class=\"uc-divider\"></div>\n    <div id=\"urlaub-kontingent-rows\"></div>\n    <div class=\"uc-divider\"></div>\n    <div class=\"ud-head\">\n      <span class=\"ub-label\">Urlaubstage ohne Reise</span>\n      <button class=\"ud-add\" onclick=\"openManualDayModal()\">＋ Urlaubstag</button>\n    </div>\n    <div id=\"manual-day-list\"></div>\n  </div>\n  <div id=\"urlaub-years\"></div>\n  <div class=\"empty\" id=\"empty-urlaub\" style=\"display:none\">Noch keine Urlaube geplant. Tippe unten, um zu beginnen.</div>\n\n  <button class=\"add-btn\" onclick=\"openUrlaubModal()\">＋ Urlaub hinzufügen</button>\n  </div>\n\n  <div class=\"group-divider\"></div>\n\n  <header class=\"sub-header\" onclick=\"toggleSection('bonus')\">\n    <div class=\"sub-header-text\">\n      <h1>Bonusprogramme</h1>\n      <p>Punkte, Meilen &amp; Verfall im Blick</p>\n    </div>\n    <span class=\"section-chevron\" id=\"chev-bonus\">⌄</span>\n  </header>\n\n  <div class=\"section-body\" id=\"body-bonus\">\n  <div class=\"section-label\">Bonusprogramme</div>\n  <div class=\"list\" id=\"list-bonus\"></div>\n  <div class=\"empty\" id=\"empty-bonus\" style=\"display:none\">Noch keine Einträge. Tippe unten, um zu beginnen.</div>\n\n  <button class=\"add-btn\" onclick=\"openBonusModal()\">＋ Eintrag hinzufügen</button>\n  </div>\n\n\n\n</div>\n\n<!-- Vollbild-Einstellungen (Zahnrad) -->\n\n\n<!-- Custom dialog (works where native confirm/alert are blocked) -->\n\n\n<div class=\"overlay\" id=\"overlay\" onclick=\"closeIfBg(event)\">\n  <div class=\"modal\">\n    <div class=\"grabber\"></div>\n    <h2 id=\"modal-title\">Neuer Eintrag</h2>\n    <div style=\"display:flex;flex-direction:column;gap:14px\">\n    <div class=\"field\">\n      <label>Name</label>\n      <input type=\"text\" id=\"f-name\" placeholder=\"z.B. Netflix\" autocomplete=\"off\">\n    </div>\n    <div class=\"field field-row\" id=\"f-prov-acct-row\">\n      <div id=\"f-provider-wrap\">\n        <label id=\"f-provider-label\">Anbieter (optional)</label>\n        <input type=\"text\" id=\"f-provider\" placeholder=\"z.B. Allianz\" autocomplete=\"off\">\n      </div>\n      <div id=\"f-extra-wrap\">\n        <label id=\"f-extra-label\">Vertragsnummer (optional)</label>\n        <input type=\"text\" id=\"f-extra-input\" placeholder=\"—\" autocomplete=\"off\">\n        <select id=\"f-extra-select\" style=\"display:none\"></select>\n      </div>\n    </div>\n    <div class=\"field field-row\">\n      <div>\n        <label>Betrag</label>\n        <input type=\"text\" id=\"f-amount\" placeholder=\"z.B. 1.000,00 €\" inputmode=\"text\">\n      </div>\n      <div id=\"f-period-wrap\">\n        <label>Intervall</label>\n        <select id=\"f-period\">\n          <option value=\"monatlich\">Monatlich</option>\n          <option value=\"jährlich\">Jährlich</option>\n          <option value=\"vierteljährlich\">Vierteljährlich</option>\n          <option value=\"wöchentlich\">Wöchentlich</option>\n        </select>\n      </div>\n      <div id=\"f-amount-value-wrap\" style=\"display:none\">\n        <label id=\"f-amount-value-label\"></label>\n        <input type=\"text\" id=\"f-amount-value-input\" placeholder=\"\" inputmode=\"text\" autocomplete=\"transaction-amount\">\n      </div>\n    </div>\n    <div class=\"field field-row\" id=\"f-cat-extra-row\">\n      <div>\n        <label>Konto</label>\n        <select id=\"f-account\">\n          <option value=\"\">— kein Konto —</option>\n          <option>DB Giro</option>\n          <option>DB Spar</option>\n          <option>DB ROBIN</option>\n          <option>DKB Giro</option>\n          <option>Scalable Broker</option>\n          <option>Scalable Wealth (Weltreise)</option>\n          <option>Scalable Tagesgeld</option>\n          <option>EquatePlus</option>\n        </select>\n      </div>\n      <div>\n        <label>Kategorie</label>\n        <select id=\"f-cat\"></select>\n      </div>\n    </div>\n    <div id=\"f-values\" class=\"f-dyn-group\"></div>\n    <div class=\"field field-row\" id=\"f-units-projtype-row\" style=\"display:none\">\n      <div id=\"f-units-wrap\" style=\"display:none\">\n        <label id=\"f-units-label\">Einheiten (optional)</label>\n        <input type=\"text\" id=\"f-units-input\" placeholder=\"z.B. 12 Stück\" autocomplete=\"off\">\n      </div>\n      <div id=\"f-projtype\" style=\"display:none\">\n        <label>Art der Beträge</label>\n        <select id=\"f-projtype-select\">\n          <option value=\"einmal\">Einmalbetrag</option>\n          <option value=\"monatlich\">Monatlich</option>\n        </select>\n      </div>\n    </div>\n    <div class=\"field f-toggle\" id=\"f-autogrow-wrap\" style=\"display:none\">\n      <input type=\"checkbox\" id=\"f-autogrow\" class=\"f-toggle-cb\">\n      <label class=\"f-toggle-lab\" for=\"f-autogrow\">Stand monatlich automatisch erhöhen</label>\n    </div>\n    <div id=\"f-growth\" class=\"f-dyn-group\"></div>\n    <div id=\"f-texts\" class=\"f-dyn-group\"></div>\n    </div><!-- end gap wrapper -->\n    <div class=\"modal-actions\">\n      <button class=\"btn btn-secondary\" id=\"cancel-btn\" onclick=\"finCloseModal()\">Abbrechen</button>\n      <button class=\"btn btn-primary\" id=\"save-btn\" onclick=\"saveEntry()\">Speichern</button>\n    </div>\n  </div>\n</div>\n\n<div class=\"overlay\" id=\"bonus-overlay\" onclick=\"if(event.target===this)closeBonusModal()\">\n  <div class=\"modal\">\n    <div class=\"grabber\"></div>\n    <h2 id=\"bonus-title\">Neues Bonusprogramm</h2>\n    <div style=\"display:flex;flex-direction:column;gap:14px\">\n    <div class=\"field\">\n      <label>Bonusprogramm</label>\n      <input type=\"text\" id=\"bonus-name\" placeholder=\"z.B. Miles & More\" autocomplete=\"off\">\n    </div>\n    <div class=\"field\">\n      <label>Punkte / Meilen</label>\n      <input type=\"text\" id=\"bonus-points\" placeholder=\"z.B. 25.000 Meilen\" autocomplete=\"off\">\n    </div>\n    <div class=\"field\">\n      <label>Verfall</label>\n      <input type=\"text\" id=\"bonus-expiry\" placeholder=\"z.B. 31.12.2026\" inputmode=\"decimal\" autocomplete=\"off\" oninput=\"autoDate(this)\" onblur=\"fixDate(this)\">\n    </div>\n    </div>\n    <div class=\"modal-actions\">\n      <button class=\"btn btn-secondary\" onclick=\"closeBonusModal()\">Abbrechen</button>\n      <button class=\"btn btn-primary\" onclick=\"saveBonus()\">Speichern</button>\n    </div>\n  </div>\n</div>\n\n<div class=\"overlay\" id=\"urlaub-overlay\" onclick=\"if(event.target===this)closeUrlaubModal()\">\n  <div class=\"modal\">\n    <div class=\"grabber\"></div>\n    <h2 id=\"urlaub-title\">Neuer Urlaub</h2>\n    <div style=\"display:flex;flex-direction:column;gap:14px\">\n    <div class=\"field\">\n      <label>Reiseziel / Name</label>\n      <input type=\"text\" id=\"urlaub-name\" placeholder=\"z.B. Namibia\" autocomplete=\"off\">\n    </div>\n    <div class=\"field\">\n      <label>Land (für die Karte)</label>\n      <input type=\"text\" id=\"urlaub-country\" placeholder=\"z.B. Namibia\" autocomplete=\"off\" list=\"country-list\">\n      <datalist id=\"country-list\"></datalist>\n    </div>\n    <div class=\"field field-row\">\n      <div>\n        <label>Von</label>\n        <input type=\"text\" id=\"urlaub-from\" placeholder=\"TT.MM.JJJJ\" autocomplete=\"off\" inputmode=\"decimal\" oninput=\"autoDate(this)\" onblur=\"fixDate(this);checkUrlaubYearSpan()\">\n      </div>\n      <div>\n        <label>Bis</label>\n        <input type=\"text\" id=\"urlaub-to\" placeholder=\"TT.MM.JJJJ\" autocomplete=\"off\" inputmode=\"decimal\" oninput=\"autoDate(this)\" onblur=\"fixDate(this);checkUrlaubYearSpan()\">\n      </div>\n    </div>\n    <div class=\"field field-row\" id=\"urlaub-split-row\" style=\"display:none\">\n      <div>\n        <label id=\"urlaub-split-label-1\">Urlaubstage Jahr 1</label>\n        <input type=\"text\" id=\"urlaub-days-y1\" placeholder=\"z.B. 3\" inputmode=\"text\" autocomplete=\"off\" oninput=\"updateUrlaubDaysTotal()\">\n      </div>\n      <div>\n        <label id=\"urlaub-split-label-2\">Urlaubstage Jahr 2</label>\n        <input type=\"text\" id=\"urlaub-days-y2\" placeholder=\"z.B. 7\" inputmode=\"text\" autocomplete=\"off\" oninput=\"updateUrlaubDaysTotal()\">\n      </div>\n    </div>\n    <div class=\"field field-row\">\n      <div id=\"urlaub-days-wrap\">\n        <label>Verbrauchte Urlaubstage</label>\n        <input type=\"text\" id=\"urlaub-days\" placeholder=\"z.B. 10\" inputmode=\"text\" autocomplete=\"off\">\n      </div>\n      <div id=\"urlaub-budget-year-field\" style=\"display:none\">\n        <label>Budget-Jahr</label>\n        <select id=\"urlaub-budget-year\"></select>\n      </div>\n      <div>\n        <label>Gesamtkosten</label>\n        <input type=\"text\" id=\"urlaub-cost\" placeholder=\"z.B. 1.000,00 €\" inputmode=\"text\" autocomplete=\"transaction-amount\" oninput=\"updatePayHint()\">\n      </div>\n    </div>\n    <div class=\"field\">\n      <label>Anzahlungen (optional)</label>\n      <div id=\"urlaub-payments\"></div>\n      <button type=\"button\" class=\"btn-add-pay\" onclick=\"addPaymentRow()\">+ Anzahlung hinzufügen</button>\n      <div class=\"pay-hint\" id=\"urlaub-pay-hint\"></div>\n    </div>\n    <div class=\"field field-row\" id=\"urlaub-due-row\" style=\"display:none\">\n      <div>\n        <label>Restzahlung Monat</label>\n        <input type=\"text\" id=\"urlaub-due-m\" placeholder=\"z.B. MM\" inputmode=\"numeric\" autocomplete=\"off\" oninput=\"updatePayHint()\">\n      </div>\n      <div>\n        <label>Restzahlung Jahr</label>\n        <input type=\"text\" id=\"urlaub-due-y\" placeholder=\"z.B. JJJJ\" inputmode=\"numeric\" autocomplete=\"off\" oninput=\"updatePayHint()\">\n      </div>\n    </div>\n    </div>\n    <div class=\"modal-actions\">\n      <button class=\"btn btn-secondary\" onclick=\"closeUrlaubModal()\">Abbrechen</button>\n      <button class=\"btn btn-primary\" onclick=\"saveUrlaub()\">Speichern</button>\n    </div>\n  </div>\n</div>\n\n<div class=\"overlay\" id=\"deposit-overlay\" onclick=\"if(event.target===this)closeDepositModal()\">\n  <div class=\"modal\">\n    <div class=\"grabber\"></div>\n    <h2 id=\"deposit-title\">Neue Einzahlung</h2>\n    <div style=\"display:flex;flex-direction:column;gap:14px\">\n    <div class=\"field field-row\">\n      <div>\n        <label>Jahr</label>\n        <input type=\"text\" id=\"deposit-year\" placeholder=\"z.B. 2026\" autocomplete=\"off\" inputmode=\"numeric\">\n      </div>\n      <div>\n        <label>Monat</label>\n        <input type=\"text\" id=\"deposit-month\" placeholder=\"z.B. 01\" autocomplete=\"off\" inputmode=\"numeric\">\n      </div>\n    </div>\n    <div class=\"field\">\n      <label>Betrag</label>\n      <input type=\"text\" id=\"deposit-amount\" placeholder=\"z.B. 1.000,00 €\" inputmode=\"text\" autocomplete=\"transaction-amount\">\n    </div>\n    <div class=\"field\">\n      <label>Notiz (optional)</label>\n      <input type=\"text\" id=\"deposit-note\" placeholder=\"z.B. Bonus, Defizitausgleich\" autocomplete=\"off\">\n    </div>\n    </div>\n    <div class=\"modal-actions\">\n      <button class=\"btn btn-secondary\" onclick=\"closeDepositModal()\">Abbrechen</button>\n      <button class=\"btn btn-primary\" onclick=\"saveDeposit()\">Speichern</button>\n    </div>\n  </div>\n</div>\n\n<div class=\"overlay\" id=\"manual-day-overlay\" onclick=\"if(event.target===this)closeManualDayModal()\">\n  <div class=\"modal\">\n    <div class=\"grabber\"></div>\n    <h2 id=\"manual-day-title\">Neuer Urlaubstag</h2>\n    <div style=\"display:flex;flex-direction:column;gap:14px\">\n    <div class=\"field\">\n      <label>Datum</label>\n      <input type=\"text\" id=\"manual-day-date\" placeholder=\"TT.MM.JJJJ\" autocomplete=\"off\" inputmode=\"decimal\" oninput=\"autoDate(this)\" onblur=\"fixDate(this)\">\n    </div>\n    <div class=\"field\">\n      <label>Tage</label>\n      <input type=\"text\" id=\"manual-day-count\" placeholder=\"z.B. 1\" inputmode=\"text\" autocomplete=\"off\">\n    </div>\n    <div class=\"field\">\n      <label>Notiz (optional)</label>\n      <input type=\"text\" id=\"manual-day-note\" placeholder=\"z.B. Brückentag\" autocomplete=\"off\">\n    </div>\n    </div>\n    <div class=\"modal-actions\">\n      <button class=\"btn btn-secondary\" onclick=\"closeManualDayModal()\">Abbrechen</button>\n      <button class=\"btn btn-primary\" onclick=\"saveManualDay()\">Speichern</button>\n    </div>\n  </div>\n</div>\n\n");
+document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', "<div class=\"wrap\">\n  \n\n  <div class=\"app-header\"><button class=\"screen-back\" aria-label=\"Zurück\" onclick=\"closeModule()\">‹</button><span>Finanzen</span></div>\n\n  <div class=\"income-bar glass\">\n    <div class=\"income-top\">\n      <div class=\"income-left\">\n        <span class=\"income-label\">Netto / Monat</span>\n        <div class=\"income-input-wrap\">\n          <input type=\"text\" id=\"income-input\" placeholder=\"z.B. 0,00\" inputmode=\"text\" oninput=\"onIncomeInput()\">\n          <span class=\"income-eur\">€</span>\n        </div>\n      </div>\n      <div class=\"income-right\">\n        <span class=\"income-label\">Verfügbar</span>\n        <span class=\"income-avail\" id=\"income-avail\">0,00 €</span>\n      </div>\n    </div>\n    <div class=\"income-meta\" id=\"income-meta\" onclick=\"openIncomeMeta()\"></div>\n  </div>\n\n  <!-- Einkommens-Details (nur Info, keine Logik) -->\n  <div class=\"overlay\" id=\"income-meta-overlay\" onclick=\"if(event.target===this)closeIncomeMeta()\">\n    <div class=\"modal\">\n      <div class=\"grabber\"></div>\n      <h2>Einkommen</h2>\n      <div style=\"display:flex;flex-direction:column;gap:14px\">\n        <div class=\"field\">\n          <label>Arbeitgeber</label>\n          <input type=\"text\" id=\"im-employer\" placeholder=\"z.B. Siemens\" autocomplete=\"off\">\n        </div>\n        <div class=\"field field-row\">\n          <div>\n            <label>Zieleinkommen</label>\n            <input type=\"text\" id=\"im-target\" placeholder=\"z.B. 0,00\" inputmode=\"text\" autocomplete=\"transaction-amount\">\n          </div>\n          <div>\n            <label>Brutto / Monat</label>\n            <input type=\"text\" id=\"im-gross-m\" placeholder=\"z.B. 0,00\" inputmode=\"text\" autocomplete=\"transaction-amount\">\n          </div>\n        </div>\n        <div class=\"field\">\n          <label>Bonus</label>\n          <input type=\"text\" id=\"im-bonus\" placeholder=\"z.B. 0,00\" inputmode=\"text\" autocomplete=\"transaction-amount\">\n        </div>\n        <div class=\"field field-row\">\n          <div>\n            <label>Altersvorsorge</label>\n            <input type=\"text\" id=\"im-pension\" placeholder=\"z.B. 0,00\" inputmode=\"text\" autocomplete=\"transaction-amount\">\n          </div>\n          <div>\n            <label>Aktien</label>\n            <input type=\"text\" id=\"im-stocks\" placeholder=\"z.B. 0,00\" inputmode=\"text\" autocomplete=\"transaction-amount\">\n          </div>\n        </div>\n      </div>\n      <div class=\"modal-actions\">\n        <button class=\"btn btn-secondary\" onclick=\"closeIncomeMeta()\">Abbrechen</button>\n        <button class=\"btn btn-primary\" onclick=\"saveIncomeMeta()\">Speichern</button>\n      </div>\n    </div>\n  </div>\n\n  <!-- Hero: Gesamtvermögen -->\n  <div class=\"hero\" id=\"hero\" onclick=\"openDetail('uebersicht')\">\n    <div class=\"hero-label\">Gesamtvermögen</div>\n    <div class=\"hero-val\" id=\"hero-val\">–</div>\n    <div id=\"hero-spark\"></div>\n    <span class=\"hero-sub\" id=\"hero-sub\"></span>\n  </div>\n\n  <!-- Bento: Kennzahlen auf einen Blick -->\n  <div class=\"tag\" id=\"bento-tag\" style=\"display:none\">Auf einen Blick</div>\n  <div class=\"bento\" id=\"bento\" style=\"display:none\"></div>\n\n  <!-- Detail-Ansichten: werden über die Bento-Kacheln geöffnet (alle Render-Ziele unverändert) -->\n  <div class=\"detail-sheet\" id=\"detail-sheet\">\n    <div class=\"settings-topbar\">\n      <button class=\"settings-back\" aria-label=\"Zurück\" onclick=\"closeDetail()\">‹</button>\n      <h2 id=\"detail-title\">Details</h2>\n    </div>\n    <div class=\"detail-panel\" id=\"panel-uebersicht\">\n      <div class=\"dashboard glass\" id=\"dashboard\">\n        <div class=\"uy-konto-head\">\n          <span>Gesamtvermögen</span>\n          <b id=\"wealth-val\">–</b>\n          <span class=\"wealth-sub-row\"><span class=\"saverate-eur\" id=\"wealth-sub\"></span><button class=\"info-i\" aria-label=\"Info\" onclick=\"showWealthInfo()\">i</button></span>\n        </div>\n        <div class=\"dash-accounts first\">\n          <div class=\"dash-sub-label\">Ausgaben nach Kategorie</div>\n          <div class=\"dash-grid\">\n            <div class=\"dash-donut\">\n              <svg viewBox=\"0 0 120 120\" id=\"donut-svg\" width=\"100\" height=\"100\"></svg>\n              <div class=\"donut-center\">\n                <span class=\"donut-center-label\">Netto</span>\n                <span class=\"donut-center-val\" id=\"donut-center-val\">–</span>\n              </div>\n            </div>\n            <div class=\"dash-legend\" id=\"dash-legend\"></div>\n          </div>\n        </div>\n        <div class=\"dash-accounts\" id=\"dash-wealth-hist\" style=\"display:none\">\n          <div class=\"hist-head\"><span class=\"dash-sub-label\">Gesamtvermögensverlauf</span><span class=\"hist-range-ctl\" data-target=\"wealth\"></span></div>\n          <div id=\"wealth-hist-chart\"></div>\n        </div>\n        <div class=\"dash-accounts\" id=\"dash-balances\">\n          <div class=\"dash-sub-label\">Kontostände</div>\n          <div id=\"balance-bars\"></div>\n        </div>\n        <div class=\"dash-accounts\" id=\"dash-saverates\" style=\"display:none\">\n          <div class=\"dash-sub-label\">Sparquoten</div>\n          <div id=\"saverate-bars\"></div>\n        </div>\n        <div class=\"dash-accounts\" id=\"dash-accounts\">\n          <div class=\"dash-sub-label\">Ausgaben nach Konto</div>\n          <div id=\"account-bars\"></div>\n        </div>\n      </div>\n    </div>\n    <div class=\"detail-panel\" id=\"panel-a\">\n      <div class=\"av-dash glass\" id=\"av-dash\">\n        <div id=\"av-kontostand\"></div>\n        <div id=\"av-table\"></div>\n      </div>\n    </div>\n    <div class=\"detail-panel\" id=\"panel-urlaub\">\n      <div class=\"av-dash glass\" id=\"urlaub-dash\">\n        <div id=\"urlaub-dash-body\"></div>\n      </div>\n    </div>\n    <div class=\"detail-panel\" id=\"panel-v\">\n      <div class=\"av-dash glass\" id=\"vertrag-dash\">\n        <div id=\"vertrag-dash-body\"></div>\n      </div>\n    </div>\n  </div>\n\n  <div class=\"income-divider\"></div>\n\n  <header class=\"sub-header\" onclick=\"toggleSection('b')\">\n    <div class=\"sub-header-text\">\n      <h1>Konsum, Urlaub &amp; Sparen</h1>\n      <p>Sparpläne und monatliche Budgets im Blick</p>\n    </div>\n    <span class=\"section-chevron\" id=\"chev-b\">⌄</span>\n  </header>\n\n  <div class=\"section-body\" id=\"body-b\">\n  <div class=\"filter-row\">\n    <select class=\"account-filter\" id=\"filter-b\" onchange=\"renderSection('b')\"></select>\n  </div>\n  <div class=\"summary glass\">\n    <div class=\"stat\"><div class=\"stat-label\">Monatlich</div><div class=\"stat-value month\" id=\"sum-month-b\">0,00 €</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">Jährlich</div><div class=\"stat-value year\" id=\"sum-year-b\">0,00 €</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">Einträge</div><div class=\"stat-value count\" id=\"sum-count-b\">0</div></div>\n  </div>\n  <div class=\"balance-box glass\" id=\"balance-box-b\" style=\"display:none\"></div>\n\n  <div class=\"section-label\">Konsum, Urlaub &amp; Sparen</div>\n  <div class=\"list\" id=\"list-b\"></div>\n  <div class=\"empty\" id=\"empty-b\" style=\"display:none\">Noch keine Einträge. Tippe unten, um zu beginnen.</div>\n\n  <button class=\"add-btn\" onclick=\"finOpenModal('b')\">＋ Eintrag hinzufügen</button>\n  </div>\n\n  <div class=\"group-divider\"></div>\n\n  <header class=\"sub-header\" onclick=\"toggleSection('a')\">\n    <div class=\"sub-header-text\">\n      <h1>Altersvorsorge</h1>\n      <p>Vorsorge und Rente im Blick · Renteneintrittsalter 67</p>\n    </div>\n    <span class=\"section-chevron\" id=\"chev-a\">⌄</span>\n  </header>\n\n  <div class=\"section-body\" id=\"body-a\">\n  <div class=\"filter-row\">\n    <select class=\"account-filter\" id=\"filter-a\" onchange=\"renderSection('a')\"></select>\n  </div>\n  <div class=\"summary glass\">\n    <div class=\"stat\"><div class=\"stat-label\">Monatlich</div><div class=\"stat-value month\" id=\"sum-month-a\">0,00 €</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">Jährlich</div><div class=\"stat-value year\" id=\"sum-year-a\">0,00 €</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">Einträge</div><div class=\"stat-value count\" id=\"sum-count-a\">0</div></div>\n  </div>\n\n  <div class=\"section-label\">Altersvorsorge</div>\n  <div class=\"list\" id=\"list-a\"></div>\n  <div class=\"empty\" id=\"empty-a\" style=\"display:none\">Noch keine Einträge. Tippe unten, um zu beginnen.</div>\n\n  <button class=\"add-btn\" onclick=\"finOpenModal('a')\">＋ Eintrag hinzufügen</button>\n  </div>\n\n  <div class=\"group-divider\"></div>\n\n  <header class=\"sub-header\" onclick=\"toggleSection('v')\">\n    <div class=\"sub-header-text\">\n      <h1>Versicherungen &amp; Verträge</h1>\n      <p>Alle laufenden Ausgaben im Blick</p>\n    </div>\n    <span class=\"section-chevron\" id=\"chev-v\">⌄</span>\n  </header>\n\n  <div class=\"section-body\" id=\"body-v\">\n  <div class=\"filter-row\">\n    <select class=\"account-filter\" id=\"filter-v\" onchange=\"renderSection('v')\"></select>\n  </div>\n  <div class=\"summary glass\">\n    <div class=\"stat\"><div class=\"stat-label\">Monatlich</div><div class=\"stat-value month\" id=\"sum-month\">0,00 €</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">Jährlich</div><div class=\"stat-value year\" id=\"sum-year\">0,00 €</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">Einträge</div><div class=\"stat-value count\" id=\"sum-count\">0</div></div>\n  </div>\n\n  <div class=\"section-label\">Versicherungen &amp; Verträge</div>\n  <div class=\"list\" id=\"list-v\"></div>\n  <div class=\"empty\" id=\"empty-v\" style=\"display:none\">Noch keine Einträge. Tippe unten, um zu beginnen.</div>\n\n  <button class=\"add-btn\" onclick=\"finOpenModal('v')\">＋ Eintrag hinzufügen</button>\n  </div>\n\n  <div class=\"group-divider\"></div>\n\n  <header class=\"sub-header\" onclick=\"toggleSection('urlaub')\">\n    <div class=\"sub-header-text\">\n      <h1>Urlaube</h1>\n      <p>Geplante Reisen &amp; Jahresbudget im Blick</p>\n    </div>\n    <span class=\"section-chevron\" id=\"chev-urlaub\">⌄</span>\n  </header>\n\n  <div class=\"section-body\" id=\"body-urlaub\">\n  <div class=\"section-label\">Urlaube</div>\n  <div class=\"urlaub-combined glass\">\n    <div class=\"uc-budget-row\">\n      <span class=\"ub-label\">Urlaubsbudget</span>\n      <span class=\"ub-auto-val\" id=\"urlaub-budget-auto\">0,00 €</span>\n    </div>\n    <div class=\"uc-divider\"></div>\n    <div class=\"ud-head\">\n      <span class=\"ub-label\">Einzahlung</span>\n      <button class=\"ud-add\" onclick=\"openDepositModal()\">＋ Einzahlung</button>\n    </div>\n    <div id=\"deposit-list\"></div>\n    <div class=\"uc-divider\"></div>\n    <div id=\"urlaub-kontingent-rows\"></div>\n    <div class=\"uc-divider\"></div>\n    <div class=\"ud-head\">\n      <span class=\"ub-label\">Urlaubstage ohne Reise</span>\n      <button class=\"ud-add\" onclick=\"openManualDayModal()\">＋ Urlaubstag</button>\n    </div>\n    <div id=\"manual-day-list\"></div>\n  </div>\n  <div id=\"urlaub-years\"></div>\n  <div class=\"empty\" id=\"empty-urlaub\" style=\"display:none\">Noch keine Urlaube geplant. Tippe unten, um zu beginnen.</div>\n\n  <button class=\"add-btn\" onclick=\"openUrlaubModal()\">＋ Urlaub hinzufügen</button>\n  </div>\n\n  <div class=\"group-divider\"></div>\n\n  <header class=\"sub-header\" onclick=\"toggleSection('bonus')\">\n    <div class=\"sub-header-text\">\n      <h1>Bonusprogramme</h1>\n      <p>Punkte, Meilen &amp; Verfall im Blick</p>\n    </div>\n    <span class=\"section-chevron\" id=\"chev-bonus\">⌄</span>\n  </header>\n\n  <div class=\"section-body\" id=\"body-bonus\">\n  <div class=\"section-label\">Bonusprogramme</div>\n  <div class=\"list\" id=\"list-bonus\"></div>\n  <div class=\"empty\" id=\"empty-bonus\" style=\"display:none\">Noch keine Einträge. Tippe unten, um zu beginnen.</div>\n\n  <button class=\"add-btn\" onclick=\"openBonusModal()\">＋ Eintrag hinzufügen</button>\n  </div>\n\n\n\n</div>\n\n<!-- Vollbild-Einstellungen (Zahnrad) -->\n\n\n<!-- Custom dialog (works where native confirm/alert are blocked) -->\n\n\n<div class=\"overlay\" id=\"overlay\" onclick=\"closeIfBg(event)\">\n  <div class=\"modal\">\n    <div class=\"grabber\"></div>\n    <h2 id=\"modal-title\">Neuer Eintrag</h2>\n    <div style=\"display:flex;flex-direction:column;gap:14px\">\n    <div class=\"field\">\n      <label>Name</label>\n      <input type=\"text\" id=\"f-name\" placeholder=\"z.B. Netflix\" autocomplete=\"off\">\n    </div>\n    <div class=\"field field-row\" id=\"f-prov-acct-row\">\n      <div id=\"f-provider-wrap\">\n        <label id=\"f-provider-label\">Anbieter (optional)</label>\n        <input type=\"text\" id=\"f-provider\" placeholder=\"z.B. Allianz\" autocomplete=\"off\">\n      </div>\n      <div id=\"f-extra-wrap\">\n        <label id=\"f-extra-label\">Vertragsnummer (optional)</label>\n        <input type=\"text\" id=\"f-extra-input\" placeholder=\"—\" autocomplete=\"off\">\n        <select id=\"f-extra-select\" style=\"display:none\"></select>\n      </div>\n    </div>\n    <div class=\"field field-row\">\n      <div>\n        <label>Betrag</label>\n        <input type=\"text\" id=\"f-amount\" placeholder=\"z.B. 1.000,00 €\" inputmode=\"text\">\n      </div>\n      <div id=\"f-period-wrap\">\n        <label>Intervall</label>\n        <select id=\"f-period\">\n          <option value=\"monatlich\">Monatlich</option>\n          <option value=\"jährlich\">Jährlich</option>\n          <option value=\"vierteljährlich\">Vierteljährlich</option>\n          <option value=\"wöchentlich\">Wöchentlich</option>\n        </select>\n      </div>\n      <div id=\"f-amount-value-wrap\" style=\"display:none\">\n        <label id=\"f-amount-value-label\"></label>\n        <input type=\"text\" id=\"f-amount-value-input\" placeholder=\"\" inputmode=\"text\" autocomplete=\"transaction-amount\">\n      </div>\n    </div>\n    <div class=\"field field-row\" id=\"f-cat-extra-row\">\n      <div>\n        <label>Konto</label>\n        <select id=\"f-account\">\n          <option value=\"\">— kein Konto —</option>\n          <option>DB Giro</option>\n          <option>DB Spar</option>\n          <option>DB ROBIN</option>\n          <option>DKB Giro</option>\n          <option>Scalable Broker</option>\n          <option>Scalable Wealth (Weltreise)</option>\n          <option>Scalable Tagesgeld</option>\n          <option>EquatePlus</option>\n        </select>\n      </div>\n      <div>\n        <label>Kategorie</label>\n        <select id=\"f-cat\"></select>\n      </div>\n    </div>\n    <div id=\"f-values\" class=\"f-dyn-group\"></div>\n    <div class=\"field field-row\" id=\"f-units-projtype-row\" style=\"display:none\">\n      <div id=\"f-units-wrap\" style=\"display:none\">\n        <label id=\"f-units-label\">Einheiten (optional)</label>\n        <input type=\"text\" id=\"f-units-input\" placeholder=\"z.B. 12 Stück\" autocomplete=\"off\">\n      </div>\n      <div id=\"f-projtype\" style=\"display:none\">\n        <label>Art der Beträge</label>\n        <select id=\"f-projtype-select\">\n          <option value=\"einmal\">Einmalbetrag</option>\n          <option value=\"monatlich\">Monatlich</option>\n        </select>\n      </div>\n    </div>\n    <div class=\"field f-toggle\" id=\"f-autogrow-wrap\" style=\"display:none\">\n      <input type=\"checkbox\" id=\"f-autogrow\" class=\"f-toggle-cb\">\n      <label class=\"f-toggle-lab\" for=\"f-autogrow\">Stand monatlich automatisch erhöhen</label>\n    </div>\n    <div id=\"f-growth\" class=\"f-dyn-group\"></div>\n    <div id=\"f-texts\" class=\"f-dyn-group\"></div>\n    </div><!-- end gap wrapper -->\n    <div class=\"modal-actions\">\n      <button class=\"btn btn-secondary\" id=\"cancel-btn\" onclick=\"finCloseModal()\">Abbrechen</button>\n      <button class=\"btn btn-primary\" id=\"save-btn\" onclick=\"saveEntry()\">Speichern</button>\n    </div>\n  </div>\n</div>\n\n<div class=\"overlay\" id=\"bonus-overlay\" onclick=\"if(event.target===this)closeBonusModal()\">\n  <div class=\"modal\">\n    <div class=\"grabber\"></div>\n    <h2 id=\"bonus-title\">Neues Bonusprogramm</h2>\n    <div style=\"display:flex;flex-direction:column;gap:14px\">\n    <div class=\"field\">\n      <label>Bonusprogramm</label>\n      <input type=\"text\" id=\"bonus-name\" placeholder=\"z.B. Miles & More\" autocomplete=\"off\">\n    </div>\n    <div class=\"field\">\n      <label>Punkte / Meilen</label>\n      <input type=\"text\" id=\"bonus-points\" placeholder=\"z.B. 25.000 Meilen\" autocomplete=\"off\">\n    </div>\n    <div class=\"field\">\n      <label>Verfall</label>\n      <input type=\"text\" id=\"bonus-expiry\" placeholder=\"z.B. 31.12.2026\" inputmode=\"decimal\" autocomplete=\"off\" oninput=\"autoDate(this)\" onblur=\"fixDate(this)\">\n    </div>\n    </div>\n    <div class=\"modal-actions\">\n      <button class=\"btn btn-secondary\" onclick=\"closeBonusModal()\">Abbrechen</button>\n      <button class=\"btn btn-primary\" onclick=\"saveBonus()\">Speichern</button>\n    </div>\n  </div>\n</div>\n\n<div class=\"overlay\" id=\"urlaub-overlay\" onclick=\"if(event.target===this)closeUrlaubModal()\">\n  <div class=\"modal\">\n    <div class=\"grabber\"></div>\n    <h2 id=\"urlaub-title\">Neuer Urlaub</h2>\n    <div style=\"display:flex;flex-direction:column;gap:14px\">\n    <div class=\"field\">\n      <label>Reiseziel / Name</label>\n      <input type=\"text\" id=\"urlaub-name\" placeholder=\"z.B. Namibia\" autocomplete=\"off\">\n    </div>\n    <div class=\"field\">\n      <label>Land (für die Karte)</label>\n      <input type=\"text\" id=\"urlaub-country\" placeholder=\"z.B. Namibia\" autocomplete=\"off\" list=\"country-list\">\n      <datalist id=\"country-list\"></datalist>\n    </div>\n    <div class=\"field field-row\">\n      <div>\n        <label>Von</label>\n        <input type=\"text\" id=\"urlaub-from\" placeholder=\"TT.MM.JJJJ\" autocomplete=\"off\" inputmode=\"decimal\" oninput=\"autoDate(this)\" onblur=\"fixDate(this);checkUrlaubYearSpan()\">\n      </div>\n      <div>\n        <label>Bis</label>\n        <input type=\"text\" id=\"urlaub-to\" placeholder=\"TT.MM.JJJJ\" autocomplete=\"off\" inputmode=\"decimal\" oninput=\"autoDate(this)\" onblur=\"fixDate(this);checkUrlaubYearSpan()\">\n      </div>\n    </div>\n    <div class=\"field field-row\" id=\"urlaub-split-row\" style=\"display:none\">\n      <div>\n        <label id=\"urlaub-split-label-1\">Urlaubstage Jahr 1</label>\n        <input type=\"text\" id=\"urlaub-days-y1\" placeholder=\"z.B. 3\" inputmode=\"text\" autocomplete=\"off\" oninput=\"updateUrlaubDaysTotal()\">\n      </div>\n      <div>\n        <label id=\"urlaub-split-label-2\">Urlaubstage Jahr 2</label>\n        <input type=\"text\" id=\"urlaub-days-y2\" placeholder=\"z.B. 7\" inputmode=\"text\" autocomplete=\"off\" oninput=\"updateUrlaubDaysTotal()\">\n      </div>\n    </div>\n    <div class=\"field field-row\">\n      <div id=\"urlaub-days-wrap\">\n        <label>Verbrauchte Urlaubstage</label>\n        <input type=\"text\" id=\"urlaub-days\" placeholder=\"z.B. 10\" inputmode=\"text\" autocomplete=\"off\">\n      </div>\n      <div id=\"urlaub-budget-year-field\" style=\"display:none\">\n        <label>Budget-Jahr</label>\n        <select id=\"urlaub-budget-year\"></select>\n      </div>\n      <div>\n        <label>Gesamtkosten</label>\n        <input type=\"text\" id=\"urlaub-cost\" placeholder=\"z.B. 1.000,00 €\" inputmode=\"text\" autocomplete=\"transaction-amount\" oninput=\"updatePayHint()\">\n      </div>\n    </div>\n    <div class=\"field\">\n      <label>Anzahlungen (optional)</label>\n      <div id=\"urlaub-payments\"></div>\n      <button type=\"button\" class=\"btn-add-pay\" onclick=\"addPaymentRow()\">+ Anzahlung hinzufügen</button>\n      <div class=\"pay-hint\" id=\"urlaub-pay-hint\"></div>\n    </div>\n    <div class=\"field field-row\" id=\"urlaub-due-row\" style=\"display:none\">\n      <div>\n        <label>Restzahlung Monat</label>\n        <input type=\"text\" id=\"urlaub-due-m\" placeholder=\"z.B. MM\" inputmode=\"numeric\" autocomplete=\"off\" oninput=\"updatePayHint()\">\n      </div>\n      <div>\n        <label>Restzahlung Jahr</label>\n        <input type=\"text\" id=\"urlaub-due-y\" placeholder=\"z.B. JJJJ\" inputmode=\"numeric\" autocomplete=\"off\" oninput=\"updatePayHint()\">\n      </div>\n    </div>\n    </div>\n    <div class=\"modal-actions\">\n      <button class=\"btn btn-secondary\" onclick=\"closeUrlaubModal()\">Abbrechen</button>\n      <button class=\"btn btn-primary\" onclick=\"saveUrlaub()\">Speichern</button>\n    </div>\n  </div>\n</div>\n\n<div class=\"overlay\" id=\"deposit-overlay\" onclick=\"if(event.target===this)closeDepositModal()\">\n  <div class=\"modal\">\n    <div class=\"grabber\"></div>\n    <h2 id=\"deposit-title\">Neue Einzahlung</h2>\n    <div style=\"display:flex;flex-direction:column;gap:14px\">\n    <div class=\"field field-row\">\n      <div>\n        <label>Jahr</label>\n        <input type=\"text\" id=\"deposit-year\" placeholder=\"z.B. 2026\" autocomplete=\"off\" inputmode=\"numeric\">\n      </div>\n      <div>\n        <label>Monat</label>\n        <input type=\"text\" id=\"deposit-month\" placeholder=\"z.B. 01\" autocomplete=\"off\" inputmode=\"numeric\">\n      </div>\n    </div>\n    <div class=\"field\">\n      <label>Betrag</label>\n      <input type=\"text\" id=\"deposit-amount\" placeholder=\"z.B. 1.000,00 €\" inputmode=\"text\" autocomplete=\"transaction-amount\">\n    </div>\n    <div class=\"field\">\n      <label>Notiz (optional)</label>\n      <input type=\"text\" id=\"deposit-note\" placeholder=\"z.B. Bonus, Defizitausgleich\" autocomplete=\"off\">\n    </div>\n    </div>\n    <div class=\"modal-actions\">\n      <button class=\"btn btn-secondary\" onclick=\"closeDepositModal()\">Abbrechen</button>\n      <button class=\"btn btn-primary\" onclick=\"saveDeposit()\">Speichern</button>\n    </div>\n  </div>\n</div>\n\n<div class=\"overlay\" id=\"manual-day-overlay\" onclick=\"if(event.target===this)closeManualDayModal()\">\n  <div class=\"modal\">\n    <div class=\"grabber\"></div>\n    <h2 id=\"manual-day-title\">Neuer Urlaubstag</h2>\n    <div style=\"display:flex;flex-direction:column;gap:14px\">\n    <div class=\"field\">\n      <label>Datum</label>\n      <input type=\"text\" id=\"manual-day-date\" placeholder=\"TT.MM.JJJJ\" autocomplete=\"off\" inputmode=\"decimal\" oninput=\"autoDate(this)\" onblur=\"fixDate(this)\">\n    </div>\n    <div class=\"field\">\n      <label>Tage</label>\n      <input type=\"text\" id=\"manual-day-count\" placeholder=\"z.B. 1\" inputmode=\"text\" autocomplete=\"off\">\n    </div>\n    <div class=\"field\">\n      <label>Notiz (optional)</label>\n      <input type=\"text\" id=\"manual-day-note\" placeholder=\"z.B. Brückentag\" autocomplete=\"off\">\n    </div>\n    </div>\n    <div class=\"modal-actions\">\n      <button class=\"btn btn-secondary\" onclick=\"closeManualDayModal()\">Abbrechen</button>\n      <button class=\"btn btn-primary\" onclick=\"saveManualDay()\">Speichern</button>\n    </div>\n  </div>\n</div>\n\n");
 
 
 
@@ -100,7 +100,41 @@ const SECTIONS = {
   }
 };
 
-const ACCOUNTS = ['DB Giro','DB Spar','DB ROBIN','DKB Giro','Scalable Broker','Scalable Wealth (Weltreise)','Scalable Tagesgeld','EquatePlus'];
+/* Konten sind Stammdaten und werden in den Einstellungen gepflegt. Die beiden
+   Schalter je Konto ersetzen die frueher fest verdrahteten Listen UEB_ACCOUNTS
+   (Uebersicht) und BALANCE_ACCOUNTS (Kontostaende) - die Vorbelegung entspricht
+   exakt dem bisherigen Stand, am ersten Tag aendert sich dadurch nichts. */
+const KONTEN_KEY = 'fin_konten_v1';
+const KONTEN_STD = [
+  { name: 'DB Giro',                     ueb: false, stand: false },
+  { name: 'DB Spar',                     ueb: true,  stand: false },
+  { name: 'DB ROBIN',                    ueb: false, stand: false },
+  { name: 'DKB Giro',                    ueb: true,  stand: false },
+  { name: 'Scalable Broker',             ueb: false, stand: false },
+  { name: 'Scalable Wealth (Weltreise)', ueb: false, stand: false },
+  { name: 'Scalable Tagesgeld',          ueb: true,  stand: true  },
+  { name: 'EquatePlus',                  ueb: false, stand: false }
+];
+let konten = (() => {
+  const v = safeParse(store.get(KONTEN_KEY), null);
+  if (!Array.isArray(v) || !v.length) return KONTEN_STD.map(k => ({ ...k }));
+  return v.filter(k => k && typeof k.name === 'string' && k.name.trim())
+          .map(k => ({ name: k.name.trim(), ueb: !!k.ueb, stand: !!k.stand }));
+})();
+function kontenSichern(){ store.set(KONTEN_KEY, JSON.stringify(konten)); }
+/* Auswahlliste: die gepflegten Konten plus jeder Name, der in einem Eintrag
+   bereits steht. Damit kann ein bestehender Wert nie aus der Auswahl fallen,
+   auch wenn das Konto aus der Verwaltung geloescht wurde. */
+function kontenNamen(){
+  const namen = konten.map(k => k.name);
+  Object.keys(data || {}).forEach(sek => {
+    const liste = data[sek];
+    if (!Array.isArray(liste)) return;
+    liste.forEach(e => { if (e && e.account && !namen.includes(e.account)) namen.push(e.account); });
+  });
+  return namen;
+}
+function kontenMit(feld){ return konten.filter(k => k[feld]).map(k => k.name); }
 const isGiro = e => /giro/i.test(e.account || '');   // Girokonto = Kontoname enthält "Giro" (aus Vermögen & Sparquote ausgenommen)
 // Kontoname -> CSS-sicherer Slug für Pill-Farbe
 const acctSlug = name => (name || '').replace(/[^a-zA-Z0-9]/g, '');
@@ -140,7 +174,7 @@ let urlaubAnspruchOverride = safeParse(store.get(URLAUB_ANSPRUCH_KEY), {});
 if (!urlaubAnspruchOverride || typeof urlaubAnspruchOverride !== 'object' || Array.isArray(urlaubAnspruchOverride)) urlaubAnspruchOverride = {};
 function urlaubAnspruchJahr(j) {
   const v = urlaubAnspruchOverride[j];
-  return (typeof v === 'number' && !isNaN(v) && v >= 0) ? v : URLAUB_ANSPRUCH;
+  return (typeof v === 'number' && !isNaN(v) && v >= 0) ? v : urlaubStandard();
 }
 let editManualDayId = null;
 /* Manuell erfasste Urlaubstage ohne Reise (z.B. Brueckentage), summiert nach Jahr. */
@@ -174,12 +208,36 @@ function toMonthly(a, p) {
   return a;
 }
 
-// --- Retirement projection (private pension) ---
-const BIRTH_DATE = new Date(1988, 0, 13);   // 13.01.1988
-const RETIREMENT_AGE = 67;
+/* --- Persoenliche Angaben (Einstellungen -> Persoenlich) ---
+   Frueher standen Geburtsdatum, Renteneintrittsalter und Urlaubsanspruch als
+   Konstanten im Code. Die Vorbelegung entspricht diesen Werten, damit sich ohne
+   Zutun nichts aendert. */
+const PERSON_KEY = 'fin_person_v1';
+const PERSON_STD = { geburt: '13.01.1988', renteAlter: 67, urlaubTage: 30 };
+let person = Object.assign({}, PERSON_STD, safeParse(store.get(PERSON_KEY), {}) || {});
+function personSichern(){ store.set(PERSON_KEY, JSON.stringify(person)); }
+/* null, wenn kein gueltiges Datum hinterlegt ist - die Anzeige laesst die
+   Rentenangaben dann weg, statt mit einem Ersatzwert zu rechnen. */
+function birthDate(){
+  const m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(String(person.geburt || '').trim());
+  if (!m) return null;
+  const d = new Date(+m[3], +m[2] - 1, +m[1]);
+  return isNaN(d.getTime()) ? null : d;
+}
+function retirementAge(){
+  const v = Number(person.renteAlter);
+  return (isFinite(v) && v > 0 && v < 120) ? v : PERSON_STD.renteAlter;
+}
+function urlaubStandard(){
+  const v = Number(person.urlaubTage);
+  return (isFinite(v) && v >= 0) ? v : PERSON_STD.urlaubTage;
+}
 
-// Months from now until 67th birthday (0 if already reached)
+// Months from now until the retirement birthday (0 if already reached or unknown)
 function monthsToRetirement() {
+  const BIRTH_DATE = birthDate();
+  if (!BIRTH_DATE) return 0;
+  const RETIREMENT_AGE = retirementAge();
   const now = jetztBerlin();
   const ret = new Date(BIRTH_DATE.getFullYear() + RETIREMENT_AGE, BIRTH_DATE.getMonth(), BIRTH_DATE.getDate());
   let months = (ret.getFullYear() - now.getFullYear()) * 12 + (ret.getMonth() - now.getMonth());
@@ -583,7 +641,7 @@ function renderHeroBento() {
   // ÜBERWEISUNGEN: monatliche Fälligkeiten für die wichtigsten Girokonten am Monatsanfang –
   // automatisch aus "Ausgaben nach Konto" abgeleitet, keine doppelte Datenpflege.
   {
-    const UEB_ACCOUNTS = ['Scalable Tagesgeld', 'DKB Giro', 'DB Spar'];
+    const UEB_ACCOUNTS = kontenMit('ueb');
     const uebTotals = {};
     ['v','b','a'].forEach(sec => data[sec].forEach(e => {
       if (!UEB_ACCOUNTS.includes(e.account)) return;
@@ -743,18 +801,24 @@ function renderHeroBento() {
       const rows = [];
       if (m > 0) rows.push(`<div class="bento-list-row av"><span class="bl">Monatlich</span><span class="bv">${fmt(m)}</span></div>`);
       if (e > 0) rows.push(`<div class="bento-list-row av"><span class="bl">Einmalig</span><span class="bv">${fmt(e)}</span></div>`);
-      // Fortschritt: Anteil der Lebensarbeitszeit bis 67 bereits vergangen
-      const now = jetztBerlin();
-      const totalMs = new Date(BIRTH_DATE.getFullYear() + RETIREMENT_AGE, BIRTH_DATE.getMonth(), BIRTH_DATE.getDate()) - BIRTH_DATE;
-      const pct = Math.min(100, Math.max(0, Math.round(((now - BIRTH_DATE) / totalMs) * 100)));
-      const yearsLeft = Math.max(0, Math.round(monthsToRetirement() / 12));
+      /* Fortschritt: Anteil der Lebensarbeitszeit bereits vergangen. Ohne
+         hinterlegtes Geburtsdatum entfaellt der Balken samt Beschriftung. */
+      const bd = birthDate(), ra = retirementAge();
+      let fortschritt = '';
+      if (bd) {
+        const now = jetztBerlin();
+        const totalMs = new Date(bd.getFullYear() + ra, bd.getMonth(), bd.getDate()) - bd;
+        const pct = Math.min(100, Math.max(0, Math.round(((now - bd) / totalMs) * 100)));
+        const yearsLeft = Math.max(0, Math.round(monthsToRetirement() / 12));
+        fortschritt = `<div class="bento-caption">noch ${yearsLeft} Jahre bis ${ra}</div>`
+                    + `<div class="bento-progress"><span class="bento-progress-fill" style="width:${pct}%"></span></div>`;
+      }
       const avRate = data.a.reduce((s,x) => s + toMonthly(Number(x.amount)||0, x.period), 0);
       tiles.push(`<div class="bento-tile" onclick="openDetail('a')">
         <div class="bento-head"><span class="bento-title">Altersvorsorge</span></div>
         <div class="bento-primary">${fmt(avRate)}<span class="bento-unit">mtl.</span></div>
         <div class="bento-foot bento-foot-col">
-          <div class="bento-caption">noch ${yearsLeft} Jahre bis 67</div>
-          <div class="bento-progress"><span class="bento-progress-fill" style="width:${pct}%"></span></div>
+          ${fortschritt}
           <div class="bento-list">${rows.join('')}</div>
         </div>
       </div>`);
@@ -897,7 +961,7 @@ function renderDashboard() {
   }
 
   // Account balances: only show selected accounts (per account total + breakdown by category)
-  const BALANCE_ACCOUNTS = ['Scalable Tagesgeld'];
+  const BALANCE_ACCOUNTS = kontenMit('stand');
   const balByAcct = {};
   data.b.forEach(e => {
     if (e.balance == null) return;
@@ -1611,7 +1675,7 @@ function startInlineUrlaubAnspruch(jahr, el) {
     if (done) return; done = true;
     const roh = inp.value.trim();
     const v = parseMoney(roh);
-    if (!roh || v == null || v < 0 || v === URLAUB_ANSPRUCH) delete urlaubAnspruchOverride[jahr];
+    if (!roh || v == null || v < 0 || v === urlaubStandard()) delete urlaubAnspruchOverride[jahr];
     else urlaubAnspruchOverride[jahr] = v;
     store.set(URLAUB_ANSPRUCH_KEY, JSON.stringify(urlaubAnspruchOverride));
     // renderUrlaubeAll() statt nur renderHeroBento(): die Eingabe liegt jetzt in dieser
@@ -1731,7 +1795,8 @@ function parseMonthOnly(s) {
    Verbrauchte Urlaubstage werden pro Reise manuell im Formular eingetragen
    (Feld "Verbrauchte Urlaubstage", u.days) statt automatisch aus Werktagen
    und Feiertagen berechnet. */
-const URLAUB_ANSPRUCH = 30;   // Urlaubstage pro Jahr
+// Standardanspruch kommt aus den Einstellungen (urlaubStandard), Jahreswerte
+// koennen ihn weiterhin einzeln ueberschreiben.
 
 /* Reisezeitraum einer Reise - faellt auf den Monatsersten zurueck, solange
    noch kein genauer Zeitraum eingetragen ist. */
@@ -2958,7 +3023,7 @@ const FIN_KEYS = {
   /* Reine Ansichtszustaende - reisen mit, damit sich die App nach einem Wiederherstellen
      genauso zeigt wie vorher. */
   collapsedSections:'fin_collapsed_sections_v1', avViewMode:'fin_av_view_mode_v1',
-  histRange:'fin_hist_range_v1'
+  histRange:'fin_hist_range_v1', person:'fin_person_v1', konten:'fin_konten_v1'
 };
 
 // ═══════════════ App-Sperre (FaceID/TouchID via WebAuthn) ═══════════════
@@ -2990,7 +3055,9 @@ function finBuildBackupPayload() {
        nach dem Wiederherstellen weg. */
     collapsedSections: collapsedSections,
     avViewMode: avViewMode,
-    histRange: histRange
+    histRange: histRange,
+    person: person,
+    konten: konten
   };
 }
 
@@ -3063,6 +3130,15 @@ function finApplyBackup(rawText) {
     histRange = parsed.histRange;
     store.set('fin_hist_range_v1', histRange);
   }
+  if (parsed.person && typeof parsed.person === 'object') {
+    person = Object.assign({}, PERSON_STD, parsed.person);
+    personSichern();
+  }
+  if (Array.isArray(parsed.konten) && parsed.konten.length) {
+    konten = parsed.konten.filter(k => k && typeof k.name === 'string' && k.name.trim())
+                          .map(k => ({ name: k.name.trim(), ueb: !!k.ueb, stand: !!k.stand }));
+    kontenSichern();
+  }
   return true;
 }
 
@@ -3083,7 +3159,7 @@ function populateFilters() {
     if (!el) return;
     const current = el.value;
     el.innerHTML = '<option value="">Alle Konten</option>' +
-      ACCOUNTS.map(a => `<option>${a}</option>`).join('');
+      kontenNamen().map(a => `<option>${esc(a)}</option>`).join('');
     if (current) el.value = current;
   });
 }
@@ -3173,3 +3249,97 @@ registerModule({
     } catch(e) { return { sub: 'Versicherungen, Budgets & Vorsorge' }; }
   }
 });
+
+
+/* ================= EINSTELLUNGEN: PERSOENLICH & KONTEN =================
+   Die Zeilen dazu stehen im Kern (index.html), die Daten gehoeren aber hierher -
+   deshalb liegt die Bedienung in diesem Modul, wie bei der Ausruestung im
+   Reise-Modul. */
+function personRowTap(){
+  const el = $('person-cfg'); if(!el) return;
+  const zeigen = el.style.display === 'none';
+  el.style.display = zeigen ? '' : 'none';
+  const c = $('person-row-chevron'); if(c) c.textContent = zeigen ? '⌄' : '›';
+  if(zeigen){
+    $('ps-geburt').value = person.geburt || '';
+    $('ps-rente').value  = retirementAge();
+    $('ps-urlaub').value = urlaubStandard();
+  }
+  personSubText();
+}
+function personSubText(){
+  const sub = $('person-row-sub'); if(!sub) return;
+  const bd = birthDate();
+  sub.textContent = (bd ? 'Rente mit ' + retirementAge() : 'Geburtsdatum fehlt')
+                  + ' · ' + urlaubStandard() + ' Urlaubstage';
+}
+function savePerson(){
+  const geburt = ($('ps-geburt').value || '').trim();
+  if(geburt && !/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(geburt)){
+    notify('Bitte das Geburtsdatum als TT.MM.JJJJ eintragen.'); return;
+  }
+  const rente  = parseInt(($('ps-rente').value  || '').replace(/\D/g, ''), 10);
+  const urlaub = parseInt(($('ps-urlaub').value || '').replace(/\D/g, ''), 10);
+  person = {
+    geburt: geburt,
+    renteAlter: (isFinite(rente)  && rente  > 0 && rente < 120) ? rente  : PERSON_STD.renteAlter,
+    urlaubTage: (isFinite(urlaub) && urlaub >= 0)               ? urlaub : PERSON_STD.urlaubTage
+  };
+  personSichern();
+  personSubText();
+  renderAll();
+  showToast('Gespeichert');
+}
+
+function kontenRowTap(){
+  const el = $('konten-cfg'); if(!el) return;
+  const zeigen = el.style.display === 'none';
+  el.style.display = zeigen ? '' : 'none';
+  const c = $('konten-row-chevron'); if(c) c.textContent = zeigen ? '⌄' : '›';
+  if(zeigen) renderKontenManage();
+}
+function renderKontenManage(){
+  const el = $('konten-list'); if(!el) return;
+  const sub = $('konten-row-sub');
+  if(sub) sub.textContent = konten.length + ' ' + (konten.length === 1 ? 'Konto' : 'Konten');
+  el.innerHTML = konten.map((k, i) => `
+    <div class="gear-row konto-row">
+      <input value="${esc(k.name)}" onchange="kontoRename(${i}, this.value)"
+             onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">
+      <button class="konto-flag${k.ueb ? ' on' : ''}" onclick="kontoFlag(${i},'ueb')"
+              title="In der Übersicht einrechnen">ÜB</button>
+      <button class="konto-flag${k.stand ? ' on' : ''}" onclick="kontoFlag(${i},'stand')"
+              title="Kontostand anzeigen">STAND</button>
+      <button class="gear-del" onclick="kontoRemove(${i})" aria-label="Löschen">✕</button>
+    </div>`).join('') + `
+    <div class="gear-row gear-new">
+      <span class="gear-plus">＋</span>
+      <input id="konto-neu" placeholder="Konto hinzufügen …"
+             onkeydown="if(event.key==='Enter'){event.preventDefault();kontoAdd();}"
+             onblur="kontoAdd(true)">
+    </div>`;
+}
+function kontoRename(i, wert){
+  if(!konten[i]) return;
+  const neu = (wert || '').trim();
+  if(!neu){ renderKontenManage(); return; }
+  konten[i].name = neu;
+  kontenSichern(); renderKontenManage(); renderAll();
+}
+function kontoRemove(i){
+  if(!konten[i]) return;
+  konten.splice(i, 1);
+  kontenSichern(); renderKontenManage(); renderAll();
+}
+function kontoFlag(i, feld){
+  if(!konten[i]) return;
+  konten[i][feld] = !konten[i][feld];
+  kontenSichern(); renderKontenManage(); renderAll();
+}
+function kontoAdd(still){
+  const inp = $('konto-neu'); if(!inp) return;
+  const name = inp.value.trim(); if(!name) return;
+  if(!konten.some(k => k.name === name)) konten.push({ name, ueb: false, stand: false });
+  kontenSichern(); renderKontenManage(); renderAll();
+  if(!still){ const n = $('konto-neu'); if(n) n.focus(); }
+}

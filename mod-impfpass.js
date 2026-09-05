@@ -5,7 +5,7 @@
 document.getElementById('mod-impfpass').insertAdjacentHTML('beforeend', `
 <div class="wrap">
 
-  <div class="app-header"><button class="screen-back" aria-label="Zurück" onclick="closeModule()">‹</button><span>Jörg's Impfpass</span></div>
+  <div class="app-header"><button class="screen-back" aria-label="Zurück" onclick="closeModule()">‹</button><span>Impfpass</span></div>
 
   <div id="imp-alert-wrap"></div>
 

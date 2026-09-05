@@ -9,10 +9,10 @@
 <!-- Name unter dem Symbol auf dem Home-Bildschirm. iOS wertet dieses Tag aus,
      nicht short_name aus dem Manifest. -->
 <meta name="apple-mobile-web-app-title" content="Jörg">
-<link rel="manifest" href="manifest.json?v=2609062500">
+<link rel="manifest" href="manifest.json?v=2609062600">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
-<title>Jörg Scheiderer</title>
+<title>Jörg</title>
 <style>
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -434,6 +434,12 @@
   .gear-choice .gc-check svg { width: 14px; height: 14px; color: #fff; display: none; }
   .gear-choice.on .gc-check svg { display: block; }
   .gear-choice .gc-label { flex: 1; }
+  /* Konten: zwei Schalter je Zeile. ÜB = fliesst in die Übersicht ein,
+     STAND = Kontostand wird angezeigt. */
+  .konto-flag { flex: 0 0 auto; padding: 5px 9px; border-radius: var(--r-pill); background: rgba(255,255,255,0.06); border: 1px solid var(--stroke); color: var(--muted-2); font: inherit; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.04em; cursor: pointer; }
+  .konto-flag.on { background: var(--accent); border-color: transparent; color: #fff; }
+  .konto-row input { flex: 1 1 auto; min-width: 0; }
+
   /* Ausrüstung: Kategorie-Gruppen in der Verwaltung */
   .gear-cat + .gear-cat { margin-top: 6px; }
   .gear-cat-label { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted-2); font-weight: 700; padding: 12px 14px 6px; }
@@ -1407,7 +1413,7 @@
 <!-- ===== Startseite ===== -->
 <div class="wrap" id="launcher">
   <div class="app-header">
-    <span>Jörg Scheiderer</span>
+    <span>Jörg</span>
     <button class="gear-btn" onclick="openCoreSettings()" aria-label="Einstellungen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </div>
   <div class="section-label">Bereiche</div>
@@ -1426,6 +1432,52 @@
     <button class="screen-back" onclick="closeCoreSettings()" aria-label="Zurück">‹</button>
     <div class="screen-title"><h2>Einstellungen</h2><p>Gilt für alle Bereiche</p></div>
   </div>
+<div class="section-label">Persönlich</div>
+  <div class="settings-group">
+    <button class="settings-row" onclick="personRowTap()">
+      <span class="sr-icon">👤</span>
+      <span class="sr-body">
+        <span class="sr-title">Persönliche Daten</span>
+        <span class="sr-sub" id="person-row-sub">Geburtsdatum · Rente · Urlaub</span>
+      </span>
+      <span class="sr-chevron" id="person-row-chevron">›</span>
+    </button>
+    <div id="person-cfg" class="settings-detail" style="display:none">
+      <div class="field">
+        <label>Geburtsdatum</label>
+        <input type="text" id="ps-geburt" placeholder="TT.MM.JJJJ" inputmode="decimal" autocomplete="off" oninput="autoDate(this)" onblur="fixDate(this)">
+      </div>
+      <div class="field field-row">
+        <div>
+          <label>Renteneintrittsalter</label>
+          <input type="text" id="ps-rente" placeholder="z.B. 67" inputmode="numeric" autocomplete="off">
+        </div>
+        <div>
+          <label>Urlaubsanspruch / Jahr</label>
+          <input type="text" id="ps-urlaub" placeholder="z.B. 30" inputmode="numeric" autocomplete="off">
+        </div>
+      </div>
+      <div class="backup-row"><button class="backup-btn" onclick="savePerson()">Speichern</button></div>
+      <p class="backup-hint" style="margin:0 6px">Ohne Geburtsdatum entfallen Fortschritt und Restlaufzeit bei der Altersvorsorge. Der Urlaubsanspruch gilt als Standard; einzelne Jahre lassen sich weiterhin überschreiben.</p>
+    </div>
+  </div>
+
+  <div class="section-label">Konten</div>
+  <div class="settings-group">
+    <button class="settings-row" onclick="kontenRowTap()">
+      <span class="sr-icon">🏦</span>
+      <span class="sr-body">
+        <span class="sr-title">Konten</span>
+        <span class="sr-sub" id="konten-row-sub">Auswahl, Übersicht und Kontostände</span>
+      </span>
+      <span class="sr-chevron" id="konten-row-chevron">›</span>
+    </button>
+    <div id="konten-cfg" class="settings-detail" style="display:none">
+      <div class="gear-manage" id="konten-list"></div>
+      <p class="backup-hint" style="margin:8px 6px 0">ÜB rechnet das Konto in die Übersicht ein, STAND zeigt seinen Kontostand. Ein gelöschtes Konto bleibt in der Auswahl, solange noch ein Eintrag darauf verweist.</p>
+    </div>
+  </div>
+
 <div class="section-label">Datensicherung</div>
   <div class="settings-group">
     <button class="settings-row" onclick="cloudRowTap()">
@@ -1536,7 +1588,7 @@
 <div id="lock-screen" style="display:none">
   <div class="lock-inner">
     <div class="lock-icon">🔒</div>
-    <div class="lock-title">Jörg Scheiderer</div>
+    <div class="lock-title">Jörg</div>
     <button class="btn btn-primary lock-btn" onclick="attemptUnlock()">Mit Face ID entsperren</button>
     <div class="lock-hint" id="lock-hint"></div>
   </div>
@@ -1847,7 +1899,7 @@ async function toggleAppLock(){
   if(!appLockAvailable()) return;
   if(appLock&&appLock.enabled){ const ok=await showDialog('FaceID Sperre wirklich deaktivieren?',{title:'App-Sperre',okText:'Deaktivieren'}); if(!ok) return; appLock=null; store.set(APPLOCK_KEY,JSON.stringify(null)); renderAppLockUI(); return; }
   try {
-    const cred=await navigator.credentials.create({ publicKey:{ challenge:crypto.getRandomValues(new Uint8Array(32)), rp:{name:'Jörg Scheiderer',id:location.hostname}, user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'Jörg Scheiderer',displayName:'Jörg Scheiderer'}, pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}], authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required'}, timeout:60000, attestation:'none' }});
+    const cred=await navigator.credentials.create({ publicKey:{ challenge:crypto.getRandomValues(new Uint8Array(32)), rp:{name:'Jörg',id:location.hostname}, user:{id:crypto.getRandomValues(new Uint8Array(16)),name:'Jörg',displayName:'Jörg'}, pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}], authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required'}, timeout:60000, attestation:'none' }});
     appLock={ credId:_b64(cred.rawId), enabled:true }; store.set(APPLOCK_KEY,JSON.stringify(appLock)); renderAppLockUI();
     notify('FaceID Sperre ist aktiv. Tipp: Richte auch das Cloud Backup ein, damit deine Daten gesichert sind.','App-Sperre');
   } catch(e){ notify('Einrichtung abgebrochen oder nicht unterstützt.','App-Sperre'); }
@@ -2814,11 +2866,11 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2609062500"></script>
-<script src="mod-reisen.js?v=2609062500"></script>
-<script src="mod-finanzen.js?v=2609062500"></script>
-<script src="mod-impfpass.js?v=2609062500"></script>
-<script src="mod-fotografie.js?v=2609062500"></script>
+<script src="data-laender.js?v=2609062600"></script>
+<script src="mod-reisen.js?v=2609062600"></script>
+<script src="mod-finanzen.js?v=2609062600"></script>
+<script src="mod-impfpass.js?v=2609062600"></script>
+<script src="mod-fotografie.js?v=2609062600"></script>
 
 <!-- ===== Start ===== -->
 <script>
