@@ -11,17 +11,17 @@
 <meta name="apple-mobile-web-app-title" content="Jörg">
 <!-- Startbilder: ohne sie zeigt iOS beim Kaltstart eine leere Flaeche, bis das
      Skript gelaufen ist. Je Geraet greift genau eine der Zeilen. -->
-<link rel="apple-touch-startup-image" href="splash/1320x2868.png?v=2609061800" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1290x2796.png?v=2609061800" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1284x2778.png?v=2609061800" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1206x2622.png?v=2609061800" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1179x2556.png?v=2609061800" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1170x2532.png?v=2609061800" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1242x2688.png?v=2609061800" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1125x2436.png?v=2609061800" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/828x1792.png?v=2609061800" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/750x1334.png?v=2609061800" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-<link rel="manifest" href="manifest.json?v=2609061800">
+<link rel="apple-touch-startup-image" href="splash/1320x2868.png?v=2609061900" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1290x2796.png?v=2609061900" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1284x2778.png?v=2609061900" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1206x2622.png?v=2609061900" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1179x2556.png?v=2609061900" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1170x2532.png?v=2609061900" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1242x2688.png?v=2609061900" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1125x2436.png?v=2609061900" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/828x1792.png?v=2609061900" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/750x1334.png?v=2609061900" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+<link rel="manifest" href="manifest.json?v=2609061900">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -81,6 +81,7 @@
        gesamte Layout ruckt beim Antippen eines Eingabefelds. svh ist die kleinste
        Viewport-Hoehe und bleibt konstant. */
     min-height: 100svh;
+    min-height: 100lvh;
     padding: max(24px, env(safe-area-inset-top)) 16px calc(var(--dock-h) + env(safe-area-inset-bottom));
     background: transparent;
     overflow-x: hidden;
@@ -542,7 +543,7 @@
   .entry-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; min-width: 0; }
 
   /* Vollbild-Screens */
-  .screen { position: fixed; inset: 0; z-index: 400; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 18px calc(14px + env(safe-area-inset-bottom)); visibility: hidden; background: var(--bg); background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2) 0%, #050509 52%, var(--bg-fuss) 100%); }
+  .screen { position: fixed; inset: 0; height: 100lvh; z-index: 400; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 18px calc(14px + env(safe-area-inset-bottom)); visibility: hidden; background: var(--bg); background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2) 0%, #050509 52%, var(--bg-fuss) 100%); }
   .screen.open { transform: translateX(0); visibility: visible; transition: transform 0.4s var(--ease-ios), visibility 0s; }
   /* Nach der Öffnen-Animation die Transform entfernen – ein dauerhaftes transform auf einem
      position:fixed-Scrollcontainer bringt iOS-Safari beim Momentum-Scrollen zum Haken. */
@@ -673,7 +674,7 @@
   /* Overlay / Modal */
   /* Ebenen: Seiten 400 < Formulare 500 < Dialoge 600 < Toast 650 < Sperre 700.
      Formulare MÜSSEN über den Seiten liegen – sonst öffnen sie sich unsichtbar dahinter. */
-  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); z-index: 500; align-items: flex-end; justify-content: center; padding: 0; }
+  .overlay { display: none; position: fixed; inset: 0; height: 100lvh; background: rgba(0,0,0,0.5); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); z-index: 500; align-items: flex-end; justify-content: center; padding: 0; }
   .overlay.open { display: flex; }
   #dialog-overlay { z-index: 600; }
   .modal { background: rgba(30, 30, 34, 0.68); -webkit-backdrop-filter: blur(48px) saturate(190%); backdrop-filter: blur(48px) saturate(190%); border: 1px solid var(--stroke-hi); border-bottom: none; border-radius: 34px 34px 0 0; box-shadow: 0 1.5px 1px rgba(255,255,255,0.12) inset, 0 -20px 60px rgba(0,0,0,0.4); padding: 26px 22px calc(26px + env(safe-area-inset-bottom)); width: 100%; max-width: 720px; max-height: 92svh; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; animation: slideUp 0.45s var(--spring); }
@@ -795,7 +796,7 @@
   .backup-hint.footnote { margin-top: 18px; }
 
   /* Lock-Screen */
-  #lock-screen { position: fixed; inset: 0; z-index: 700; background: rgba(0,0,0,0.6); -webkit-backdrop-filter: blur(60px) saturate(160%); backdrop-filter: blur(60px) saturate(160%); display: flex; align-items: center; justify-content: center; }
+  #lock-screen { position: fixed; inset: 0; height: 100lvh; z-index: 700; background: rgba(0,0,0,0.6); -webkit-backdrop-filter: blur(60px) saturate(160%); backdrop-filter: blur(60px) saturate(160%); display: flex; align-items: center; justify-content: center; }
   .lock-inner { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 32px; }
   .lock-icon { font-size: 2.4rem; }
   .lock-title { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.02em; }
@@ -962,7 +963,7 @@
      aufdecken (kein Fixed-Layer, kein wirksames z-index). Jetzt wie .screen als eigener
      Vollbild-Layer, damit Drag/Parallax exakt so funktionieren wie bei den Screens. */
   .mod-container {
-    position: fixed; inset: 0; z-index: 400;
+    position: fixed; inset: 0; height: 100lvh; z-index: 400;
     overflow-y: auto; overflow-x: hidden;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
@@ -1046,7 +1047,7 @@
 /* Hero: Gesamtvermögen */
   #mod-finanzen .hero{ text-align: center; padding: 32px 0 34px; cursor: pointer; }
 /* Detail-Sheet (öffnet über Hero/Bento) */
-  #mod-finanzen .detail-sheet{ position: fixed; inset: 0; z-index: 380; overscroll-behavior: contain; background: var(--bg); background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2) 0%, #050509 52%, var(--bg-fuss) 100%); overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 16px calc(14px + env(safe-area-inset-bottom)); visibility: hidden; }
+  #mod-finanzen .detail-sheet{ position: fixed; inset: 0; height: 100lvh; z-index: 380; overscroll-behavior: contain; background: var(--bg); background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2) 0%, #050509 52%, var(--bg-fuss) 100%); overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 16px calc(14px + env(safe-area-inset-bottom)); visibility: hidden; }
 #mod-finanzen .detail-sheet.open{ transform: translateX(0); visibility: visible; transition: transform 0.4s var(--ease-ios), visibility 0s; }
 #mod-finanzen .detail-sheet.settled{ transform: none; }
 #mod-finanzen .detail-panel{ display: none; }
@@ -2780,11 +2781,11 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2609061800"></script>
-<script src="mod-reisen.js?v=2609061800"></script>
-<script src="mod-finanzen.js?v=2609061800"></script>
-<script src="mod-impfpass.js?v=2609061800"></script>
-<script src="mod-fotografie.js?v=2609061800"></script>
+<script src="data-laender.js?v=2609061900"></script>
+<script src="mod-reisen.js?v=2609061900"></script>
+<script src="mod-finanzen.js?v=2609061900"></script>
+<script src="mod-impfpass.js?v=2609061900"></script>
+<script src="mod-fotografie.js?v=2609061900"></script>
 
 <!-- ===== Start ===== -->
 <script>
@@ -3146,14 +3147,17 @@ function initZustand(){
 function messungZeigen(){
   const el = $('mess-stamp'); if(!el) return;
   const probe = document.createElement('div');
-  probe.style.cssText = 'position:fixed;top:0;height:env(safe-area-inset-top);width:1px;visibility:hidden';
+  probe.style.cssText = 'position:fixed;top:0;left:0;width:1px;visibility:hidden';
   document.body.appendChild(probe);
-  const oben = Math.round(probe.getBoundingClientRect().height);
-  probe.style.cssText = 'position:fixed;bottom:0;height:env(safe-area-inset-bottom);width:1px;visibility:hidden';
-  const unten = Math.round(probe.getBoundingClientRect().height);
+  const miss = (wert) => { probe.style.height = wert; return Math.round(probe.getBoundingClientRect().height); };
+  const oben  = miss('env(safe-area-inset-top)');
+  const unten = miss('env(safe-area-inset-bottom)');
+  const lvh   = miss('100lvh');
+  const svh   = miss('100svh');
   probe.remove();
   el.textContent = 'Schirm ' + Math.round(window.screen.height)
     + ' · innen ' + Math.round(window.innerHeight)
+    + ' · lvh ' + lvh + ' · svh ' + svh
     + ' · oben ' + oben + ' · unten ' + unten;
 }
 
