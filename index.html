@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -12,17 +12,17 @@
 <meta name="apple-mobile-web-app-title" content="Jörg">
 <!-- Startbilder: ohne sie zeigt iOS beim Kaltstart eine leere Flaeche, bis das
      Skript gelaufen ist. Je Geraet greift genau eine der Zeilen. -->
-<link rel="apple-touch-startup-image" href="splash/1320x2868.png?v=2609051730" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1290x2796.png?v=2609051730" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1284x2778.png?v=2609051730" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1206x2622.png?v=2609051730" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1179x2556.png?v=2609051730" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1170x2532.png?v=2609051730" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1242x2688.png?v=2609051730" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1125x2436.png?v=2609051730" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/828x1792.png?v=2609051730" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/750x1334.png?v=2609051730" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-<link rel="manifest" href="manifest.json?v=2609051730">
+<link rel="apple-touch-startup-image" href="splash/1320x2868.png?v=2609060900" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1290x2796.png?v=2609060900" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1284x2778.png?v=2609060900" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1206x2622.png?v=2609060900" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1179x2556.png?v=2609060900" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1170x2532.png?v=2609060900" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1242x2688.png?v=2609060900" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1125x2436.png?v=2609060900" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/828x1792.png?v=2609060900" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/750x1334.png?v=2609060900" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+<link rel="manifest" href="manifest.json?v=2609060900">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -62,7 +62,9 @@
     --r-entry:   12px;
     --r-control: 16px;
     --r-pill:    99px;
-    --dock-h:    86px;   /* Platz, den die untere Leiste am Seitenende freihalten muss */
+    /* Die Leiste ist 60px hoch und sitzt 10px ueber dem sicheren Bereich - macht
+       70px, plus ein wenig Luft zum letzten Inhalt. */
+    --dock-h:    74px;
   }
 
   html { -webkit-text-size-adjust: 100%; overflow-x: hidden; background: #0a0a0c; }
@@ -733,7 +735,16 @@
      Versatz waere geraten und wuerde bei anderer Schriftgroesse wieder verrutschen. */
   .f-toggle .f-toggle-cb { width: 18px; height: 18px; accent-color: #fff; flex: 0 0 18px; cursor: pointer; margin: 0; align-self: center; }
 
-  .modal-actions { display: flex; gap: 8px; margin-top: 22px; }
+  /* Speichern und Abbrechen bleiben am unteren Rand des Blattes stehen, statt
+     unter langen Formularen zu verschwinden. */
+  .modal-actions {
+    display: flex; gap: 8px; margin-top: 22px; position: sticky; bottom: calc(26px + env(safe-area-inset-bottom)); z-index: 2;
+    margin-left: -22px; margin-right: -22px; padding: 14px 22px 2px;
+    background: linear-gradient(180deg, rgba(30,30,34,0) 0%, rgba(30,30,34,0.9) 34%);
+  }
+  /* Zwei Rasten: lange Formulare oeffnen halbhoch und lassen sich nach oben ziehen. */
+  .modal.raste { height: 58svh; transition: height 0.34s var(--ease-ios); }
+  .modal.raste.voll { height: 92svh; }
   .btn {
     flex: 1; padding: 11px; border-radius: var(--r-pill); font: inherit; font-size: 0.88rem; font-weight: 600;
     cursor: pointer; border: none;
@@ -753,7 +764,11 @@
   /* Einstellungen (exakt wie Finanzen) */
   .settings-group { background: var(--glass); border: 1px solid var(--stroke); border-radius: var(--r-control); overflow: hidden; margin-top: 10px; -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); }
   .settings-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 16px; background: transparent; border: none; font: inherit; color: var(--text); text-align: left; cursor: pointer; transition: background 0.18s var(--ease-ios); }
-  .settings-row + .settings-row { border-top: 1px solid var(--stroke); }
+  /* Trennlinie beginnt erst beim Text, nicht am Kartenrand - wie in den
+     Systemeinstellungen. */
+  .settings-row { position: relative; }
+  .settings-row + .settings-row { border-top: none; }
+  .settings-row + .settings-row::before { content: ""; position: absolute; left: 52px; right: 0; top: 0; height: 1px; background: var(--stroke); }
   .settings-row:active { background: var(--glass-hi); }
   .settings-row .sr-icon { font-size: 1.05rem; width: 24px; text-align: center; flex-shrink: 0; }
   .settings-row .sr-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -784,9 +799,6 @@
   .lock-btn { flex: none; padding: 13px 26px; margin-top: 6px; }
   .lock-hint { font-size: 0.74rem; color: var(--muted-2); min-height: 1.2em; text-align: center; }
 
-  .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translate(-50%, 120px); z-index: 650; display: flex; align-items: center; gap: 14px; background: rgba(40, 40, 46, 0.78); -webkit-backdrop-filter: blur(48px) saturate(190%); backdrop-filter: blur(48px) saturate(190%); border: 1px solid var(--stroke-hi); border-radius: var(--r-pill); box-shadow: 0 1.5px 1px rgba(255,255,255,0.12) inset, 0 12px 40px rgba(0,0,0,0.5); padding: 13px 20px; transition: transform 0.45s var(--spring); pointer-events: none; max-width: 90vw; }
-  .toast.show { transform: translate(-50%, 0); pointer-events: auto; }
-  .toast-label { font-size: 0.82rem; color: var(--text); }
 
 
   /* ==================================================================
@@ -955,6 +967,14 @@
     padding: max(24px, env(safe-area-inset-top)) 16px calc(var(--dock-h) + env(safe-area-inset-bottom));
   }
   .mod-container[hidden] { display: none !important; }
+  /* Bereiche kommen von rechts herein wie die Bildschirme. Der Transform steht
+     ausschliesslich waehrend der Bewegung: ein dauerhaft transformierter Container
+     waere fuer jedes position:fixed-Kind darin der neue Bezugsrahmen - Blaetter und
+     Bildschirme der Module wuerden dann mitscrollen statt zu stehen. */
+  .mod-container.rein  { transform: translateX(100%); }
+  .mod-container.rein.auf { transform: translateX(0); transition: transform 0.4s var(--ease-ios); }
+  .mod-container.raus  { transform: translateX(0); transition: transform 0.34s var(--ease-ios); }
+  .mod-container.raus.fort { transform: translateX(100%); }
   /* In einem Bereich steht der Zurück-Pfeil links neben dem Titel – eine Zeile statt zwei. */
   .mod-container .app-header { justify-content: flex-start; gap: 10px; }
   .mod-container .app-header .screen-back { flex: 0 0 auto; }
@@ -1426,6 +1446,8 @@
   </div>
 
   <p class="backup-hint" id="build-stamp" style="text-align:center;margin:22px 6px 0"></p>
+  <!-- Nur zur Fehlersuche am schwarzen Rand unten. Faellt wieder raus, sobald geklaert. -->
+  <p class="backup-hint" id="mess-stamp" style="text-align:center;margin:6px 6px 0;font-variant-numeric:tabular-nums"></p>
 </div>
 
 <div class="overlay" id="pass-overlay">
@@ -1473,7 +1495,6 @@
 <label class="haptik-quelle" id="haptik-label" for="haptik-schalter" aria-hidden="true"></label>
 <input class="haptik-quelle" type="checkbox" switch id="haptik-schalter" tabindex="-1" aria-hidden="true">
 
-<div class="toast" id="toast"><span class="toast-label" id="toast-label"></span></div>
 <div id="lock-screen" style="display:none">
   <div class="lock-inner">
     <div class="lock-icon">🔒</div>
@@ -1990,7 +2011,7 @@ function renderLauncher(){
   }).join('') + `<div class="bento-tile trip-tile tile-ghost" aria-hidden="true"><span>+</span></div>`;
 }
 
-function openModule(id){
+function openModule(id, sofort){
   const m = moduleById(id);
   if(!m) return;
   if(activeModule && activeModule !== id && typeof ebenenAufraeumen === 'function') ebenenAufraeumen(activeModule);
@@ -1998,15 +2019,34 @@ function openModule(id){
   $('launcher').hidden = true;
   MODULES.forEach(x => { const c = $('mod-' + x.id); if(c) c.hidden = (x.id !== id); });
   window.scrollTo(0, 0);
+  const c = $('mod-' + id);
+  if(c){
+    c.scrollTop = 0;
+    if(!sofort){
+      c.classList.add('rein');
+      void c.offsetHeight;
+      c.classList.add('auf');
+      setTimeout(() => c.classList.remove('rein', 'auf'), 430);
+    }
+  }
   if (m.onOpen) { try { m.onOpen(); } catch(e){} }
 }
-function closeModule(){
+/* sofort=true, wenn die Ebene schon aus dem Bild geschoben wurde - das macht die
+   Zurueck-Geste selbst, dort waere eine zweite Bewegung ein sichtbarer Rueckschlag. */
+function closeModule(sofort){
   if(typeof ebenenAufraeumen === 'function') ebenenAufraeumen(activeModule);
+  const c = activeModule ? $('mod-' + activeModule) : null;
   activeModule = null;
-  MODULES.forEach(x => { const c = $('mod-' + x.id); if(c) c.hidden = true; });
+  MODULES.forEach(x => { const el = $('mod-' + x.id); if(el && el !== c) el.hidden = true; });
   $('launcher').hidden = false;
   renderLauncher();
   window.scrollTo(0, 0);
+  if(!c) return;
+  if(sofort){ c.hidden = true; return; }
+  c.classList.add('raus');
+  void c.offsetHeight;
+  c.classList.add('fort');
+  setTimeout(() => { c.classList.remove('raus', 'fort'); c.hidden = true; }, 360);
 }
 
 /* ---------------- Gemeinsame Einstellungen ---------------- */
@@ -2402,15 +2442,26 @@ function attachSheetSwipe(overlayId, closeFn){
     startY=e.touches[0].clientY; cur=0; dragging=true; atTop=modal.scrollTop<=0; modal.style.transition='none'; }, {passive:true});
   modal.addEventListener('touchmove', e=>{ if(!dragging) return;
     const dy=e.touches[0].clientY-startY;
+    const halb = modal.classList.contains('raste') && !modal.classList.contains('voll');
     if(dy>0 && atTop){ cur=dy;
       /* Ab 120px zunehmender Widerstand - das Blatt haengt am Finger, statt ihm
          beliebig weit zu folgen. */
       const weg = dy>120 ? 120 + (dy-120)*0.45 : dy;
       modal.style.transform='translateY('+weg+'px)'; }
-    else if(dy<0){ dragging=false; modal.style.transform=''; } }, {passive:true});
+    else if(dy<0){
+      /* Aus der halben Raste nach oben ziehen: ein kurzer Vorgriff, das Aufgehen
+         selbst uebernimmt beim Loslassen die Hoehenaenderung. */
+      if(halb){ cur=dy; modal.style.transform='translateY('+Math.max(dy*0.4,-40)+'px)'; }
+      else { dragging=false; modal.style.transform=''; }
+    } }, {passive:true});
   modal.addEventListener('touchend', ()=>{ if(!dragging) return; dragging=false;
     modal.style.transition=''; const drop=cur; modal.style.transform='';
-    if(drop>110) closeFn(); }, {passive:true});
+    if(drop < -55 && modal.classList.contains('raste')){ modal.classList.add('voll'); return; }
+    if(drop > 110){
+      // Aus der vollen Hoehe geht es erst zurueck auf halb, dann zu - wie in iOS.
+      if(modal.classList.contains('voll')) modal.classList.remove('voll');
+      else closeFn();
+    } }, {passive:true});
 }
 
 /* Ein Blatt einblenden. Schliesst dabei eine offen stehende Swipe-Zeile und haengt
@@ -2423,6 +2474,7 @@ function oeffneOverlay(id, schliessen){
   closeOpenSwipe();
   if(schliessen) attachSheetSwipe(id, schliessen);
   ov.classList.add('open');
+  rasteSetzen(ov);
   const i = _offeneBlaetter.findIndex(b => b.id === id);
   if(i >= 0) _offeneBlaetter.splice(i, 1);
   _offeneBlaetter.push({ id, schliessen });
@@ -2689,7 +2741,7 @@ function topOpenScreen(){
           if(btn) btn.click();
           else { el.classList.remove('settled'); el.classList.remove('open'); }
         } else {
-          closeModule();
+          closeModule(true);
         }
         aufraeumen(true);
       };
@@ -2715,11 +2767,11 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2609051730"></script>
-<script src="mod-reisen.js?v=2609051730"></script>
-<script src="mod-finanzen.js?v=2609051730"></script>
-<script src="mod-impfpass.js?v=2609051730"></script>
-<script src="mod-fotografie.js?v=2609051730"></script>
+<script src="data-laender.js?v=2609060900"></script>
+<script src="mod-reisen.js?v=2609060900"></script>
+<script src="mod-finanzen.js?v=2609060900"></script>
+<script src="mod-impfpass.js?v=2609060900"></script>
+<script src="mod-fotografie.js?v=2609060900"></script>
 
 <!-- ===== Start ===== -->
 <script>
@@ -3022,6 +3074,77 @@ function iosAktualisieren(){
     verlaufAbgleichen();
   });
 }
+
+/* ---------------- Rasten fuer Blaetter ----------------
+   Nur wirklich lange Formulare oeffnen halbhoch. Kurze bleiben so hoch wie ihr
+   Inhalt - eine feste Raste haette sie kuenstlich aufgeblasen. */
+function rasteSetzen(ov){
+  const modal = ov.querySelector('.modal'); if(!modal) return;
+  modal.classList.remove('raste', 'voll');
+  requestAnimationFrame(() => {
+    if(!ov.classList.contains('open')) return;
+    if(modal.scrollHeight > window.innerHeight * 0.92) modal.classList.add('raste');
+  });
+}
+
+/* ---------------- Schriftgroesse des Systems ----------------
+   Liest die eingestellte Textgroesse aus und setzt sie als Grundmass - alle
+   rem-Angaben der App wachsen dadurch mit. Nach unten bei 16px gedeckelt, sonst
+   zoomt iOS beim Antippen eines Eingabefelds; nach oben bei 19px, sonst brechen
+   die dichten Kacheln auseinander. */
+function initSchriftgroesse(){
+  let px = 16;
+  try {
+    const probe = document.createElement('div');
+    probe.style.cssText = 'position:absolute;visibility:hidden;font:-apple-system-body';
+    document.body.appendChild(probe);
+    px = parseFloat(getComputedStyle(probe).fontSize) || 16;
+    probe.remove();
+  } catch(e){}
+  document.documentElement.style.fontSize = Math.max(16, Math.min(19, px)) + 'px';
+}
+
+/* ---------------- Zuletzt geoeffneter Bereich ----------------
+   iOS bringt eine App dorthin zurueck, wo man sie verlassen hat. Gemerkt wird nur
+   der Bereich, nicht der Bildschirm darin: ein halb ausgefuelltes Formular nach
+   Stunden wieder aufzuklappen waere keine Hilfe. */
+const ZUSTAND_KEY = 'ui_zustand_v1';
+const ZUSTAND_FRIST = 30 * 60 * 1000;
+function zustandSichern(){
+  try { store.set(ZUSTAND_KEY, JSON.stringify({ modul: activeModule, zeit: Date.now() })); } catch(e){}
+}
+function zustandHerstellen(){
+  const z = safeParse(store.get(ZUSTAND_KEY), null);
+  if(!z || !z.modul || !moduleById(z.modul)) return;
+  if(Date.now() - (z.zeit || 0) > ZUSTAND_FRIST) return;
+  openModule(z.modul, true);
+}
+function initZustand(){
+  window.addEventListener('pagehide', zustandSichern);
+  document.addEventListener('visibilitychange', () => { if(document.hidden) zustandSichern(); });
+  zustandHerstellen();
+}
+
+
+/* ---------------- Messzeile ----------------
+   Zeigt die vier Hoehen, die ueber die Position der unteren Leiste entscheiden.
+   Weichen sie voneinander ab, ist das Layout-Fenster kuerzer als der Bildschirm -
+   dann sitzt nicht die Leiste falsch, sondern die Seite ist zu kurz.
+   Diese Zeile ist ein Messwerkzeug und faellt wieder raus. */
+function messungZeigen(){
+  const el = $('mess-stamp'); if(!el) return;
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;bottom:0;height:env(safe-area-inset-bottom);width:1px;visibility:hidden';
+  document.body.appendChild(probe);
+  const sicher = Math.round(probe.getBoundingClientRect().height);
+  probe.remove();
+  const vv = window.visualViewport;
+  el.textContent = 'Schirm ' + Math.round(window.screen.height * (window.devicePixelRatio ? 1 : 1))
+    + ' · innen ' + Math.round(window.innerHeight)
+    + ' · sichtbar ' + (vv ? Math.round(vv.height) : '-')
+    + ' · unten ' + sicher;
+}
+
 function initIOS(){
   renderDock();
   initTastatur();
@@ -3033,6 +3156,10 @@ function initIOS(){
   document.addEventListener('scroll', () => iosAktualisieren(), true);
   window.addEventListener('scroll', () => iosAktualisieren(), { passive: true });
   window.addEventListener('resize', () => iosAktualisieren());
+  initSchriftgroesse();
+  initZustand();
+  messungZeigen();
+  window.addEventListener('resize', messungZeigen);
   history.replaceState({ tiefe: offeneEbenen() }, '');
   iosAktualisieren();
 }
