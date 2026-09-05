@@ -129,6 +129,11 @@ function fgStartbestand(){
           { label: 'Dateiformat', wert: 'RAW (verlustfrei komprimiert)' }
         ]},
         fgMenuGruppe(null)
+      ,
+        { titel: 'Profi-Tipps', zeilen: [
+          { label: 'Testbelichtung', wert: 'Kurz auf ISO 12800 hochstellen und 2s testbelichten, um Komposition und Fokus am Display zu prüfen – danach auf die Zielwerte zurückstellen, das geht schneller als bei den finalen, dunkleren Bildern zu beurteilen' },
+          { label: 'Blaue Stunde', wert: 'Vordergrund idealerweise noch in der Dämmerung separat belichten und später mit dem Himmelbild blenden – bei völliger Dunkelheit bleibt der Vordergrund sonst unterbelichtet oder verrauscht' }
+        ]}
       ],
       ausrichtung: 'Süden bis Südosten, Querformat (weiter Blickwinkel für Kernregion + Horizont)',
       komposition: [
@@ -165,6 +170,11 @@ function fgStartbestand(){
           { label: 'AE-Verfolgung bei Intervall', wert: 'Aus' },
           { label: 'Bildanzahl', wert: '25 Bilder ≈ 1s Video – für 12s Clip ca. 300 Bilder' }
         ]}
+      ,
+        { titel: 'Profi-Tipps', zeilen: [
+          { label: 'Taukappenheizung', wert: 'Bei hoher Luftfeuchtigkeit eine Objektiv-Heizmanschette einsetzen – Beschlag mitten in der Serie ist bei Timelapses kaum zu retten' },
+          { label: 'Holy-Grail-Übergang', wert: 'Fällt Anfang oder Ende der Serie in die Dämmerung, Blende/ISO alle paar Bilder minimal nachführen (Ramping) statt hart umzuschalten – sonst springt die Helligkeit im fertigen Video' }
+        ]}
       ],
       ausrichtung: 'Süden, Querformat – Kern wandert im Bildverlauf von links nach rechts durchs Bild',
       komposition: [
@@ -198,6 +208,11 @@ function fgStartbestand(){
         fgMenuGruppe('Aus (Akku für die mehreren Serien schonen)'),
         { titel: 'Workflow', zeilen: [
           { label: 'Dark Frames', wert: '5–10 Aufnahmen mit aufgesetztem Objektivdeckel bei identischen Werten am Session-Ende (Hot-Pixel-Entfernung)' }
+        ]}
+      ,
+        { titel: 'Profi-Tipps', zeilen: [
+          { label: 'Flugzeug-/Satellitenspuren', wert: 'Median- statt Durchschnitts-Stacking verwenden (in Sequator/Starry Landscape Stacker einstellbar) – Median entfernt solche Spuren automatisch aus dem Ergebnis' },
+          { label: 'Flat Frames', wert: 'Zusätzlich zu den Dark Frames 10–15 Flat Frames gegen Vignettierung aufnehmen (gleichmäßig ausgeleuchtete Fläche, z.B. T-Shirt vor der Frontlinse, bei Arbeitsblende des Shootings)' }
         ]}
       ],
       ausrichtung: 'Süden bis Südosten, Querformat – Kamera zwischen den Serien nicht bewegen (identischer Ausschnitt nötig)',
@@ -235,6 +250,11 @@ function fgStartbestand(){
           { label: 'Dark Frames', wert: '5–10 Aufnahmen mit aufgesetztem Objektivdeckel bei identischen Werten am Session-Ende' },
           { label: 'Vordergrund', wert: 'Separate, längere Belichtungen bei ISO 400–800, ungetrackt' }
         ]}
+      ,
+        { titel: 'Profi-Tipps', zeilen: [
+          { label: 'Nodalpunkt', wert: 'Vor der Session per Parallaxe-Test (zwei Objekte in unterschiedlicher Entfernung deckungsgleich halten) den exakten Drehpunkt bestimmen – ein falscher Nodalpunkt zeigt sich erst beim Stitching als Versatz' },
+          { label: 'Überstand', wert: 'Jedes Feld etwas höher/tiefer als geplant schwenken (Überscan) – gibt dem Stitching-Programm Reserve an den Rändern' }
+        ]}
       ],
       ausrichtung: 'Süden bis Südosten, Kamera im Hochformat schwenken (mehr Höhe je Feld) · untere Reihe auf den Vordergrund, mittlere auf die Kernregion, obere auf den Bogen',
       komposition: [
@@ -271,6 +291,11 @@ function fgStartbestand(){
           { label: 'Intervall-Hinweis', wert: 'Die Sony-Intervallfunktion misst von Start zu Start, nicht ab Belichtungsende – mind. 3s Puffer einplanen, sonst Lücken in den Spuren' },
           { label: 'Dark Frames', wert: '5–10 Aufnahmen mit aufgesetztem Objektivdeckel bei identischen Werten am Session-Ende' }
         ]}
+      ,
+        { titel: 'Profi-Tipps', zeilen: [
+          { label: 'Polarstern finden', wert: 'Per Kompass-App oder Sucher (z.B. an der Deichsel des Großen Wagens entlang) exakt anpeilen – schon wenige Grad Abweichung verschieben das Zentrum der Kreise sichtbar aus der Bildmitte' },
+          { label: 'Scharfer Vordergrund', wert: 'Zusätzlich eine kurze, sauber belichtete Einzelaufnahme des Vordergrunds machen und später mit dem gestackten Sternenhimmel blenden – der Vordergrund in der langen Serie wirkt sonst oft flau' }
+        ]}
       ],
       ausrichtung: 'Norden zum Polarstern, Hochformat (konzentrische Kreise, mehr Himmel im Bild)',
       komposition: [
@@ -301,6 +326,11 @@ function fgStartbestand(){
           { label: 'Dateiformat', wert: 'RAW (verlustfrei komprimiert)' }
         ]},
         fgMenuGruppe('Aus (Akku für die durchgehende Serie schonen)')
+      ,
+        { titel: 'Profi-Tipps', zeilen: [
+          { label: 'Mondphase prüfen', wert: 'Nächte um Neumond wählen bzw. warten, bis der Mond untergegangen ist – schon ein Halbmond hellt den Himmel so weit auf, dass schwächere Meteore untergehen' },
+          { label: 'Ausbeute einordnen', wert: 'Nur ein Bruchteil der Bilder zeigt einen Treffer – das ist normal, nicht an einzelnen leeren Serien die Einstellungen in Frage stellen' }
+        ]}
       ],
       ausrichtung: 'Radiant (Ursprungspunkt des Schauers) etwa 30–40° neben der Bildmitte – dort erscheinen die Spuren am längsten · Querformat für großes Sichtfeld',
       komposition: [
@@ -340,6 +370,11 @@ function fgStartbestand(){
         { titel: 'Workflow', zeilen: [
           { label: 'Serienaufnahme', wert: '50–100 Bilder als Burst für Stacking (Lucky Imaging gegen Luftunruhe) – schnelle Karte (V90/CFexpress) leert den Puffer spürbar zügiger' },
           { label: 'Zeitpunkt', wert: 'Mond möglichst hoch am Himmel, ruhige Luft (gutes Seeing) – nicht bei Vollmond (flaches Licht ohne Schattenrelief)' }
+        ]}
+      ,
+        { titel: 'Profi-Tipps', zeilen: [
+          { label: 'Serien-Filterung', wert: 'Beim Stacking (z.B. AutoStakkert) nur die schärfsten 10–20% der Serie verwenden, nicht alle Bilder – die Software sortiert nach Schärfe, mehr Masse verbessert das Ergebnis kaum' },
+          { label: 'Seeing beachten', wert: 'Bei flirrender Luft (schlechtes Seeing) lieber später am Abend erneut versuchen als bei schlechten Bedingungen weiterzumachen – die Bildqualität hängt stärker von ruhiger Luft ab als von der Anzahl der Aufnahmen' }
         ]}
       ],
       ausrichtung: 'Position wechselt mit Datum/Uhrzeit – vorher per Kompass-App/Stellarium prüfen, Kamera folgt der Bewegung nach',
@@ -388,6 +423,11 @@ function fgStartbestand(){
           { label: 'Serienaufnahme', wert: '50–100 Bilder als Burst für Stacking – schnelle Karte (V90/CFexpress) leert den Puffer spürbar zügiger' },
           { label: 'Vorbereitung', wert: 'Aktive Fleckenregionen vorab online prüfen (z.B. spaceweather.com)' }
         ]}
+      ,
+        { titel: 'Profi-Tipps', zeilen: [
+          { label: 'Seeing über die Zeit verteilen', wert: 'Serie über mehrere Minuten verteilt aufnehmen statt in einem einzigen Burst – die Luftunruhe schwankt wellenartig, verteilte Aufnahmen erhöhen die Chance auf ruhige Momente' },
+          { label: 'Filter regelmäßig prüfen', wert: 'Sonnenfilter vor jeder Session auf Löcher oder Risse gegen eine helle Lichtquelle kontrollieren – auch winzige Beschädigungen lassen gefährlich viel Energie durch' }
+        ]}
       ],
       ausrichtung: 'Position wechselt mit Datum/Uhrzeit – vorher per Kompass-App/Stellarium prüfen, Kamera folgt der Bewegung nach',
       komposition: [
@@ -423,6 +463,11 @@ function fgStartbestand(){
           { label: 'Nivellierung', wert: 'Horizontlinie über alle Segmente auf gleicher Höhe halten – Nivellierbasis vorher justieren' },
           { label: 'Wetter', wert: 'Nur bei durchgehend klarem Himmel aufnehmen – eine Wolke in einem Segment stört das ganze Panorama' }
         ]}
+      ,
+        { titel: 'Profi-Tipps', zeilen: [
+          { label: 'Sicherheitspuffer', wert: 'Erstes und letztes Segment bewusst etwas leeren Himmel mitnehmen lassen – gibt dem Stitching-Programm Reserve an den Rändern des Panoramas' },
+          { label: 'Reihenfolge merken', wert: 'Segmente der Reihe nach durchnummerieren bzw. fotografisch dokumentieren (kurzer Handzettel im Bild) – bei 5–7 Einzelbildern verwechselt man die Reihenfolge beim Sichten später leicht' }
+        ]}
       ],
       ausrichtung: 'Süden bis Südosten, Querformat – Kamera horizontal von einem Ende des Bogens zum anderen schwenken',
       komposition: [
@@ -450,7 +495,8 @@ function fgStartbestand(){
           { label: 'Verschlusszeit', wert: '180°-Regel – bei 120fps 1/240s, bei 240fps 1/480s' },
           { label: 'ISO', wert: 'Auto mit Obergrenze (tagsüber meist niedrig)' },
           { label: 'Objektiv', wert: 'Sony FE 200–600mm F5.6–6.3 G' },
-          { label: 'Fokus', wert: 'AF-C mit Tier-Motiverkennung (Real-time Recognition AF) – viele Kameras versagen bei 120fps beim AF; im Zweifel etwas abblenden für mehr Schärfentiefe' }
+          { label: 'Fokus', wert: 'AF-C mit Tier-Motiverkennung (Real-time Recognition AF) – viele Kameras versagen bei 120fps beim AF; im Zweifel etwas abblenden für mehr Schärfentiefe' },
+          { label: 'AF-Bereich (Tracking-Feld)', wert: 'Tracking: Zone als Standard – reagiert am zuverlässigsten auf unvorhersehbare Bewegung. Bei einem Einzeltier in einer Gruppe (z.B. ein Vogel im Schwarm) auf Tracking: Erw. Spot wechseln und gezielt draufhalten' }
         ]},
         { titel: 'Farbe & Format', zeilen: [
           { label: 'Farbprofil', wert: 'S-Cinetone (einfacher zu graden) bzw. S-Log3 (mehr Grading-Spielraum)' },
@@ -458,6 +504,9 @@ function fgStartbestand(){
         ]},
         { titel: 'Einmalig im Menü', zeilen: [
           { label: 'Motiverkennung', wert: 'Tiere/Vögel aktivieren' },
+          { label: 'AF-Fach-Wechselempfindlichkeit', wert: 'Hoch (5–6) für sprunghafte Bewegung, z.B. auffliegende Vögel; mittig (3) wenn ruhigere Objekte zwischenzeitlich nicht das Tier übernehmen sollen' },
+          { label: 'AF-Übergangsgeschwindigkeit', wert: 'Schnell für Actionmomente – bei ruhigerem Fressverhalten langsamer für weichere Fokuswechsel' },
+          { label: 'Fokustaste', wert: 'AF-ON auf eine Custom-Taste legen (Back-Button-Fokus) – der Auslöser dient dann nur zum Start/Stopp der Aufnahme, das Nachführen läuft unabhängig davon weiter' },
           { label: 'SteadyShot', wert: 'Active Mode' },
           { label: 'Kartenkapazität', wert: 'Vorher prüfen – hohe Datenrate bei 120p' },
           { label: 'Wind-Rauschunterdrückung', wert: 'Ein (falls Ton relevant)' }
@@ -466,6 +515,10 @@ function fgStartbestand(){
           { label: 'Cliplänge', wert: 'Deutlich länger filmen als gedacht – Zeitlupe „frisst“ Sekunden' },
           { label: 'Vibration', wert: 'Motor/Fahrzeug wenn möglich aus' },
           { label: 'Puffer', wert: 'Vor und nach der Aktion mitfilmen' }
+        ]},
+        { titel: 'Profi-Tipps', zeilen: [
+          { label: 'Verhalten antizipieren', wert: 'Das Tier vor dem Filmen einige Minuten beobachten – typische Vorzeichen einer Aktion (Anspannung, Kopfhaltung, Fluchtrichtung) erkennen, statt erst bei der Bewegung selbst zu reagieren' },
+          { label: 'Hintergrund vorher wählen', wert: 'Position so wählen, dass ein ruhiger, kontrastarmer Hintergrund hinter dem erwarteten Aktionsbereich liegt – erleichtert dem Tracking die Unterscheidung Tier/Hintergrund erheblich' }
         ]}
       ],
       ausrichtung: 'Position folgt dem Tier – auf Fluchtdistanz und Windrichtung achten (Wind nicht zum Tier hin tragen)',

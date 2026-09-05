@@ -103,7 +103,7 @@ const IMP_STIKO_SCHEMA = [
     dosenNoetig: 3, auffrischJahre: null,
     hinweis: 'STIKO: 3 Dosen für die Grundimmunisierung vor einer Reise (Tag 0, 7, 21/28). Danach hält die Boosterfähigkeit Jahrzehnte, teils lebenslang – routinemäßige Auffrischungen sind für Normalexponierte nicht nötig. Nach Tierkontakt trotzdem immer sofort zum Arzt.' },
   { muster: /typhus|typhim/i,
-    dosenNoetig: 1, auffrischJahre: 3,
+    dosenNoetig: 1, auffrischJahre: null,
     hinweis: 'STIKO: 1 Dosis schützt etwa 3 Jahre. Eine Auffrischung ist nur nötig, wenn erneut eine Reise in ein Endemiegebiet ansteht – ohne Reise besteht kein Handlungsbedarf.' },
   { muster: /meningokokken|menactra|menveo|nimenrix/i,
     dosenNoetig: 1, auffrischJahre: null,

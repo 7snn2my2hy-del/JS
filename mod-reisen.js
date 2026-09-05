@@ -1121,7 +1121,7 @@ function renderPhotosTab(t){
   const body = list.length
     ? `<div class="foto-list">${list.map(fotoCardHTML).join('')}</div>`
     : `<div class="empty glass"><b>Noch kein Foto-Ort</b>Leg Orte für deine Shootings an – mit Ausrüstung, Notizen und Referenzbildern.</div>`;
-  setTimeout(loadFotoImages, 0);
+  setTimeout(() => { loadFotoImages(); sizeFotoTextareas(); }, 0);
   return body + `<button class="add-btn" onclick="addFotoPlace()">＋ Hinzufügen</button>`;
 }
 function fotoCardHTML(p){
@@ -1147,16 +1147,26 @@ function fotoCardHTML(p){
     <div class="foto-field">
       <label>Notizen</label>
       <textarea class="foto-textarea" placeholder="Notizen zum Shooting …" rows="2"
+             oninput="this.style.height='auto';this.style.height=(this.scrollHeight)+'px'"
              onchange="setFotoNotes('${p.id}', this.value)">${esc(p.notes||'')}</textarea>
     </div>
     <div class="foto-field">
       <label>Referenzbilder</label>
-      <div class="foto-strip">
+      <div class="foto-gallery">
         ${imgs}
         <div class="foto-add" onclick="pickFotoImages('${p.id}')" aria-label="Foto hinzufügen"><span class="plus">＋</span></div>
       </div>
     </div>
   </div>`;
+}
+/* Notiz-Felder wachsen mit dem Inhalt statt einer festen Mindesthoehe - direkt nach dem
+   Einfuegen ins DOM einmal auf den vorhandenen Text einmessen (oninput uebernimmt danach
+   jede weitere Eingabe live). */
+function sizeFotoTextareas(){
+  document.querySelectorAll('.foto-textarea').forEach(el => {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  });
 }
 async function loadFotoImages(){
   const thumbs = document.querySelectorAll('.foto-thumb[data-ref]');
