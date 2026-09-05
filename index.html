@@ -9,7 +9,7 @@
 <!-- Name unter dem Symbol auf dem Home-Bildschirm. iOS wertet dieses Tag aus,
      nicht short_name aus dem Manifest. -->
 <meta name="apple-mobile-web-app-title" content="Jörg">
-<link rel="manifest" href="manifest.json?v=2609062300">
+<link rel="manifest" href="manifest.json?v=2609062500">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -579,7 +579,13 @@
   .back-scrim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 398; }
   .back-under { will-change: transform; }
   .back-under.gliding { transition: transform var(--back-dur, 0.32s) var(--ease-ios); }
+  /* Titel steht links am Rand, der Knopf rechts - wie das Zahnrad auf der
+     Startseite. Die Reihenfolge im HTML bleibt unveraendert, nur die Anzeige
+     dreht sich; dadurch mussten die Moduldateien nicht angefasst werden. */
   .screen-topbar { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+  .screen-topbar > * { order: 2; }
+  .screen-topbar > .screen-title { order: 1; }
+  .screen-topbar > .screen-back { order: 3; margin-left: auto; }
   /* Gleiche Glasoptik wie das Zahnrad: kein Rahmen, sondern Innenlichter und ein
      weicher Schatten. Der Pfeil wird als SVG gezeichnet statt als Zeichen ‹ - das
      Schriftzeichen hat ungleiche Seitenraender und sitzt dadurch sichtbar links
@@ -601,8 +607,8 @@
   }
   .screen-back::before {
     content: ""; width: 15px; height: 15px; display: block;
-    /* Der Pfad ist um 0.6 nach rechts gesetzt: die Spitze des Winkels liegt sonst
-       optisch links, weil rechts zwei Enden stehen und links nur eines. */
+    /* Symmetrisch um die Mitte des Feldes: der Pfad laeuft von 15.6 auf 8.4 und
+       zurueck, Mittelpunkt also exakt 12. */
     background: currentColor;
     -webkit-mask: center / 15px 15px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15.6 4.5 8.4 12l7.2 7.5'/%3E%3C/svg%3E");
     mask: center / 15px 15px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15.6 4.5 8.4 12l7.2 7.5'/%3E%3C/svg%3E");
@@ -906,13 +912,15 @@
     color: var(--accent); font-size: 1.5rem; line-height: 1; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
   }
-  .navbar-back[hidden] { display: none; }
+  /* visibility statt display: der Knopf haelt seinen Platz auch dort, wo es
+     nichts zurueckzugehen gibt (Startseite) - sonst rutscht der Titel aus der Mitte. */
+  .navbar-back { order: 2; }
+  .navbar-back[hidden] { display: flex; visibility: hidden; }
   .navbar-title {
-    flex: 1 1 auto; min-width: 0; text-align: center; padding-right: 38px;
+    flex: 1 1 auto; min-width: 0; text-align: center; padding-left: 44px;
     font-size: 1rem; font-weight: 700; letter-spacing: -0.01em;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .navbar-back:not([hidden]) + .navbar-title { padding-right: 38px; }
 
   /* ---- Kontextmenue (langes Druecken auf einer Kachel) ---- */
   .kontext { position: fixed; inset: 0; z-index: 700; display: none; }
@@ -1006,8 +1014,9 @@
   .mod-container.raus  { transform: translateX(0); transition: transform 0.34s var(--ease-ios); }
   .mod-container.raus.fort { transform: translateX(100%); }
   /* In einem Bereich steht der Zurück-Pfeil links neben dem Titel – eine Zeile statt zwei. */
-  .mod-container .app-header { justify-content: flex-start; gap: 10px; }
-  .mod-container .app-header .screen-back { flex: 0 0 auto; }
+  .mod-container .app-header { justify-content: space-between; gap: 10px; }
+  .mod-container .app-header .screen-back { flex: 0 0 auto; order: 3; margin-left: auto; }
+  .mod-container .app-header > span { order: 1; }
 
 
 
@@ -2805,11 +2814,11 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2609062300"></script>
-<script src="mod-reisen.js?v=2609062300"></script>
-<script src="mod-finanzen.js?v=2609062300"></script>
-<script src="mod-impfpass.js?v=2609062300"></script>
-<script src="mod-fotografie.js?v=2609062300"></script>
+<script src="data-laender.js?v=2609062500"></script>
+<script src="mod-reisen.js?v=2609062500"></script>
+<script src="mod-finanzen.js?v=2609062500"></script>
+<script src="mod-impfpass.js?v=2609062500"></script>
+<script src="mod-fotografie.js?v=2609062500"></script>
 
 <!-- ===== Start ===== -->
 <script>
