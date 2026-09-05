@@ -9,7 +9,7 @@
 <!-- Name unter dem Symbol auf dem Home-Bildschirm. iOS wertet dieses Tag aus,
      nicht short_name aus dem Manifest. -->
 <meta name="apple-mobile-web-app-title" content="Jörg">
-<link rel="manifest" href="manifest.json?v=2609063400">
+<link rel="manifest" href="manifest.json?v=2609063600">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg</title>
@@ -750,7 +750,7 @@
   .overlay { display: none; position: fixed; inset: 0; height: 100lvh; background: rgba(0,0,0,0.5); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); z-index: 500; align-items: flex-end; justify-content: center; padding: 0; }
   .overlay.open { display: flex; }
   #dialog-overlay { z-index: 600; }
-  .modal { background: rgba(30, 30, 34, 0.68); -webkit-backdrop-filter: blur(48px) saturate(190%); backdrop-filter: blur(48px) saturate(190%); border: 1px solid var(--stroke-hi); border-bottom: none; border-radius: 34px 34px 0 0; box-shadow: 0 1.5px 1px rgba(255,255,255,0.12) inset, 0 -20px 60px rgba(0,0,0,0.4); padding: 26px 22px calc(26px + env(safe-area-inset-bottom)); width: 100%; max-width: 720px; max-height: 92svh; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; animation: slideUp 0.45s var(--spring); }
+  .modal { background: rgba(30, 30, 34, 0.68); -webkit-backdrop-filter: blur(48px) saturate(190%); backdrop-filter: blur(48px) saturate(190%); border: 1px solid var(--stroke-hi); border-bottom: none; border-radius: 34px 34px 0 0; box-shadow: 0 1.5px 1px rgba(255,255,255,0.12) inset, 0 -20px 60px rgba(0,0,0,0.4); padding: 26px 22px calc(26px + env(safe-area-inset-bottom)); width: 100%; max-width: 720px; max-height: 92svh; overflow-y: auto; scroll-padding-bottom: 76px; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; animation: slideUp 0.45s var(--spring); }
   @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
   .grabber { width: 38px; height: 5px; border-radius: var(--r-pill); background: rgba(255,255,255,0.22); margin: -8px auto 18px; }
   .modal h2 { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 20px; }
@@ -2592,9 +2592,10 @@ function attachSheetSwipe(overlayId, closeFn){
       const weg = dy>120 ? 120 + (dy-120)*0.45 : dy;
       modal.style.transform='translateY('+weg+'px)'; }
     else if(dy<0){
-      /* Aus der halben Raste nach oben ziehen: ein kurzer Vorgriff, das Aufgehen
-         selbst uebernimmt beim Loslassen die Hoehenaenderung. */
-      if(halb){ cur=dy; modal.style.transform='translateY('+Math.max(dy*0.4,-40)+'px)'; }
+      /* Nach oben ziehen oeffnet die halbe Raste ganz - aber nur, wenn der Inhalt
+         schon oben steht. Ohne diese Bedingung fing die Geste jedes Scrollen im
+         Blatt ab und der untere Teil des Formulars war nicht erreichbar. */
+      if(halb && atTop){ cur=dy; modal.style.transform='translateY('+Math.max(dy*0.4,-40)+'px)'; }
       else { dragging=false; modal.style.transform=''; }
     } }, {passive:true});
   modal.addEventListener('touchend', ()=>{ if(!dragging) return; dragging=false;
@@ -2910,11 +2911,11 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2609063400"></script>
-<script src="mod-reisen.js?v=2609063400"></script>
-<script src="mod-finanzen.js?v=2609063400"></script>
-<script src="mod-impfpass.js?v=2609063400"></script>
-<script src="mod-fotografie.js?v=2609063400"></script>
+<script src="data-laender.js?v=2609063600"></script>
+<script src="mod-reisen.js?v=2609063600"></script>
+<script src="mod-finanzen.js?v=2609063600"></script>
+<script src="mod-impfpass.js?v=2609063600"></script>
+<script src="mod-fotografie.js?v=2609063600"></script>
 
 <!-- ===== Start ===== -->
 <script>
@@ -3069,8 +3070,18 @@ function renderDock(){
     `<button class="dock-btn" type="button" data-id="${e.id}" aria-label="${esc(e.name)}" onclick="dockTipp('${e.id}')">${DOCK_ICONS[e.id] || DOCK_ICONS.ersatz}</button>`
   ).join('');
 }
+/* Alles schliessen, was ueber der Grundebene liegt - Bildschirme, Blaetter und
+   die Einstellungen. Ohne das bliebe die oberste Ebene beim Bereichswechsel
+   stehen und der Wechsel liefe unsichtbar dahinter ab. */
+function ebenenAlleSchliessen(){
+  for(let i = 0; i < 8; i++){
+    if(!offeneEbenenListe().length) return;
+    if(!ebeneZurueck()) return;
+  }
+}
 function dockTipp(id){
   haptik();
+  ebenenAlleSchliessen();
   if(id === 'home'){
     if(activeModule) closeModule();
     else window.scrollTo({ top: 0, behavior: 'smooth' });
