@@ -12,17 +12,17 @@
 <meta name="apple-mobile-web-app-title" content="Jörg">
 <!-- Startbilder: ohne sie zeigt iOS beim Kaltstart eine leere Flaeche, bis das
      Skript gelaufen ist. Je Geraet greift genau eine der Zeilen. -->
-<link rel="apple-touch-startup-image" href="splash/1320x2868.png?v=2609051200" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1290x2796.png?v=2609051200" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1284x2778.png?v=2609051200" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1206x2622.png?v=2609051200" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1179x2556.png?v=2609051200" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1170x2532.png?v=2609051200" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1242x2688.png?v=2609051200" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1125x2436.png?v=2609051200" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/828x1792.png?v=2609051200" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/750x1334.png?v=2609051200" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-<link rel="manifest" href="manifest.json?v=2609051200">
+<link rel="apple-touch-startup-image" href="splash/1320x2868.png?v=2609051730" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1290x2796.png?v=2609051730" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1284x2778.png?v=2609051730" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1206x2622.png?v=2609051730" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1179x2556.png?v=2609051730" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1170x2532.png?v=2609051730" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1242x2688.png?v=2609051730" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1125x2436.png?v=2609051730" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/828x1792.png?v=2609051730" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/750x1334.png?v=2609051730" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+<link rel="manifest" href="manifest.json?v=2609051730">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -100,12 +100,14 @@
      Titel darunter ueber die volle Breite. Beim Scrollen uebernimmt die schwebende
      Leiste (#navbar) den Titel in klein - deshalb darf er hier gross sein, ohne
      dass die Orientierung verloren geht. */
-  .app-header { font-weight: 800; letter-spacing: -0.03em; margin: 14px 2px 30px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 6px 12px; }
-  .app-header > span { grid-column: 1 / -1; grid-row: 2; font-size: 2.1rem; line-height: 1.12; }
-  .gear-btn { grid-column: 3; grid-row: 1; justify-self: end; }
+  /* Eine Zeile: Knopf, Titel, Knopf. Der Titel bekommt so viel Groesse, wie neben
+     den Knoepfen bleibt - passt er nicht, bricht er um, statt abgeschnitten zu
+     werden. Beim Scrollen uebernimmt die schwebende Leiste (#navbar) den Titel. */
+  .app-header { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.14; margin: 18px 2px 30px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .app-header > span { flex: 1 1 auto; min-width: 0; overflow-wrap: break-word; }
   /* Zahnrad als freigestellte Glaslinse: kein Vollkoerper, nur Brechung und Lichtkante */
   .gear-btn {
-    flex-shrink: 0; width: 38px; height: 38px; border-radius: var(--r-pill);
+    flex-shrink: 0; width: 34px; height: 34px; border-radius: var(--r-pill);
     border: none; background: transparent; color: rgba(245,245,247,0.82);
     font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
     -webkit-backdrop-filter: blur(12px) saturate(200%) brightness(1.35);
@@ -119,7 +121,7 @@
     transition: transform 0.4s var(--spring), color 0.2s, box-shadow 0.2s;
   }
   .gear-btn:active { transform: rotate(90deg) scale(0.94); color: var(--accent); }
-  .gear-btn svg { width: 18px; height: 18px; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35)); }
+  .gear-btn svg { width: 16px; height: 16px; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35)); }
 
   .glass {
     background: var(--glass);
@@ -583,14 +585,11 @@
   .back-scrim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 398; }
   .back-under { will-change: transform; }
   .back-under.gliding { transition: transform var(--back-dur, 0.32s) var(--ease-ios); }
-  .screen-topbar { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 6px 12px; margin-bottom: 22px; }
-  .screen-topbar > .screen-back { grid-column: 1; grid-row: 1; justify-self: start; }
-  .screen-topbar > .screen-title { grid-column: 1 / -1; grid-row: 2; }
-  .screen-topbar > :not(.screen-back):not(.screen-title) { grid-column: 3; grid-row: 1; justify-self: end; }
-  .screen-back { width: 40px; height: 40px; border-radius: var(--r-pill); border: 1px solid var(--stroke); background: var(--glass); color: var(--text); font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.3s var(--spring); }
+  .screen-topbar { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+  .screen-back { width: 34px; height: 34px; border-radius: var(--r-pill); border: 1px solid var(--stroke); background: var(--glass); color: var(--text); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.3s var(--spring); }
   .screen-back:active { transform: scale(0.9); }
   .screen-title { flex: 1; min-width: 0; }
-  .screen-title h2 { font-size: 1.9rem; line-height: 1.14; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .screen-title h2 { font-size: 1.7rem; line-height: 1.14; font-weight: 800; letter-spacing: -0.02em; overflow-wrap: break-word; }
   .screen-title p { color: var(--muted); font-size: 0.84rem; margin-top: 3px; }
   /* Der Kopf soll deutlich vom ersten Abschnitt abgesetzt sein. */
   #core-settings-screen .screen-topbar { margin-bottom: 34px; }
@@ -957,8 +956,8 @@
   }
   .mod-container[hidden] { display: none !important; }
   /* In einem Bereich steht der Zurück-Pfeil links neben dem Titel – eine Zeile statt zwei. */
-  .mod-container .app-header .screen-back { grid-column: 1; grid-row: 1; justify-self: start; }
-  .mod-container .app-header > span { font-size: 1.95rem; }
+  .mod-container .app-header { justify-content: flex-start; gap: 10px; }
+  .mod-container .app-header .screen-back { flex: 0 0 auto; }
 
 
 
@@ -1994,6 +1993,7 @@ function renderLauncher(){
 function openModule(id){
   const m = moduleById(id);
   if(!m) return;
+  if(activeModule && activeModule !== id && typeof ebenenAufraeumen === 'function') ebenenAufraeumen(activeModule);
   activeModule = id;
   $('launcher').hidden = true;
   MODULES.forEach(x => { const c = $('mod-' + x.id); if(c) c.hidden = (x.id !== id); });
@@ -2001,6 +2001,7 @@ function openModule(id){
   if (m.onOpen) { try { m.onOpen(); } catch(e){} }
 }
 function closeModule(){
+  if(typeof ebenenAufraeumen === 'function') ebenenAufraeumen(activeModule);
   activeModule = null;
   MODULES.forEach(x => { const c = $('mod-' + x.id); if(c) c.hidden = true; });
   $('launcher').hidden = false;
@@ -2714,11 +2715,11 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2609051200"></script>
-<script src="mod-reisen.js?v=2609051200"></script>
-<script src="mod-finanzen.js?v=2609051200"></script>
-<script src="mod-impfpass.js?v=2609051200"></script>
-<script src="mod-fotografie.js?v=2609051200"></script>
+<script src="data-laender.js?v=2609051730"></script>
+<script src="mod-reisen.js?v=2609051730"></script>
+<script src="mod-finanzen.js?v=2609051730"></script>
+<script src="mod-impfpass.js?v=2609051730"></script>
+<script src="mod-fotografie.js?v=2609051730"></script>
 
 <!-- ===== Start ===== -->
 <script>
@@ -2760,14 +2761,45 @@ function haptik(stark){
 
 /* ---------------- Ebenen ----------------
    Was gerade oben liegt, brauchen Leiste, Titelzeile und Verlauf gleichermassen. */
-function offeneBlaetterZahl(){ return document.querySelectorAll('.overlay.open').length; }
-function offeneEbenen(){
-  return document.querySelectorAll('.screen.open, .detail-sheet.open, .overlay.open').length
-       + (activeModule ? 1 : 0);
+/* Ein Blatt oder Bildschirm behaelt seine Klasse "open" auch dann, wenn sein
+   Bereich ausgeblendet wurde. Sichtbar ist es dann nicht mehr - mitgezaehlt werden
+   darf es deshalb auch nicht, sonst haelt sich die untere Leiste dauerhaft fuer
+   verdeckt und die Ebenenzahl fuer den Verlauf stimmt nicht mehr. */
+function ebeneSichtbar(el){
+  const c = el.closest('.mod-container');
+  return !(c && c.hidden);
+}
+function offeneEbenenListe(){
+  return [...document.querySelectorAll('.screen.open, .detail-sheet.open, .overlay.open')]
+    .filter(ebeneSichtbar);
+}
+function offeneEbenen(){ return offeneEbenenListe().length + (activeModule ? 1 : 0); }
+function obersterSichtbarerScreen(){
+  const sc = topOpenScreen();
+  return (sc && ebeneSichtbar(sc)) ? sc : null;
+}
+/* Beim Verlassen eines Bereichs alles schliessen, was dort noch offen steht -
+   sonst findet man ihn beim naechsten Aufruf mitten in einem Detailblatt vor. */
+function ebenenAufraeumen(id){
+  const c = id ? $('mod-' + id) : null;
+  if(!c) return;
+  c.querySelectorAll('.overlay.open').forEach(o => {
+    const b = o.querySelector('.modal-actions .btn-secondary');
+    if(b) b.click(); else o.classList.remove('open');
+  });
+  c.querySelectorAll('.screen.open, .detail-sheet.open').forEach(sc => {
+    const b = sc.querySelector('.screen-back, .settings-back');
+    if(b) b.click();
+    else { sc.classList.remove('settled'); sc.classList.remove('open'); }
+  });
+  for(let i = _offeneBlaetter.length - 1; i >= 0; i--){
+    const el = $(_offeneBlaetter[i].id);
+    if(el && c.contains(el)) _offeneBlaetter.splice(i, 1);
+  }
 }
 /* Die oberste Ebene mit eigenem Titel - Bildschirm, sonst Bereich, sonst Startseite. */
 function obersteEbene(){
-  const sc = topOpenScreen();
+  const sc = obersterSichtbarerScreen();
   if(sc) return { el: sc, art: 'screen' };
   if(activeModule){
     const el = $('mod-' + activeModule);
@@ -2782,14 +2814,14 @@ function ebeneZurueck(){
   if(dlg && dlg.classList.contains('open')){ dialogResolve(false); return true; }
   /* Blaetter, die ein Bereich selbst geoeffnet hat, ohne sie anzumelden: ueber ihre
      eigene Abbrechen-Schaltflaeche schliessen, damit deren Aufraeumen mitlaeuft. */
-  const ovs = document.querySelectorAll('.overlay.open');
+  const ovs = offeneEbenenListe().filter(e => e.classList.contains('overlay'));
   if(ovs.length){
     const ov = ovs[ovs.length - 1];
     const b = ov.querySelector('.modal-actions .btn-secondary');
     if(b) b.click(); else ov.classList.remove('open');
     return true;
   }
-  const sc = topOpenScreen();
+  const sc = obersterSichtbarerScreen();
   if(sc){ const b = sc.querySelector('.screen-back, .settings-back'); if(b){ b.click(); return true; } }
   if(activeModule){ closeModule(); return true; }
   return false;
@@ -2831,7 +2863,7 @@ function dockTipp(id){
 let _tastaturOffen = false;
 function dockSichtbar(){
   if(_tastaturOffen) return false;
-  if(document.querySelector('.screen.open, .detail-sheet.open, .overlay.open')) return false;
+  if(offeneEbenenListe().length) return false;
   if(document.querySelector('.kontext.an')) return false;
   const ls = $('lock-screen');
   if(ls && ls.style.display !== 'none') return false;
@@ -2850,7 +2882,8 @@ function aktualisiereNavbar(){
   const titelEl = art === 'screen'
     ? el.querySelector('.screen-title h2')
     : el.querySelector('.app-header > span');
-  const zeigen = oben > NAV_SCHWELLE && !!titelEl && !document.querySelector('.overlay.open, .kontext.an');
+  const blattOffen = offeneEbenenListe().some(e => e.classList.contains('overlay'));
+  const zeigen = oben > NAV_SCHWELLE && !!titelEl && !blattOffen && !document.querySelector('.kontext.an');
   bar.classList.toggle('an', zeigen);
   if(zeigen){
     $('navbar-title').textContent = titelEl.textContent.trim();
@@ -2953,18 +2986,24 @@ window.addEventListener('popstate', () => {
 /* ---------------- Tastatur ----------------
    Das aktive Feld wird sichtbar gehalten, sobald die Tastatur aufgeht. */
 function initTastatur(){
-  const merken = (offen) => { _tastaturOffen = offen; iosAktualisieren(); };
+  /* Nicht am Fokus festmachen: ein angetipptes Auswahlfeld behaelt ihn oft, auch
+     nachdem sein Auswahlrad wieder zu ist - die Leiste blieb dadurch verschwunden.
+     Die Hoehe des sichtbaren Fensters sagt dagegen sicher, ob die Tastatur steht. */
+  const vv = window.visualViewport;
+  if(vv){
+    let voll = vv.height;
+    const pruefen = () => {
+      voll = Math.max(voll, vv.height);
+      const offen = (voll - vv.height) > 150;
+      if(offen !== _tastaturOffen){ _tastaturOffen = offen; iosAktualisieren(); }
+    };
+    vv.addEventListener('resize', pruefen);
+    window.addEventListener('orientationchange', () => { voll = 0; setTimeout(pruefen, 350); });
+  }
+  // Das angetippte Feld sichtbar halten - unabhaengig von der Leiste.
   document.addEventListener('focusin', e => {
-    if(e.target.matches('input, textarea, select')){
-      merken(true);
-      setTimeout(() => { try { e.target.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch(err){} }, 320);
-    }
-  });
-  document.addEventListener('focusout', e => {
-    if(e.target.matches('input, textarea, select')) setTimeout(() => {
-      const a = document.activeElement;
-      if(!a || !a.matches('input, textarea, select')) merken(false);
-    }, 120);
+    if(!e.target.matches('input, textarea')) return;
+    setTimeout(() => { try { e.target.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch(err){} }, 320);
   });
 }
 
