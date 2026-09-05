@@ -9,19 +9,7 @@
 <!-- Name unter dem Symbol auf dem Home-Bildschirm. iOS wertet dieses Tag aus,
      nicht short_name aus dem Manifest. -->
 <meta name="apple-mobile-web-app-title" content="Jörg">
-<!-- Startbilder: ohne sie zeigt iOS beim Kaltstart eine leere Flaeche, bis das
-     Skript gelaufen ist. Je Geraet greift genau eine der Zeilen. -->
-<link rel="apple-touch-startup-image" href="splash/1320x2868.png?v=2609061900" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1290x2796.png?v=2609061900" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1284x2778.png?v=2609061900" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1206x2622.png?v=2609061900" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1179x2556.png?v=2609061900" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1170x2532.png?v=2609061900" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1242x2688.png?v=2609061900" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1125x2436.png?v=2609061900" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/828x1792.png?v=2609061900" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/750x1334.png?v=2609061900" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-<link rel="manifest" href="manifest.json?v=2609061900">
+<link rel="manifest" href="manifest.json?v=2609062300">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -592,7 +580,33 @@
   .back-under { will-change: transform; }
   .back-under.gliding { transition: transform var(--back-dur, 0.32s) var(--ease-ios); }
   .screen-topbar { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
-  .screen-back { width: 34px; height: 34px; border-radius: var(--r-pill); border: 1px solid var(--stroke); background: var(--glass); color: var(--text); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.3s var(--spring); }
+  /* Gleiche Glasoptik wie das Zahnrad: kein Rahmen, sondern Innenlichter und ein
+     weicher Schatten. Der Pfeil wird als SVG gezeichnet statt als Zeichen ‹ - das
+     Schriftzeichen hat ungleiche Seitenraender und sitzt dadurch sichtbar links
+     der Mitte. Die Beschriftung im Knopf bleibt fuer Vorlesehilfen erhalten,
+     wird aber nicht mehr dargestellt. */
+  .screen-back {
+    flex-shrink: 0; width: 34px; height: 34px; border-radius: var(--r-pill);
+    border: none; background: transparent; color: rgba(245,245,247,0.82);
+    font-size: 0; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    -webkit-backdrop-filter: blur(12px) saturate(200%) brightness(1.35);
+    backdrop-filter: blur(12px) saturate(200%) brightness(1.35);
+    box-shadow:
+      inset 0 1px 0.5px rgba(255,255,255,0.42),
+      inset 0 -1px 0.5px rgba(255,255,255,0.10),
+      inset 1px 0 0.5px rgba(255,255,255,0.14),
+      inset -1px 0 0.5px rgba(255,255,255,0.14),
+      0 4px 14px rgba(0,0,0,0.28);
+    transition: transform 0.4s var(--spring), color 0.2s, box-shadow 0.2s;
+  }
+  .screen-back::before {
+    content: ""; width: 15px; height: 15px; display: block;
+    /* Der Pfad ist um 0.6 nach rechts gesetzt: die Spitze des Winkels liegt sonst
+       optisch links, weil rechts zwei Enden stehen und links nur eines. */
+    background: currentColor;
+    -webkit-mask: center / 15px 15px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15.6 4.5 8.4 12l7.2 7.5'/%3E%3C/svg%3E");
+    mask: center / 15px 15px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15.6 4.5 8.4 12l7.2 7.5'/%3E%3C/svg%3E");
+  }
   .screen-back:active { transform: scale(0.9); }
   .screen-title { flex: 1; min-width: 0; }
   .screen-title h2 { font-size: 1.7rem; line-height: 1.14; font-weight: 800; letter-spacing: -0.02em; overflow-wrap: break-word; }
@@ -841,10 +855,19 @@
     width: min(430px, calc(100vw - 28px));
     display: flex; align-items: center; gap: 2px; padding: 6px;
     border-radius: var(--r-pill);
-    background: rgba(30, 30, 34, 0.62);
-    -webkit-backdrop-filter: blur(44px) saturate(200%); backdrop-filter: blur(44px) saturate(200%);
-    border: 1px solid var(--stroke);
-    box-shadow: 0 1.5px 1px rgba(255,255,255,0.14) inset, 0 12px 40px rgba(0,0,0,0.55);
+    /* Liquid Glass: fast keine Eigenfarbe, dafuer starker Weichzeichner mit
+       Saettigung und Aufhellung - das Material lebt vom Untergrund. Die Kante
+       entsteht aus vier Innenlichtern statt aus einem Rahmen, wie beim Zahnrad. */
+    background: rgba(255, 255, 255, 0.045);
+    -webkit-backdrop-filter: blur(26px) saturate(210%) brightness(1.28);
+    backdrop-filter: blur(26px) saturate(210%) brightness(1.28);
+    border: none;
+    box-shadow:
+      inset 0 1px 0.5px rgba(255,255,255,0.42),
+      inset 0 -1px 0.5px rgba(255,255,255,0.10),
+      inset 1px 0 0.5px rgba(255,255,255,0.16),
+      inset -1px 0 0.5px rgba(255,255,255,0.16),
+      0 8px 28px rgba(0,0,0,0.32);
     transform: translate(-50%, 0);
     transition: transform 0.42s var(--ease-ios), opacity 0.28s var(--ease-ios);
   }
@@ -853,13 +876,14 @@
   .dock.weg { transform: translate(-50%, calc(100% + 30px)); opacity: 0; pointer-events: none; }
   .dock-btn {
     flex: 1 1 0; min-width: 0; height: 46px; border: none; background: transparent;
-    border-radius: var(--r-pill); color: rgba(235,235,245,0.5); cursor: pointer;
+    border-radius: var(--r-pill); color: rgba(235,235,245,0.56); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     transition: color 0.2s, background 0.25s, transform 0.3s var(--spring);
   }
-  .dock-btn svg { width: 23px; height: 23px; display: block; }
+  .dock-btn svg { width: 25px; height: 25px; display: block; }
   .dock-btn:active { transform: scale(0.86); }
-  .dock-btn.an { color: var(--text); background: rgba(255,255,255,0.10); }
+  .dock-btn.an { color: var(--text); background: rgba(255,255,255,0.14);
+    box-shadow: inset 0 1px 0.5px rgba(255,255,255,0.28); }
 
   /* ---- Schwebende Titelzeile ---- */
   /* Der grosse Titel scrollt weg, diese Leiste faengt ihn auf. Ein einziges
@@ -2781,11 +2805,11 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2609061900"></script>
-<script src="mod-reisen.js?v=2609061900"></script>
-<script src="mod-finanzen.js?v=2609061900"></script>
-<script src="mod-impfpass.js?v=2609061900"></script>
-<script src="mod-fotografie.js?v=2609061900"></script>
+<script src="data-laender.js?v=2609062300"></script>
+<script src="mod-reisen.js?v=2609062300"></script>
+<script src="mod-finanzen.js?v=2609062300"></script>
+<script src="mod-impfpass.js?v=2609062300"></script>
+<script src="mod-fotografie.js?v=2609062300"></script>
 
 <!-- ===== Start ===== -->
 <script>
@@ -2894,14 +2918,44 @@ function ebeneZurueck(){
 }
 
 /* ---------------- Untere Leiste ---------------- */
-const DOCK_ICONS = {
-  home:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/></svg>',
-  reisen:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3Z"/></svg>',
-  finanzen:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V10"/><path d="M10 19V5"/><path d="M16 19v-6"/><path d="M21 19H3"/></svg>',
-  impfpass:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v6c0 4.2 2.9 7.6 7 9 4.1-1.4 7-4.8 7-9V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg>',
-  fotografie:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13.5" r="3.4"/></svg>',
-  ersatz:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/></svg>'
-};
+/* Die Zeichnungen folgen den Kachel-Motiven: dieselbe Bildsprache, dieselbe
+   duenne Strichstaerke (die Kacheln zeichnen mit rund 2 auf 110 Einheiten).
+   Fotografie und Impfpass sind massstaeblich verkleinerte Fassungen von
+   fgTileArt() und impTileArt(). */
+const DOCK_ICONS = (() => {
+  const virus = (() => {
+    const cx = 8.6, cy = 15, R = 4;
+    let st = '';
+    for (let i = 0; i < 10; i++){
+      const a = (i / 10) * Math.PI * 2;
+      const x1 = cx + Math.cos(a) * R,         y1 = cy + Math.sin(a) * R;
+      const x2 = cx + Math.cos(a) * (R + 1.7), y2 = cy + Math.sin(a) * (R + 1.7);
+      st += `<line x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}"/>`
+          + `<circle cx="${x2.toFixed(2)}" cy="${y2.toFixed(2)}" r="0.55"/>`;
+    }
+    return `<circle cx="${cx}" cy="${cy}" r="${R}"/>${st}`
+         + `<circle cx="${cx - 1.5}" cy="${cy - 1.5}" r="0.8"/>`
+         + `<circle cx="${cx + 1.6}" cy="${cy + 1}" r="1"/>`;
+  })();
+  /* Spritze auf der 45-Grad-Achse, wie in der Kachel: Nadel, Zylinder, Kolben. */
+  const spritze = (() => {
+    const s = Math.SQRT1_2, ax = 13.4, ay = 10.6, b = 1.5;
+    const P = (l, q) => [(ax + l*s + q*s).toFixed(2), (ay - l*s + q*s).toFixed(2)];
+    const seg = (l1,q1,l2,q2) => { const a=P(l1,q1), c=P(l2,q2);
+      return `<line x1="${a[0]}" y1="${a[1]}" x2="${c[0]}" y2="${c[1]}"/>`; };
+    const zyl = [P(3,-b), P(8,-b), P(8,b), P(3,b)].map(x=>x.join(',')).join(' ');
+    return seg(0,0,3,0) + `<polygon points="${zyl}"/>` + seg(8,0,10.4,0) + seg(10.4,-1.8,10.4,1.8);
+  })();
+  return {
+    home:      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 10.6 12 4l8.6 6.6"/><path d="M5.8 9.8V20h12.4V9.8"/></svg>',
+    reisen:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.4"/><path d="M3.6 12h16.8"/><path d="M12 3.6c2.3 2.5 3.5 5.3 3.5 8.4s-1.2 5.9-3.5 8.4c-2.3-2.5-3.5-5.3-3.5-8.4S9.7 6.1 12 3.6Z"/></svg>',
+    finanzen:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.4,15.4 6,10.8 9.2,12.4 12.6,6.6 16,9.4 21.6,4.8"/><path d="M2.4 19.6h19.2"/></svg>',
+    impfpass:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">' + virus + spritze + '</svg>',
+    fotografie:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"><rect x="2.8" y="7" width="18.4" height="13.2" rx="3.2"/><rect x="8.4" y="4.4" width="6" height="3.4" rx="1.1"/><circle cx="12" cy="13.6" r="4.7"/><circle cx="12" cy="13.6" r="2.2"/><circle cx="17.9" cy="9.9" r="0.75" fill="currentColor" stroke="none"/></svg>',
+    ersatz:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/></svg>'
+  };
+})();
+
 function renderDock(){
   const el = $('dock'); if(!el) return;
   const eintraege = [{ id:'home', name:'Start' }]
