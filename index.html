@@ -9,7 +9,7 @@
 <!-- Name unter dem Symbol auf dem Home-Bildschirm. iOS wertet dieses Tag aus,
      nicht short_name aus dem Manifest. -->
 <meta name="apple-mobile-web-app-title" content="Jörg">
-<link rel="manifest" href="manifest.json?v=2609062700">
+<link rel="manifest" href="manifest.json?v=2609062800">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg</title>
@@ -97,8 +97,34 @@
   /* Eine Zeile: Knopf, Titel, Knopf. Der Titel bekommt so viel Groesse, wie neben
      den Knoepfen bleibt - passt er nicht, bricht er um, statt abgeschnitten zu
      werden. Beim Scrollen uebernimmt die schwebende Leiste (#navbar) den Titel. */
-  .app-header { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.14; margin: 18px 2px 30px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-  .app-header > span { flex: 1 1 auto; min-width: 0; overflow-wrap: break-word; }
+  /* ===== Kopfzeilen: eine Quelle fuer alle Bereiche und Bildschirme =====
+     Anordnung, Raender und Schriftgroesse stehen ausschliesslich hier. Die
+     Module bringen nur noch ihr Markup mit - .app-header, .screen-topbar und
+     .settings-topbar sind drei Namen fuer dieselbe Zeile. */
+  .app-header,
+  .screen-topbar,
+  #mod-finanzen .settings-topbar {
+    display: flex; align-items: center; gap: 10px; margin: 18px 2px 30px;
+  }
+  /* Titel links, alles andere rechts - unabhaengig von der Reihenfolge im HTML. */
+  .app-header > *,
+  .screen-topbar > *,
+  #mod-finanzen .settings-topbar > * { order: 2; }
+  .app-header > span,
+  .screen-topbar > .screen-title,
+  #mod-finanzen .settings-topbar > h2 {
+    order: 1; flex: 1 1 auto; min-width: 0;
+  }
+  .app-header > span,
+  .screen-topbar > .screen-title > h2,
+  #mod-finanzen .settings-topbar > h2 {
+    font-size: 1.7rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.14;
+    overflow-wrap: break-word;
+  }
+  .app-header > .screen-back,
+  .screen-topbar > .screen-back,
+  #mod-finanzen .settings-back,
+  .gear-btn { order: 3; margin-left: auto; }
   /* Zahnrad als freigestellte Glaslinse: kein Vollkoerper, nur Brechung und Lichtkante */
   .gear-btn {
     flex-shrink: 0; width: 34px; height: 34px; border-radius: var(--r-pill);
@@ -151,7 +177,7 @@
   .picker-head { flex: 0 0 auto; }
   .picker-search { width: 100%; padding: 12px 14px; border-radius: var(--r-control); border: 1px solid var(--stroke); background: rgba(255,255,255,0.05); color: var(--text); font: inherit; font-size: 1rem; outline: none; -webkit-appearance: none; margin-bottom: 8px; }
   .picker-search:focus { border-color: var(--been); background: rgba(255,159,10,0.08); }
-  .picker-list { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(24px + env(safe-area-inset-bottom)); overscroll-behavior: contain; }
+  .picker-list { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(var(--dock-h) + env(safe-area-inset-bottom)); overscroll-behavior: contain; }
   .pick-row { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 13px 4px; border: none; background: transparent; color: var(--text); font: inherit; font-size: 0.95rem; text-align: left; cursor: pointer; }
   .pick-row + .pick-row { border-top: 1px solid var(--stroke); }
   .pick-row:active { background: rgba(255,255,255,0.05); }
@@ -537,7 +563,7 @@
   .entry-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; min-width: 0; }
 
   /* Vollbild-Screens */
-  .screen { position: fixed; inset: 0; height: 100lvh; z-index: 400; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 18px calc(14px + env(safe-area-inset-bottom)); visibility: hidden; background: var(--bg); background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2) 0%, #050509 52%, var(--bg-fuss) 100%); }
+  .screen { position: fixed; inset: 0; height: 100lvh; z-index: 400; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 18px calc(var(--dock-h) + env(safe-area-inset-bottom)); visibility: hidden; background: var(--bg); background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2) 0%, #050509 52%, var(--bg-fuss) 100%); }
   .screen.open { transform: translateX(0); visibility: visible; transition: transform 0.4s var(--ease-ios), visibility 0s; }
   /* Nach der Öffnen-Animation die Transform entfernen – ein dauerhaftes transform auf einem
      position:fixed-Scrollcontainer bringt iOS-Safari beim Momentum-Scrollen zum Haken. */
@@ -585,13 +611,6 @@
   .back-scrim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 398; }
   .back-under { will-change: transform; }
   .back-under.gliding { transition: transform var(--back-dur, 0.32s) var(--ease-ios); }
-  /* Titel steht links am Rand, der Knopf rechts - wie das Zahnrad auf der
-     Startseite. Die Reihenfolge im HTML bleibt unveraendert, nur die Anzeige
-     dreht sich; dadurch mussten die Moduldateien nicht angefasst werden. */
-  .screen-topbar { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
-  .screen-topbar > * { order: 2; }
-  .screen-topbar > .screen-title { order: 1; }
-  .screen-topbar > .screen-back { order: 3; margin-left: auto; }
   /* Gleiche Glasoptik wie das Zahnrad: kein Rahmen, sondern Innenlichter und ein
      weicher Schatten. Der Pfeil wird als SVG gezeichnet statt als Zeichen ‹ - das
      Schriftzeichen hat ungleiche Seitenraender und sitzt dadurch sichtbar links
@@ -621,10 +640,8 @@
   }
   .screen-back:active, #mod-finanzen .settings-back:active { transform: scale(0.9); }
   .screen-title { flex: 1; min-width: 0; }
-  .screen-title h2 { font-size: 1.7rem; line-height: 1.14; font-weight: 800; letter-spacing: -0.02em; overflow-wrap: break-word; }
   .screen-title p { color: var(--muted); font-size: 0.84rem; margin-top: 3px; }
   /* Der Kopf soll deutlich vom ersten Abschnitt abgesetzt sein. */
-  #core-settings-screen .screen-topbar { margin-bottom: 34px; }
   #core-settings-screen .section-label:first-of-type { margin-top: 0; }
   .icon-btn { width: 40px; height: 40px; border-radius: var(--r-pill); border: 1px solid var(--stroke); background: var(--glass); color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.95rem; transition: transform 0.3s var(--spring), color 0.2s; }
   .icon-btn:active { transform: scale(0.9); }
@@ -1020,9 +1037,6 @@
   .mod-container.raus  { transform: translateX(0); transition: transform 0.34s var(--ease-ios); }
   .mod-container.raus.fort { transform: translateX(100%); }
   /* In einem Bereich steht der Zurück-Pfeil links neben dem Titel – eine Zeile statt zwei. */
-  .mod-container .app-header { justify-content: space-between; gap: 10px; }
-  .mod-container .app-header .screen-back { flex: 0 0 auto; order: 3; margin-left: auto; }
-  .mod-container .app-header > span { order: 1; }
 
 
 
@@ -1063,10 +1077,7 @@
    jeder Aenderung der uebrigen Koepfe vorbei - anderer Knopf, anderes Material,
    Knopf links statt rechts, kleinerer Titel. Sie erbt jetzt vollstaendig von
    .screen-topbar und .screen-back; hier steht nur noch die Zuordnung. */
-#mod-finanzen .settings-topbar{ display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
-#mod-finanzen .settings-topbar > *{ order: 2; }
-#mod-finanzen .settings-topbar > h2{ order: 1; flex: 1; min-width: 0; font-size: 1.7rem; line-height: 1.14; font-weight: 800; letter-spacing: -0.02em; overflow-wrap: break-word; }
-#mod-finanzen .settings-back{ order: 3; margin-left: auto; }
+/* Kopfzeile und Zurueck-Knopf kommen aus der gemeinsamen Definition im Kern. */
 #mod-finanzen .income-left, #mod-finanzen .income-right{ display: flex; flex-direction: column; gap: 3px; }
 #mod-finanzen .income-right{ align-items: flex-end; }
 #mod-finanzen .income-label{ font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-2); }
@@ -1091,7 +1102,7 @@
 /* Hero: Gesamtvermögen */
   #mod-finanzen .hero{ text-align: center; padding: 32px 0 34px; cursor: pointer; }
 /* Detail-Sheet (öffnet über Hero/Bento) */
-  #mod-finanzen .detail-sheet{ position: fixed; inset: 0; height: 100lvh; z-index: 380; overscroll-behavior: contain; background: var(--bg); background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2) 0%, #050509 52%, var(--bg-fuss) 100%); overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 16px calc(14px + env(safe-area-inset-bottom)); visibility: hidden; }
+  #mod-finanzen .detail-sheet{ position: fixed; inset: 0; height: 100lvh; z-index: 380; overscroll-behavior: contain; background: var(--bg); background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2) 0%, #050509 52%, var(--bg-fuss) 100%); overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 16px calc(var(--dock-h) + env(safe-area-inset-bottom)); visibility: hidden; }
 #mod-finanzen .detail-sheet.open{ transform: translateX(0); visibility: visible; transition: transform 0.4s var(--ease-ios), visibility 0s; }
 #mod-finanzen .detail-sheet.settled{ transform: none; }
 #mod-finanzen .detail-panel{ display: none; }
@@ -2871,11 +2882,11 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2609062700"></script>
-<script src="mod-reisen.js?v=2609062700"></script>
-<script src="mod-finanzen.js?v=2609062700"></script>
-<script src="mod-impfpass.js?v=2609062700"></script>
-<script src="mod-fotografie.js?v=2609062700"></script>
+<script src="data-laender.js?v=2609062800"></script>
+<script src="mod-reisen.js?v=2609062800"></script>
+<script src="mod-finanzen.js?v=2609062800"></script>
+<script src="mod-impfpass.js?v=2609062800"></script>
+<script src="mod-fotografie.js?v=2609062800"></script>
 
 <!-- ===== Start ===== -->
 <script>
@@ -3047,9 +3058,12 @@ function dockTipp(id){
 /* Die Leiste verschwindet, sobald etwas ueber der Grundebene liegt: ein Bildschirm,
    ein Blatt, das Kontextmenue, die Sperre oder die Tastatur. */
 let _tastaturOffen = false;
+/* Wie in iOS: die Leiste bleibt stehen, wenn ein Bildschirm aufgeschoben wird -
+   er gehoert weiterhin zum selben Bereich. Nur modale Blaetter, das Kontextmenue,
+   die Sperre und die Tastatur legen sich darueber und blenden sie aus. */
 function dockSichtbar(){
   if(_tastaturOffen) return false;
-  if(offeneEbenenListe().length) return false;
+  if(offeneEbenenListe().some(e => e.classList.contains('overlay'))) return false;
   if(document.querySelector('.kontext.an')) return false;
   const ls = $('lock-screen');
   if(ls && ls.style.display !== 'none') return false;
