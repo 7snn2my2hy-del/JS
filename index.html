@@ -6,23 +6,22 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#000000">
 <!-- Name unter dem Symbol auf dem Home-Bildschirm. iOS wertet dieses Tag aus,
      nicht short_name aus dem Manifest. -->
 <meta name="apple-mobile-web-app-title" content="Jörg">
 <!-- Startbilder: ohne sie zeigt iOS beim Kaltstart eine leere Flaeche, bis das
      Skript gelaufen ist. Je Geraet greift genau eine der Zeilen. -->
-<link rel="apple-touch-startup-image" href="splash/1320x2868.png?v=2609061400" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1290x2796.png?v=2609061400" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1284x2778.png?v=2609061400" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1206x2622.png?v=2609061400" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1179x2556.png?v=2609061400" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1170x2532.png?v=2609061400" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1242x2688.png?v=2609061400" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/1125x2436.png?v=2609061400" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/828x1792.png?v=2609061400" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-<link rel="apple-touch-startup-image" href="splash/750x1334.png?v=2609061400" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
-<link rel="manifest" href="manifest.json?v=2609061400">
+<link rel="apple-touch-startup-image" href="splash/1320x2868.png?v=2609061615" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1290x2796.png?v=2609061615" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1284x2778.png?v=2609061615" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1206x2622.png?v=2609061615" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1179x2556.png?v=2609061615" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1170x2532.png?v=2609061615" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1242x2688.png?v=2609061615" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/1125x2436.png?v=2609061615" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/828x1792.png?v=2609061615" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+<link rel="apple-touch-startup-image" href="splash/750x1334.png?v=2609061615" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+<link rel="manifest" href="manifest.json?v=2609061615">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg Scheiderer</title>
@@ -862,17 +861,6 @@
   .dock-btn:active { transform: scale(0.86); }
   .dock-btn.an { color: var(--text); background: rgba(255,255,255,0.10); }
 
-  /* Unter und hinter der Leiste laeuft der Hintergrund nach unten aus. Ohne ihn
-     endet der Inhalt an der Leistenkante hart und der Rest bleibt leere Flaeche. */
-  .dock-saum {
-    position: fixed; z-index: 470; left: 0; right: 0; bottom: 0;
-    height: calc(112px + env(safe-area-inset-bottom));
-    pointer-events: none;
-    background: linear-gradient(180deg, rgba(11,11,18,0) 0%, rgba(11,11,18,0.6) 38%, var(--bg-fuss) 78%);
-    transition: opacity 0.28s var(--ease-ios);
-  }
-  .dock-saum.weg { opacity: 0; }
-
   /* ---- Schwebende Titelzeile ---- */
   /* Der grosse Titel scrollt weg, diese Leiste faengt ihn auf. Ein einziges
      Element fuer alle Bereiche und Bildschirme: der Titel wird jeweils aus der
@@ -1464,6 +1452,7 @@
   </div>
 
   <p class="backup-hint" id="build-stamp" style="text-align:center;margin:22px 6px 0"></p>
+  <p class="backup-hint" id="mess-stamp" style="text-align:center;margin:6px 6px 0;font-variant-numeric:tabular-nums"></p>
 </div>
 
 <div class="overlay" id="pass-overlay">
@@ -1495,7 +1484,6 @@
   <span class="navbar-title" id="navbar-title"></span>
 </div>
 
-<div class="dock-saum" id="dock-saum" aria-hidden="true"></div>
 <nav class="dock" id="dock" aria-label="Bereiche"></nav>
 
 <div class="kontext" id="kontext" onclick="schliesseKontext()">
@@ -2793,11 +2781,11 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2609061400"></script>
-<script src="mod-reisen.js?v=2609061400"></script>
-<script src="mod-finanzen.js?v=2609061400"></script>
-<script src="mod-impfpass.js?v=2609061400"></script>
-<script src="mod-fotografie.js?v=2609061400"></script>
+<script src="data-laender.js?v=2609061615"></script>
+<script src="mod-reisen.js?v=2609061615"></script>
+<script src="mod-finanzen.js?v=2609061615"></script>
+<script src="mod-impfpass.js?v=2609061615"></script>
+<script src="mod-fotografie.js?v=2609061615"></script>
 
 <!-- ===== Start ===== -->
 <script>
@@ -3092,11 +3080,8 @@ function iosAktualisieren(){
   _iosWartet = true;
   requestAnimationFrame(() => {
     _iosWartet = false;
-    const sichtbar = dockSichtbar();
     const d = $('dock');
-    if(d) d.classList.toggle('weg', !sichtbar);
-    const saum = $('dock-saum');
-    if(saum) saum.classList.toggle('weg', !sichtbar);
+    if(d) d.classList.toggle('weg', !dockSichtbar());
     document.querySelectorAll('.dock-btn').forEach(b =>
       b.classList.toggle('an', b.dataset.id === (activeModule || 'home')));
     aktualisiereNavbar();
@@ -3155,6 +3140,24 @@ function initZustand(){
 }
 
 
+
+/* ---------------- Messzeile ----------------
+   Schirm gegen innen: sind beide gleich, laeuft der Inhalt unter Statusleiste und
+   Home-Indikator hindurch und nutzt das ganze Display. */
+function messungZeigen(){
+  const el = $('mess-stamp'); if(!el) return;
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;top:0;height:env(safe-area-inset-top);width:1px;visibility:hidden';
+  document.body.appendChild(probe);
+  const oben = Math.round(probe.getBoundingClientRect().height);
+  probe.style.cssText = 'position:fixed;bottom:0;height:env(safe-area-inset-bottom);width:1px;visibility:hidden';
+  const unten = Math.round(probe.getBoundingClientRect().height);
+  probe.remove();
+  el.textContent = 'Schirm ' + Math.round(window.screen.height)
+    + ' · innen ' + Math.round(window.innerHeight)
+    + ' · oben ' + oben + ' · unten ' + unten;
+}
+
 function initIOS(){
   renderDock();
   initTastatur();
@@ -3168,6 +3171,8 @@ function initIOS(){
   window.addEventListener('resize', () => iosAktualisieren());
   initSchriftgroesse();
   initZustand();
+  messungZeigen();
+  window.addEventListener('resize', messungZeigen);
   history.replaceState({ tiefe: offeneEbenen() }, '');
   iosAktualisieren();
 }
