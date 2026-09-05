@@ -9,7 +9,7 @@
 <!-- Name unter dem Symbol auf dem Home-Bildschirm. iOS wertet dieses Tag aus,
      nicht short_name aus dem Manifest. -->
 <meta name="apple-mobile-web-app-title" content="Jörg">
-<link rel="manifest" href="manifest.json?v=2609062800">
+<link rel="manifest" href="manifest.json?v=2609063200">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg</title>
@@ -56,6 +56,12 @@
     /* Die Leiste ist 60px hoch und sitzt 10px ueber dem sicheren Bereich - macht
        70px, plus ein wenig Luft zum letzten Inhalt. */
     --dock-h:    66px;
+    /* Polsterung aller Vollbild-Flaechen - Startseite, Bereiche, Bildschirme und
+       Detailblatt. Stand vorher an drei Stellen mit drei verschiedenen Werten,
+       dadurch sassen die Titel je nach Herkunft 12pt und 2pt versetzt. */
+    --pad-x:     16px;
+    --pad-top:   max(24px, env(safe-area-inset-top));
+    --pad-bot:   calc(66px + env(safe-area-inset-bottom));
   }
 
   html { -webkit-text-size-adjust: 100%; overflow-x: hidden; background: var(--bg-fuss); }
@@ -70,7 +76,7 @@
        Viewport-Hoehe und bleibt konstant. */
     min-height: 100svh;
     min-height: 100lvh;
-    padding: max(24px, env(safe-area-inset-top)) 16px calc(var(--dock-h) + env(safe-area-inset-bottom));
+    padding: var(--pad-top) var(--pad-x) var(--pad-bot);
     background: transparent;
     overflow-x: hidden;
     position: relative;
@@ -177,7 +183,7 @@
   .picker-head { flex: 0 0 auto; }
   .picker-search { width: 100%; padding: 12px 14px; border-radius: var(--r-control); border: 1px solid var(--stroke); background: rgba(255,255,255,0.05); color: var(--text); font: inherit; font-size: 1rem; outline: none; -webkit-appearance: none; margin-bottom: 8px; }
   .picker-search:focus { border-color: var(--been); background: rgba(255,159,10,0.08); }
-  .picker-list { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(var(--dock-h) + env(safe-area-inset-bottom)); overscroll-behavior: contain; }
+  .picker-list { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: var(--pad-bot); overscroll-behavior: contain; }
   .pick-row { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 13px 4px; border: none; background: transparent; color: var(--text); font: inherit; font-size: 0.95rem; text-align: left; cursor: pointer; }
   .pick-row + .pick-row { border-top: 1px solid var(--stroke); }
   .pick-row:active { background: rgba(255,255,255,0.05); }
@@ -229,7 +235,23 @@
   .imp-sub { font-size: 0.72rem; color: var(--muted-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .import-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 12px; margin: 26px 0 10px; }
 
-  .section-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted-2); font-weight: 600; margin: 22px 6px 10px; }
+  /* .tag war eine zweite, fast identische Fassung derselben Beschriftung.
+     Beide Namen zeigen jetzt auf dieselbe Regel. */
+  /* ===== Gruppenueberschrift =====
+     Grosse, optional aufklappbare Ueberschrift innerhalb eines Bereichs. Stand
+     vorher nur unter #mod-finanzen und war damit fuer die anderen Bereiche nicht
+     erreichbar. Die Groesse liegt bewusst unter dem Bereichstitel (1.7rem), damit
+     die Rangfolge stimmt - vorher war sie mit 1.95rem groesser als er. */
+  .sub-header { margin: 24px 0 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .sub-header h1 { font-size: 1.45rem; font-weight: 800; letter-spacing: -0.03em; }
+  .sub-header p { color: var(--muted); font-size: 0.86rem; margin-top: 3px; }
+
+  .section-chevron { font-size: 1.4rem; color: var(--muted-2); flex-shrink: 0; transition: transform 0.35s var(--spring); line-height: 1; }
+  .sub-header.collapsed .section-chevron { transform: rotate(-90deg); }
+  .section-body { overflow: hidden; }
+  .section-body.collapsed { display: none; }
+
+  .section-label, .tag { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted-2); font-weight: 700; margin: 22px 6px 10px; }
   /* Groesserer Abstand, wenn direkt darueber eine Liste endet (z.B. Packliste). */
   .section-label.spaced { margin-top: 26px; }
 
@@ -563,7 +585,7 @@
   .entry-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; min-width: 0; }
 
   /* Vollbild-Screens */
-  .screen { position: fixed; inset: 0; height: 100lvh; z-index: 400; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 18px calc(var(--dock-h) + env(safe-area-inset-bottom)); visibility: hidden; background: var(--bg); background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2) 0%, #050509 52%, var(--bg-fuss) 100%); }
+  .screen { position: fixed; inset: 0; height: 100lvh; z-index: 400; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: var(--pad-top) var(--pad-x) var(--pad-bot); visibility: hidden; background: var(--bg); background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2) 0%, #050509 52%, var(--bg-fuss) 100%); }
   .screen.open { transform: translateX(0); visibility: visible; transition: transform 0.4s var(--ease-ios), visibility 0s; }
   /* Nach der Öffnen-Animation die Transform entfernen – ein dauerhaftes transform auf einem
      position:fixed-Scrollcontainer bringt iOS-Safari beim Momentum-Scrollen zum Haken. */
@@ -640,7 +662,7 @@
   }
   .screen-back:active, #mod-finanzen .settings-back:active { transform: scale(0.9); }
   .screen-title { flex: 1; min-width: 0; }
-  .screen-title p { color: var(--muted); font-size: 0.84rem; margin-top: 3px; }
+  .screen-title p { color: var(--muted); font-size: 0.86rem; margin-top: 3px; }
   /* Der Kopf soll deutlich vom ersten Abschnitt abgesetzt sein. */
   #core-settings-screen .section-label:first-of-type { margin-top: 0; }
   .icon-btn { width: 40px; height: 40px; border-radius: var(--r-pill); border: 1px solid var(--stroke); background: var(--glass); color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.95rem; transition: transform 0.3s var(--spring), color 0.2s; }
@@ -1025,7 +1047,7 @@
     background: var(--bg);
     background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2) 0%, #050509 52%, var(--bg-fuss) 100%);
     background-repeat: no-repeat;
-    padding: max(24px, env(safe-area-inset-top)) 16px calc(var(--dock-h) + env(safe-area-inset-bottom));
+    padding: var(--pad-top) var(--pad-x) var(--pad-bot);
   }
   .mod-container[hidden] { display: none !important; }
   /* Bereiche kommen von rechts herein wie die Bildschirme. Der Transform steht
@@ -1102,7 +1124,7 @@
 /* Hero: Gesamtvermögen */
   #mod-finanzen .hero{ text-align: center; padding: 32px 0 34px; cursor: pointer; }
 /* Detail-Sheet (öffnet über Hero/Bento) */
-  #mod-finanzen .detail-sheet{ position: fixed; inset: 0; height: 100lvh; z-index: 380; overscroll-behavior: contain; background: var(--bg); background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2) 0%, #050509 52%, var(--bg-fuss) 100%); overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: calc(12px + env(safe-area-inset-top)) 16px calc(var(--dock-h) + env(safe-area-inset-bottom)); visibility: hidden; }
+  #mod-finanzen .detail-sheet{ position: fixed; inset: 0; height: 100lvh; z-index: 380; overscroll-behavior: contain; background: var(--bg); background-image: radial-gradient(1100px 700px at 12% -10%, rgba(10,132,255,0.14), transparent 60%), radial-gradient(900px 600px at 105% 8%, rgba(191,90,242,0.10), transparent 55%), linear-gradient(180deg, var(--bg-2) 0%, #050509 52%, var(--bg-fuss) 100%); overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; transform: translateX(100%); transition: transform 0.4s var(--ease-ios), visibility 0s linear 0.4s; padding: var(--pad-top) var(--pad-x) var(--pad-bot); visibility: hidden; }
 #mod-finanzen .detail-sheet.open{ transform: translateX(0); visibility: visible; transition: transform 0.4s var(--ease-ios), visibility 0s; }
 #mod-finanzen .detail-sheet.settled{ transform: none; }
 #mod-finanzen .detail-panel{ display: none; }
@@ -1113,7 +1135,7 @@
 #mod-finanzen .hero-spark, #mod-finanzen #hero-spark{ width: 100%; }
 #mod-finanzen #hero-spark svg{ width: 100%; height: 88px; margin-top: 26px; display: block; }
 #mod-finanzen .hero-sub{ display: block; font-size: 0.76rem; color: var(--muted-2); margin-top: 20px; }
-#mod-finanzen .tag{ font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted-2); margin: 6px 2px 10px; font-weight: 700; }
+#mod-finanzen .tag{ margin: 6px 2px 10px; }
 /* Bento – einheitlicher Apple-Stil. Raster und Kachelrahmen liegen im Kern,
    damit alle Module dieselbe Kachel erben. */
 .bento-head{ margin-bottom: 3px; }
@@ -1210,13 +1232,8 @@
     background: var(--stroke);
     margin: 40px 0 4px;
   }
-#mod-finanzen .sub-header{ margin: 24px 0 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-#mod-finanzen .sub-header h1{ font-size: 1.95rem; font-weight: 800; letter-spacing: -0.04em; }
-#mod-finanzen .sub-header p{ color: var(--muted); font-size: 0.88rem; margin-top: 3px; }
-#mod-finanzen .section-chevron{ font-size: 1.4rem; color: var(--muted-2); flex-shrink: 0; transition: transform 0.35s var(--spring); line-height: 1; }
-#mod-finanzen .sub-header.collapsed .section-chevron{ transform: rotate(-90deg); }
-#mod-finanzen .section-body{ overflow: hidden; }
-#mod-finanzen .section-body.collapsed{ display: none; }
+/* Gruppenueberschrift: Definition steht im Kern bei .sub-header. */
+/* Pfeil und Klapp-Verhalten stehen im Kern bei .section-chevron. */
 #mod-finanzen .entry-name-prov{ font-weight: 500; font-size: 0.8rem; color: var(--muted); letter-spacing: 0; }
 #mod-finanzen .entry-paysched{ font-size: 0.74rem; color: var(--muted-2); margin-top: 2px; font-variant-numeric: tabular-nums; }
 #mod-finanzen .cat-Abonnement{ background: rgba(176,110,235,0.16); color: #c39bf0; }
@@ -2882,11 +2899,11 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2609062800"></script>
-<script src="mod-reisen.js?v=2609062800"></script>
-<script src="mod-finanzen.js?v=2609062800"></script>
-<script src="mod-impfpass.js?v=2609062800"></script>
-<script src="mod-fotografie.js?v=2609062800"></script>
+<script src="data-laender.js?v=2609063200"></script>
+<script src="mod-reisen.js?v=2609063200"></script>
+<script src="mod-finanzen.js?v=2609063200"></script>
+<script src="mod-impfpass.js?v=2609063200"></script>
+<script src="mod-fotografie.js?v=2609063200"></script>
 
 <!-- ===== Start ===== -->
 <script>

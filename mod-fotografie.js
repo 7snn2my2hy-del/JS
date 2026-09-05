@@ -30,7 +30,7 @@ document.getElementById('mod-fotografie').insertAdjacentHTML('beforeend', `
   <div class="empty" id="fg-empty" style="display:none">Noch keine Guides hinterlegt.</div>
 
   <div class="fg-trenner"></div>
-  <div class="section-label">Astro-Kalender</div>
+  <div class="sub-header"><div class="sub-header-text"><h1>Astro-Kalender</h1><p>Sichtbarkeit, Mondphasen und Termine</p></div></div>
   <div class="rt-list" id="fg-calendar"></div>
 </div>
 
