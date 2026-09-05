@@ -9,7 +9,7 @@
 <!-- Name unter dem Symbol auf dem Home-Bildschirm. iOS wertet dieses Tag aus,
      nicht short_name aus dem Manifest. -->
 <meta name="apple-mobile-web-app-title" content="Jörg">
-<link rel="manifest" href="manifest.json?v=2609062600">
+<link rel="manifest" href="manifest.json?v=2609062700">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg</title>
@@ -597,7 +597,7 @@
      Schriftzeichen hat ungleiche Seitenraender und sitzt dadurch sichtbar links
      der Mitte. Die Beschriftung im Knopf bleibt fuer Vorlesehilfen erhalten,
      wird aber nicht mehr dargestellt. */
-  .screen-back {
+  .screen-back, #mod-finanzen .settings-back {
     flex-shrink: 0; width: 34px; height: 34px; border-radius: var(--r-pill);
     border: none; background: transparent; color: rgba(245,245,247,0.82);
     font-size: 0; cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -611,7 +611,7 @@
       0 4px 14px rgba(0,0,0,0.28);
     transition: transform 0.4s var(--spring), color 0.2s, box-shadow 0.2s;
   }
-  .screen-back::before {
+  .screen-back::before, #mod-finanzen .settings-back::before {
     content: ""; width: 15px; height: 15px; display: block;
     /* Symmetrisch um die Mitte des Feldes: der Pfad laeuft von 15.6 auf 8.4 und
        zurueck, Mittelpunkt also exakt 12. */
@@ -619,7 +619,7 @@
     -webkit-mask: center / 15px 15px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15.6 4.5 8.4 12l7.2 7.5'/%3E%3C/svg%3E");
     mask: center / 15px 15px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15.6 4.5 8.4 12l7.2 7.5'/%3E%3C/svg%3E");
   }
-  .screen-back:active { transform: scale(0.9); }
+  .screen-back:active, #mod-finanzen .settings-back:active { transform: scale(0.9); }
   .screen-title { flex: 1; min-width: 0; }
   .screen-title h2 { font-size: 1.7rem; line-height: 1.14; font-weight: 800; letter-spacing: -0.02em; overflow-wrap: break-word; }
   .screen-title p { color: var(--muted); font-size: 0.84rem; margin-top: 3px; }
@@ -1059,9 +1059,14 @@
 #mod-finanzen .income-bar{
     display: block; padding: 12px 18px; margin-bottom: 6px;
   }
-#mod-finanzen .settings-topbar{ display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
-#mod-finanzen .settings-back{ width: 40px; height: 40px; border-radius: var(--r-pill); border: 1px solid var(--stroke); background: var(--glass); color: var(--text); font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.3s var(--spring); }
-#mod-finanzen .settings-back:active{ transform: scale(0.9); }
+/* Die Kopfzeile des Finanzen-Detailblatts hatte eigene Regeln und lief damit an
+   jeder Aenderung der uebrigen Koepfe vorbei - anderer Knopf, anderes Material,
+   Knopf links statt rechts, kleinerer Titel. Sie erbt jetzt vollstaendig von
+   .screen-topbar und .screen-back; hier steht nur noch die Zuordnung. */
+#mod-finanzen .settings-topbar{ display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+#mod-finanzen .settings-topbar > *{ order: 2; }
+#mod-finanzen .settings-topbar > h2{ order: 1; flex: 1; min-width: 0; font-size: 1.7rem; line-height: 1.14; font-weight: 800; letter-spacing: -0.02em; overflow-wrap: break-word; }
+#mod-finanzen .settings-back{ order: 3; margin-left: auto; }
 #mod-finanzen .income-left, #mod-finanzen .income-right{ display: flex; flex-direction: column; gap: 3px; }
 #mod-finanzen .income-right{ align-items: flex-end; }
 #mod-finanzen .income-label{ font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-2); }
@@ -2866,11 +2871,11 @@ function topOpenScreen(){
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2609062600"></script>
-<script src="mod-reisen.js?v=2609062600"></script>
-<script src="mod-finanzen.js?v=2609062600"></script>
-<script src="mod-impfpass.js?v=2609062600"></script>
-<script src="mod-fotografie.js?v=2609062600"></script>
+<script src="data-laender.js?v=2609062700"></script>
+<script src="mod-reisen.js?v=2609062700"></script>
+<script src="mod-finanzen.js?v=2609062700"></script>
+<script src="mod-impfpass.js?v=2609062700"></script>
+<script src="mod-fotografie.js?v=2609062700"></script>
 
 <!-- ===== Start ===== -->
 <script>
