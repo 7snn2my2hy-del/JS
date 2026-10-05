@@ -5,48 +5,42 @@
 document.getElementById('mod-impfpass').insertAdjacentHTML('beforeend', `
 <div class="wrap">
 
-  <div class="app-header"><button class="screen-back" aria-label="Zurück" onclick="closeModule()">‹</button><span>Impfpass</span></div>
+  <div class="app-header">
+    <button class="screen-back" aria-label="Zurück" onclick="closeModule()">‹</button>
+    <button class="icon-btn" aria-label="Impfung hinzufügen" onclick="impOpenModal()">＋</button>
+    <span>Impfpass</span>
+  </div>
 
   <div id="imp-alert-wrap"></div>
 
   <div id="imp-list"></div>
-  <div class="empty" id="imp-empty" style="display:none"><b>Noch keine Impfung erfasst</b>Tippe unten, um die erste anzulegen.</div>
 
-  <button class="add-btn" onclick="impOpenModal()">＋ Impfung hinzufügen</button>
-
-  <p class="backup-hint footnote">Auffrischungsintervalle nach RKI/STIKO · nur zur persönlichen Übersicht, ersetzt keine ärztliche Beratung.</p>
 </div>
 
-<div class="overlay" id="imp-overlay" onclick="if(event.target===this)impCloseModal()">
+<div class="overlay" id="imp-overlay" onclick="if(event.target===this)blattAbbrechen(this)">
   <div class="modal">
-    <div class="grabber"></div>
-    <h2 id="imp-form-title">Neue Impfung</h2>
-    <div class="field-stack">
-      <div class="field">
-        <label>Impfung</label>
-        <input type="text" id="imp-f-name" placeholder="z.B. Tetanus / Diphtherie" autocomplete="off" oninput="impZeigeStikoHinweis()">
-      </div>
-      <div class="field">
-        <label>Kategorie</label>
-        <select id="imp-f-kategorie">
-          <option value="standard">Standardimpfung</option>
-          <option value="indikation">Indikationsimpfung</option>
-          <option value="reise">Reiseimpfung</option>
-        </select>
-      </div>
-      <div class="imp-hinweis" id="imp-stiko-hinweis" style="display:none"></div>
-      <div class="field">
-        <div id="imp-dosen-liste"></div>
-        <button type="button" class="imp-dose-add" onclick="impDoseHinzufuegen()">＋ weitere Impfung</button>
-      </div>
-      <div class="field" id="imp-f-next-wrap">
-        <label>Nächste Auffrischung (falls bekannt)</label>
-        <input type="text" id="imp-f-next" placeholder="TT.MM.JJJJ" inputmode="decimal" autocomplete="off" oninput="autoDate(this)" onblur="fixDate(this)">
-      </div>
+    <div class="blatt-kopf">
+      <button type="button" class="kopf-knopf" onclick="blattAbbrechen(this)">Abbrechen</button>
+      <h2 id="imp-form-title">Neue Impfung</h2>
+      <button type="button" class="kopf-knopf fett" onclick="impSave()">Sichern</button>
     </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="impCloseModal()">Abbrechen</button>
-      <button class="btn btn-primary" onclick="impSave()">Speichern</button>
+    <div class="formular">
+      <div class="gruppe">
+        <div class="feld"><label for="imp-f-name">Impfung</label><input type="text" id="imp-f-name" placeholder="z.B. Tetanus" autocomplete="off" oninput="impZeigeStikoHinweis()"></div>
+        <div class="feld"><label for="imp-f-kategorie">Kategorie</label>
+          <select id="imp-f-kategorie">
+            <option value="standard">Standardimpfung</option>
+            <option value="indikation">Indikationsimpfung</option>
+            <option value="reise">Reiseimpfung</option>
+          </select>
+        </div>
+      </div>
+      <p class="gruppe-fuss" id="imp-stiko-hinweis"></p>
+      <div class="gruppe-titel">Impfungen</div>
+      <div class="gruppe" id="imp-dosen-liste"></div>
+      <div class="gruppe" id="imp-f-next-wrap">
+        <div class="feld"><label for="imp-f-next">Nächste Auffrischung</label><input type="text" id="imp-f-next" placeholder="TT.MM.JJJJ" inputmode="decimal" autocomplete="off" oninput="autoDate(this)" onblur="fixDate(this)"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -113,9 +107,6 @@ function impSchemaFuer(name){
   return IMP_STIKO_SCHEMA.find(e => e.muster.test(name || '')) || null;
 }
 
-/* Alteintraege ohne Kategorie (vor diesem Update angelegt) bekommen "Standardimpfung"
-   als Vorschlag - haeufigster Fall, jederzeit im Formular korrigierbar. Laeuft bei
-   jedem Start mit, tut aber nichts mehr, sobald einmal alles nachgezogen ist. */
 /* Rät die Kategorie aus dem Namen, nach demselben Muster wie IMP_PASS_2026 unten.
    Nur die eindeutigen Fälle - alles andere (auch unbekannte Namen) landet bei
    "standard", dem haeufigsten Fall, und ist im Formular jederzeit korrigierbar. */
@@ -373,14 +364,11 @@ function impRenderAlert(){
   const dringlich = impDringlichkeitsListe();
   const kommend = impKommendeListe(dringlich);
 
-  if (!dringlich.length && !kommend.length) {
-    el.innerHTML = `<div class="empty"><b>Alles erledigt</b>Keine Impfung ist überfällig, unvollständig oder steht in Kürze an.</div>`;
-    return;
-  }
+  if (!impfungen.length) { el.innerHTML = ''; return; }
 
   const titel = dringlich.length
     ? (dringlich.length === 1 ? 'Impfung braucht Aufmerksamkeit' : 'Impfungen brauchen Aufmerksamkeit')
-    : 'Alles im grünen Bereich';
+    : (kommend.length ? 'Alles im grünen Bereich' : 'Nichts steht an');
 
   const zeile = ({ e, st }, warnen) => {
     let rechts;
@@ -397,15 +385,11 @@ function impRenderAlert(){
     </div>`;
   };
 
+  const zeilen = dringlich.map(x => zeile(x, true)).join('') + kommend.map(x => zeile(x, false)).join('');
   el.innerHTML = `<div class="bento-tile imp-radar">
-    <div class="bento-head"><span class="bento-title">Impfstatus</span></div>
+    ${kachelKopf('Impfstatus', 'schild', dringlich.length ? 'rot' : 'petrol')}
     <div class="bento-primary ${dringlich.length ? 'neg' : 'ok'}">${dringlich.length || '✓'}<span class="bento-unit">${esc(titel)}</span></div>
-    <div class="bento-foot">
-      <div class="bento-list">
-        ${dringlich.map(x => zeile(x, true)).join('')}
-        ${kommend.map(x => zeile(x, false)).join('')}
-      </div>
-    </div>
+    ${zeilen ? `<div class="bento-foot"><div class="bento-list">${zeilen}</div></div>` : ''}
   </div>`;
 }
 
@@ -418,7 +402,7 @@ function impEntryHTML(e){
   // vollstaendigem Schutz (Status "done") waere selbst ein "-" irrefuehrend, weil es
   // eine offene, nur unbekannte Faelligkeit nahelegt.
   if (st.key !== 'done') zeilen.push('Nächste Impfung: ' + (st.next ? displayDate(st.next) : '–'));
-  return `<div class="entry glass">
+  return `<div class="entry">
     <div class="entry-main">
       <div class="entry-name">${esc(e.name)}</div>
       ${zeilen.map(z => `<div class="entry-sub">${esc(z)}</div>`).join('')}
@@ -428,10 +412,14 @@ function impEntryHTML(e){
 }
 
 function impRenderList(){
-  const el = $('imp-list'), leer = $('imp-empty'); if(!el) return;
+  const el = $('imp-list'); if(!el) return;
   const liste = impSorted();
-  if (leer) leer.style.display = liste.length ? 'none' : '';
-  if (!liste.length){ el.innerHTML = ''; return; }
+  if (!liste.length){
+    el.innerHTML = leerHTML({ symbol: DOCK_ICONS.impfpass, titel: 'Keine Impfungen',
+      text: 'Hier stehen deine Impfungen mit Status und nächster Auffrischung.',
+      knopf: 'Impfung hinzufügen', aktion: 'impOpenModal()' });
+    return;
+  }
   let html = '';
   IMP_KATEGORIEN.forEach((kat, i) => {
     const gruppe = liste.filter(e => impKategorie(e) === kat.key);
@@ -440,9 +428,10 @@ function impRenderList(){
     html += `<div class="list">${gruppe.map(e => swipeWrap('impf', e.id, impEntryHTML(e))).join('')}</div>`;
   });
   el.innerHTML = html;
+  // Antippen oeffnet den Eintrag, Wischen bietet Bearbeiten und Loeschen.
   el.querySelectorAll('.entry-wrap').forEach(wrap => {
     const id = wrap.dataset.id;
-    attachSwipeGeneric(wrap, () => impDelete(id), () => impOpenModal(id));
+    attachSwipeGeneric(wrap, () => impDelete(id), () => impOpenModal(id), () => impOpenModal(id));
   });
 }
 
@@ -456,23 +445,21 @@ function impRenderDosenListe(){
   const el = $('imp-dosen-liste'); if (!el) return;
   if (!impDosenBearbeitung.length) impDosenBearbeitung = [{ datum: '', impfstoff: '' }];
   el.innerHTML = impDosenBearbeitung.map((d, i) => `
-    <div class="imp-dose-row">
-      <div class="field imp-dose-input-wrap imp-dose-input-wrap-datum">
-        <label>Impfung ${i + 1}</label>
-        <input type="text" placeholder="TT.MM.JJJJ" inputmode="decimal" autocomplete="off"
-               value="${esc(isoToDE(d.datum))}" oninput="autoDate(this)" onblur="fixDate(this);impDoseAktualisieren(${i},'datum',this.value)">
-      </div>
-      <div class="field imp-dose-input-wrap imp-dose-input-wrap-impfstoff">
-        <label>Impfstoff</label>
-        <input type="text" placeholder="z.B. Boostrix" autocomplete="off"
-               value="${esc(d.impfstoff || '')}" onblur="impDoseAktualisieren(${i},'impfstoff',this.value)">
-      </div>
-      ${impDosenBearbeitung.length > 1 ? `<button type="button" class="imp-dose-remove" onclick="impDoseEntfernen(${i})" aria-label="Impfung ${i + 1} entfernen">✕</button>` : ''}
-    </div>`).join('');
+    <div class="feld reihe">
+      <button type="button" class="minus-kreis" onclick="impDoseEntfernen(${i})" aria-label="Impfung ${i + 1} entfernen"></button>
+      <input type="text" class="breite-l" placeholder="TT.MM.JJJJ" inputmode="decimal" autocomplete="off" aria-label="Datum der Impfung ${i + 1}"
+             value="${esc(isoToDE(d.datum))}" oninput="autoDate(this)" onblur="fixDate(this);impDoseAktualisieren(${i},'datum',this.value)">
+      <input type="text" placeholder="Impfstoff" autocomplete="off" aria-label="Impfstoff der Impfung ${i + 1}"
+             value="${esc(d.impfstoff || '')}" onblur="impDoseAktualisieren(${i},'impfstoff',this.value)">
+    </div>`).join('')
+    + `<button type="button" class="feld hinzu" onclick="impDoseHinzufuegen()"><span class="plus-kreis"></span>Impfung hinzufügen</button>`;
 }
 function impDoseAktualisieren(i, feld, wert){
-  if (feld === 'datum') impDosenBearbeitung[i].datum = deToISO(wert.trim());
-  else impDosenBearbeitung[i].impfstoff = wert.trim();
+  const d = impDosenBearbeitung[i]; if (!d) return;
+  // roh: das Getippte - ein ungueltiges Datum soll beim Sichern auffallen, statt
+  // still wegzufallen.
+  if (feld === 'datum'){ d.roh = wert.trim(); d.datum = deToISO(d.roh); }
+  else d.impfstoff = wert.trim();
 }
 function impDoseHinzufuegen(){ impDosenBearbeitung.push({ datum: '', impfstoff: '' }); impRenderDosenListe(); }
 function impDoseEntfernen(i){ impDosenBearbeitung.splice(i, 1); impRenderDosenListe(); }
@@ -495,12 +482,16 @@ function impCloseModal(){ schliesseOverlay('imp-overlay'); impEditId = null; }
 async function impSave(){
   const name = $('imp-f-name').value.trim();
   if (!name){ await notify('Bitte einen Namen für die Impfung eintragen.'); return; }
-  const dosen = impDosenBearbeitung.filter(d => d.datum);
+  const falsch = impDosenBearbeitung.find(d => d.roh && !d.datum);
+  const nextRoh = impSchemaFuer(name) ? '' : $('imp-f-next').value.trim();
+  const ungueltig = falsch ? falsch.roh : (nextRoh && !deToISO(nextRoh) ? nextRoh : '');
+  if (ungueltig){ await notify(`„${ungueltig}“ ist kein gültiges Datum. Bitte im Format TT.MM.JJJJ eingeben.`, 'Datum prüfen'); return; }
+  const dosen = impDosenBearbeitung.filter(d => d.datum).map(d => ({ datum: d.datum, impfstoff: d.impfstoff || '' }));
   const daten = {
     name,
     kategorie: $('imp-f-kategorie').value,
     dosen,
-    next: impSchemaFuer(name) ? '' : deToISO($('imp-f-next').value.trim())
+    next: deToISO(nextRoh)
   };
   if (impEditId){
     const e = impfungen.find(x => x.id === impEditId);
@@ -548,64 +539,6 @@ function impApplyBackup(text){
   return true;
 }
 
-/* Kachel-Grafik: Virus mit Spritze, schlichte Linienzeichnung passend zum
-   uebrigen Kachel-Stil. Eigene Konstruktion – die Vorlage aus dem Netz wird
-   bewusst nicht nachgezeichnet.
-   Die Spritze liegt auf einer sauberen 45-Grad-Achse: Nadel, Zylinder mit
-   Skalenstrichen, Kolben und Griff sitzen alle auf derselben Geraden, damit
-   sie nicht auseinanderfaellt. */
-function impTileArt(){
-  const R = 23, cx = 42, cy = 70;
-  let stacheln = '';
-  for (let i = 0; i < 12; i++){
-    const a = (i / 12) * Math.PI * 2;
-    const x1 = cx + Math.cos(a) * R,        y1 = cy + Math.sin(a) * R;
-    const x2 = cx + Math.cos(a) * (R + 8),  y2 = cy + Math.sin(a) * (R + 8);
-    stacheln += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`
-             +  `<circle cx="${x2.toFixed(1)}" cy="${y2.toFixed(1)}" r="2.6"/>`;
-  }
-
-  /* Spritze entlang der Achse von unten-links nach oben-rechts aufbauen.
-     u = Laengsrichtung, v = Querrichtung – so bleibt alles exakt ausgerichtet. */
-  const s = Math.SQRT1_2;                 // 45 Grad
-  const ax = 62, ay = 56;                 // Nadelspitze (zeigt zum Virus)
-  const P = (l, q) => [(ax + l * s + q * s).toFixed(1), (ay - l * s + q * s).toFixed(1)];
-  const seg = (l1, q1, l2, q2) => { const a = P(l1,q1), b = P(l2,q2); return `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}"/>`; };
-  const halbB = 6;                        // halbe Zylinderbreite
-
-  const zyl = [P(14,-halbB), P(40,-halbB), P(40,halbB), P(14,halbB)]
-                .map(p => p.join(',')).join(' ');
-  const griff = seg(41, -10, 41, 10);     // Fingerauflage am Zylinderende
-  const kolben = seg(41, 0, 52, 0) + seg(52, -8, 52, 8);   // Kolbenstange + Daumenplatte
-  const nadel = seg(0, 0, 14, 0);
-  const ansatz = `<polygon points="${[P(11,-3), P(14,-halbB), P(14,halbB), P(11,3)].map(p=>p.join(',')).join(' ')}"/>`;
-  let skala = '';
-  for (let i = 1; i <= 4; i++) skala += seg(16 + i * 5, -3.2, 16 + i * 5, 1.2);
-
-    /* Rahmen eng am tatsaechlichen Inhalt (gemessen: x 8.4..104.4, y 13.6..103.6)
-     statt der lockeren 120x120-Flaeche – das Icon wird dadurch rund 14% groesser,
-     ohne dass an der Zeichnung selbst etwas geaendert wird. */
-    /* Leicht eingefaerbt statt rein weiss: Petrol setzt sich vom Blau der
-     Laendersilhouette ab und passt zum Gesundheitsthema. */
-  return `<svg viewBox="0.7 5.9 111.4 105.4" preserveAspectRatio="xMidYMid meet" fill="none" stroke="var(--petrol)" stroke-width="2.1"
-       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <g>
-      <circle cx="${cx}" cy="${cy}" r="${R}"/>
-      ${stacheln}
-      <circle cx="${cx - 7}" cy="${cy - 6}" r="3.4"/>
-      <circle cx="${cx + 7}" cy="${cy + 3}" r="4.4"/>
-      <circle cx="${cx - 2}" cy="${cy + 10}" r="2.6"/>
-    </g>
-    <g>
-      ${nadel}
-      ${ansatz}
-      <polygon points="${zyl}"/>
-      ${skala}
-      ${griff}
-      ${kolben}
-    </g>
-  </svg>`;
-}
 
 registerModule({
   id: 'impfpass', name: 'Impfpass', tagline: 'Impfungen', order: 3,
@@ -619,7 +552,7 @@ registerModule({
   onOpen: () => { try { impRender(); } catch(e){} },
   summary: () => {
     try {
-      const art = impTileArt();
+      const art = kachelMotiv('impfpass');
       const offen = impfungen.filter(impNeedsAction).length;
       if (offen) return { sub: 'Impfungen', value: offen, unit: offen === 1 ? 'Hinweis' : 'Hinweise', note: 'Handlungsbedarf', art };
       const bald = impfungen.filter(e => impStatus(e).key === 'soon').length;

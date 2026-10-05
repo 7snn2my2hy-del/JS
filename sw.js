@@ -48,6 +48,12 @@ async function ablegen(cache, req, res) {
 async function rueckfall(req) {
   const treffer = await caches.match(req);
   if (treffer) return treffer;
+  /* Direkt nach der Installation liegen die Dateien nur ohne ?v= im Vorrat (ASSETS),
+     die Seite fragt aber nach ihrer ?v=-Fassung. Offline zaehlt dann dieselbe Datei
+     in der vorhandenen Fassung - ablegen() haelt je Pfad ohnehin nur eine. Sonst
+     startete die App beim ersten Offline-Aufruf ganz ohne Bereiche. */
+  const gleicherPfad = await caches.match(req, { ignoreSearch: true });
+  if (gleicherPfad) return gleicherPfad;
   if (req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html')) {
     const start = await caches.match('./index.html');
     if (start) return start;
@@ -58,19 +64,49 @@ async function rueckfall(req) {
   });
 }
 
+/* Wie lange auf das Netz gewartet wird, bevor der Vorrat einspringt. Ohne Frist
+   wartete der Start bei schlechtem Empfang, bis das Netz endgueltig aufgab. */
+const NETZ_FRIST = 4000;
+
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   if (new URL(req.url).origin !== location.origin) return;
+
+  /* Das Ablegen laeuft unabhaengig von der Antwort an die Seite weiter, auch wenn
+     der Vorrat schon geliefert wurde. waitUntil muss hier synchron fallen. */
+  let abgelegt;
+  event.waitUntil(new Promise((r) => { abgelegt = r; }));
+
   // reload statt default: erzwingt, dass der Browser seinen EIGENEN HTTP-Cache
   // umgeht und wirklich bei GitHub nachfragt. Das GitHub-eigene CDN-Cache-Fenster
   // (bis zu 10 Minuten nach einem Push) bleibt davon unberuehrt - das ist eine
   // Eigenschaft von GitHub Pages selbst, kein Cache, den der Service Worker steuert.
-  event.respondWith(
-    fetch(req, { cache: 'reload' }).then((res) => {
+  const netz = fetch(req, { cache: 'reload' }).then((res) => {
+    /* Nur erfolgreiche Antworten ablegen. Vorher landete auch eine 404- oder
+       Fehlerseite im Vorrat - und ablegen() loeschte dabei die vorige, intakte
+       Fassung derselben Datei. */
+    if (res.ok) {
       const copy = res.clone();
-      event.waitUntil(caches.open(CACHE).then((c) => ablegen(c, req, copy)));
-      return res;
-    }).catch(() => rueckfall(req))
-  );
+      caches.open(CACHE).then((c) => ablegen(c, req, copy)).then(abgelegt, abgelegt);
+    } else {
+      abgelegt();
+    }
+    return res;
+  }, (err) => { abgelegt(); throw err; });
+
+  event.respondWith((async () => {
+    const frist = new Promise((r) => setTimeout(r, NETZ_FRIST, 'frist'));
+    try {
+      const erstes = await Promise.race([netz, frist]);
+      if (erstes !== 'frist') return erstes;
+      // Netz zu langsam: liegt die Datei im Vorrat, kommt sie von dort. Das Netz
+      // laeuft weiter und legt die frische Fassung fuer den naechsten Start ab.
+      const vorrat = await caches.match(req);
+      if (vorrat) { netz.catch(() => {}); return vorrat; }
+      return await netz;
+    } catch (e) {
+      return rueckfall(req);
+    }
+  })());
 });

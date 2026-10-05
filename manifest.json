@@ -9,7 +9,7 @@
     "standalone"
   ],
   "orientation": "portrait",
-  "background_color": "#0b0b12",
+  "background_color": "#000000",
   "icons": [
     {
       "src": "icon.png",

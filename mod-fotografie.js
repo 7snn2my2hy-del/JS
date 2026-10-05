@@ -27,9 +27,7 @@ document.getElementById('mod-fotografie').insertAdjacentHTML('beforeend', `
   <div class="app-header"><button class="screen-back" aria-label="Zurück" onclick="closeModule()">‹</button><span>Fotografie</span></div>
 
   <div id="fg-list"></div>
-  <div class="empty" id="fg-empty" style="display:none">Noch keine Guides hinterlegt.</div>
 
-  <div class="fg-trenner"></div>
   <div class="sub-header"><div class="sub-header-text"><h1>Astro-Kalender</h1><p>Sichtbarkeit, Mondphasen und Termine</p></div></div>
   <div class="rt-list" id="fg-calendar"></div>
 </div>
@@ -535,27 +533,20 @@ function fgStartbestand(){
   ];
 }
 
-let szenarien = safeParse(store.get(FG_KEYS.szenarien), null);
-if (!Array.isArray(szenarien)) szenarien = fgStartbestand();
-// Bestehende Speicherstände (vor der Umstellung auf Listen/Gruppen) nachrüsten.
-szenarien.forEach(s => {
-  if (typeof s.notizen !== 'string') s.notizen = '';
-  if (typeof s.equipment === 'string') s.equipment = s.equipment.split(' · ').map(t => t.trim()).filter(Boolean);
-  if (!Array.isArray(s.equipment)) s.equipment = [];
-  if (Array.isArray(s.einstellungen) && s.einstellungen.length && !s.einstellungen[0].titel) {
-    s.einstellungen = [{ titel: 'Kamera', zeilen: s.einstellungen }];
-  }
-  if (!Array.isArray(s.einstellungen)) s.einstellungen = [];
-  if (!Array.isArray(s.komposition)) s.komposition = s.inspiration ? [s.inspiration] : [];
-  if (typeof s.bearbeitung === 'string') s.bearbeitung = s.bearbeitung.split(' · ').map(t => t.trim()).filter(Boolean);
-  if (!Array.isArray(s.bearbeitung)) s.bearbeitung = [];
-  delete s.photopills;
-  delete s.inspiration;
-  if (!s.art) s.art = 'ms-shot';
-  if (!s.kachelIso) s.kachelIso = '';
-  if (!s.kachelBlende) s.kachelBlende = '';
-  if (!s.kachelZeit) s.kachelZeit = '';
-});
+/* Die Guides kommen immer aus dem Code (fgStartbestand) - so erscheinen
+   Aenderungen dort auch dann, wenn schon Notizen gespeichert sind. Aus dem Speicher
+   (und aus Sicherungen) werden nur die Notizen uebernommen, zugeordnet ueber die
+   Art des Guides. Vorher hielt der Speicher die ganze Liste fest, und jede
+   Aenderung im Code blieb nach der ersten gespeicherten Notiz unsichtbar. */
+function fgMitNotizen(gespeichert){
+  const alt = Array.isArray(gespeichert) ? gespeichert.filter(x => x && typeof x.notizen === 'string' && x.notizen) : [];
+  return fgStartbestand().map(s => {
+    const a = alt.find(x => x.art === s.art && x.name === s.name) || alt.find(x => x.art === s.art) || alt.find(x => x.name === s.name);
+    if (a) s.notizen = a.notizen;
+    return s;
+  });
+}
+let szenarien = fgMitNotizen(safeParse(store.get(FG_KEYS.szenarien), null));
 
 function fgPersist(){ store.set(FG_KEYS.szenarien, JSON.stringify(szenarien)); }
 
@@ -568,8 +559,7 @@ function fgKachelZeile(label, wert){
 function fgTileHTML(s){
   const icon = FG_GUIDE_ICON[s.art] || '';
   return `<div class="bento-tile fg-tile" onclick="fgOpenDetail('${s.id}')">
-    <span class="fg-tile-icon">${icon}</span>
-    <div class="bento-head"><span class="bento-title">Guides</span></div>
+    ${kachelKopf('Guide', icon, 'violett')}
     <div class="bento-primary">${esc(s.name)}</div>
     <div class="bento-foot">
       <div class="bento-list">
@@ -582,9 +572,10 @@ function fgTileHTML(s){
 }
 
 function fgRenderList(){
-  const el = $('fg-list'), leer = $('fg-empty'); if(!el) return;
-  if (leer) leer.style.display = szenarien.length ? 'none' : '';
-  el.innerHTML = szenarien.length ? `<div class="bento">${szenarien.map(s => fgTileHTML(s)).join('')}</div>` : '';
+  const el = $('fg-list'); if(!el) return;
+  el.innerHTML = szenarien.length
+    ? `<div class="bento">${szenarien.map(s => fgTileHTML(s)).join('')}</div>`
+    : leerHTML({ symbol: 'buch', titel: 'Keine Guides', text: 'Guides werden im Code gepflegt und erscheinen hier.' });
 }
 
 /* ---------------- Leseansicht ---------------- */
@@ -592,7 +583,7 @@ let fgDetailId = null;
 
 function fgAbschnitt(label, text){
   if (!text) return '';
-  return `<div class="glass fg-card">
+  return `<div class="karte fg-card">
     <div class="bento-title">${esc(label)}</div>
     <div class="fg-text">${esc(text)}</div>
   </div>`;
@@ -602,7 +593,7 @@ function fgAbschnitt(label, text){
 function fgListeAbschnitt(label, items){
   if (!items || !items.length) return '';
   const li = items.map(t => `<li>${esc(t)}</li>`).join('');
-  return `<div class="glass fg-card">
+  return `<div class="karte fg-card">
     <div class="bento-title">${esc(label)}</div>
     <ul class="fg-liste">${li}</ul>
   </div>`;
@@ -610,13 +601,13 @@ function fgListeAbschnitt(label, items){
 
 /* Kamera-Einstellungen: mehrere Gruppen (Aufnahme, Farbe & Format, Einmalig im Menü,
    Workflow) in einer Karte, mit dünner Trennlinie + kleinem Gruppentitel zwischen den
-   Abschnitten. Zeilen selbst wie gehabt Label links / Wert rechts, Wert darf bei
-   Bedarf mehrzeilig umbrechen, bleibt dabei rechtsbündig. */
+   Abschnitten. Zeilen: Label links / Wert rechts; lange Werte (ab 33 Zeichen) stehen
+   linksbuendig unter der Bezeichnung (Klasse "lang", Gestaltung im Kern). */
 function fgEinstellungenHTML(gruppen){
   const sichtbar = (gruppen || []).filter(g => g.zeilen && g.zeilen.length);
   if (!sichtbar.length) return '';
   const teile = sichtbar.map((g, gi) => {
-    const zeilen = g.zeilen.map((z, i) => `<div class="fg-zeile">
+    const zeilen = g.zeilen.map((z, i) => `<div class="fg-zeile${(z.wert || '').length > 32 ? ' lang' : ''}">
         <span class="fg-zeile-label">${esc(z.label)}</span>
         <span class="fg-zeile-wert">${esc(z.wert)}</span>
       </div>`).join('');
@@ -625,7 +616,7 @@ function fgEinstellungenHTML(gruppen){
       ${zeilen}
     </div>`;
   }).join('');
-  return `<div class="glass fg-card">
+  return `<div class="karte fg-card">
     <div class="bento-title">Kamera-Einstellungen</div>
     ${teile}
   </div>`;
@@ -641,11 +632,10 @@ function fgOpenDetail(id){
     fgAbschnitt('Ausrichtung', s.ausrichtung) +
     fgListeAbschnitt('Komposition', s.komposition) +
     fgListeAbschnitt('Bearbeitung', s.bearbeitung) +
-    `<div class="glass fg-card">
+    `<div class="karte fg-card">
       <div class="bento-title">Notizen</div>
       <textarea id="fg-notiz-feld" rows="4" placeholder="Eigene Beobachtungen, Ergebnisse, Anpassungen …"
-        class="fg-notiz">${esc(s.notizen || '')}</textarea>
-      <button class="btn btn-secondary fg-notiz-btn" onclick="fgSaveNotiz()">Notiz speichern</button>
+        class="fg-notiz" oninput="fgNotizTippen()" onblur="fgSaveNotiz()">${esc(s.notizen || '')}</textarea>
     </div>`;
   const sc = $('fg-detail-screen');
   sc.classList.add('open');
@@ -654,6 +644,7 @@ function fgOpenDetail(id){
 }
 
 function fgCloseDetail(){
+  fgSaveNotiz();
   const sc = $('fg-detail-screen'); if (!sc) return;
   sc.classList.remove('settled');
   void sc.offsetHeight;
@@ -661,12 +652,18 @@ function fgCloseDetail(){
   fgDetailId = null;
 }
 
+/* Notizen sichern sich beim Tippen (kurz verzoegert) und beim Verlassen des
+   Feldes - wie in der Notizen-App, ohne eigenen Knopf. */
+let _fgNotizTimer = null;
+function fgNotizTippen(){ clearTimeout(_fgNotizTimer); _fgNotizTimer = setTimeout(fgSaveNotiz, 600); }
 function fgSaveNotiz(){
+  clearTimeout(_fgNotizTimer);
   const s = szenarien.find(x => x.id === fgDetailId); if (!s) return;
   const feld = $('fg-notiz-feld'); if (!feld) return;
-  s.notizen = feld.value.trim();
+  const neu = feld.value.trim();
+  if (neu === (s.notizen || '')) return;
+  s.notizen = neu;
   fgPersist();
-  showToast('Notiz gespeichert');
 }
 
 /* ---------------- Astro-Kalender ----------------
@@ -674,13 +671,14 @@ function fgSaveNotiz(){
    synodische Mondperiode ab einem bekannten Referenz-Neumond; Supermond-Kennzeichnung
    über die anomalistische Periode ab dem gut dokumentierten Perigäums-Vollmond vom
    14. November 2016 (nächste reale Übereinstimmung: Supermond am 24.12.2026).
-   Meteorschauer über feste, jährlich wiederkehrende Maxima-Daten. Mondfinsternis und
-   Milchstraßenkern-Fenster sind feste, recherchierte Termine für 2026 – der Kalender
-   läuft bewusst nur bis Jahresende 2026 und müsste für 2027 erweitert werden.
+   Meteorschauer und Milchstraßenkern-Fenster wiederholen sich jedes Jahr zum selben
+   Datum. Finsternisse sind recherchierte Termine (timeanddate.de, Ort Nürnberg) bis
+   Ende 2030 – danach endet der Kalender und die Liste müsste erweitert werden.
+   Angezeigt werden jeweils die nächsten zwölf Monate.
    Ein Neumond während der Milchstraßen-Saison (April–September) heißt direkt
    "Milchstraße" statt "Neumond" – außerhalb der Saison bleibt es "Neumond". */
 
-const FG_KALENDER_ENDE = new Date(2026, 11, 31);   // 31. Dezember 2026 – bewusste Grenze, siehe oben
+const FG_KALENDER_ENDE = new Date(2030, 11, 31);   // 31. Dezember 2030 – bewusste Grenze, siehe oben
 
 const FG_WOCHENTAGE = ['So','Mo','Di','Mi','Do','Fr','Sa'];
 const FG_MONATE_KURZ = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
@@ -698,19 +696,45 @@ const FG_METEORSCHAUER = [
   { monat: 11, tag: 22, name: 'Ursiden' }
 ];
 
-/* Recherchiert (August 2026): partielle Mondfinsternis, 93–96% Bedeckung. */
-const FG_FINSTERNISSE_2026 = [
+/* Recherchiert bei timeanddate.de fuer Nuernberg (Stand Oktober 2026), Ortszeit.
+   Groesse = bedeckter Anteil des Durchmessers. Nicht aufgenommen: die Halbschatten-
+   Finsternis vom 6.7.2028 - sie faellt in Nuernberg auf den Mondaufgang und ist
+   praktisch nicht zu sehen. */
+const FG_FINSTERNISSE = [
   { datum: new Date(2026,7,28), titel: 'Partielle Mondfinsternis',
-    notiz: 'Bis zu 93–96% des Mondes im Erdschatten · Beginn 04:34 Uhr, Höhepunkt 06:12 Uhr, kurz vor Monduntergang.' }
+    notiz: 'Bis zu 93–96% des Mondes im Erdschatten · Beginn 04:34 Uhr, Höhepunkt 06:12 Uhr, kurz vor Monduntergang.' },
+  { datum: new Date(2027,1,20), titel: 'Halbschatten-Mondfinsternis',
+    notiz: 'Nacht zum 21.2. · Beginn 22:12 Uhr, Höhepunkt 00:12 Uhr, Ende 02:13 Uhr, Mond hoch im Süden. Nur leichte Abdunklung – mit bloßem Auge kaum zu sehen.' },
+  { datum: new Date(2027,7,2), titel: 'Partielle Sonnenfinsternis',
+    notiz: 'Gut die Hälfte des Sonnendurchmessers bedeckt (Größe 0,55) · Beginn 10:09 Uhr, Höhepunkt 11:10 Uhr, Ende 12:14 Uhr. Nur mit Sonnenfilter.' },
+  { datum: new Date(2028,0,12), titel: 'Partielle Mondfinsternis',
+    notiz: 'Nur ein schmaler Rand im Kernschatten (Größe 0,07) · Beginn 03:07 Uhr, Höhepunkt 05:13 Uhr, Ende 07:18 Uhr – zum Ende tief im Westen.' },
+  { datum: new Date(2028,0,26), titel: 'Partielle Sonnenfinsternis',
+    notiz: 'Zum Sonnenuntergang, Größe 0,20 · Beginn 16:40 Uhr, Höhepunkt 16:56 Uhr, gegen 17:00 Uhr geht die Sonne verfinstert unter. Freie Sicht nach Südwesten, nur mit Sonnenfilter.' },
+  { datum: new Date(2028,11,31), titel: 'Totale Mondfinsternis',
+    notiz: 'Blutmond an Silvester · Der Mond geht während der Finsternis auf, Totalität 17:16–18:27 Uhr, Höhepunkt 17:52 Uhr, Ende 20:40 Uhr.' },
+  { datum: new Date(2029,5,12), titel: 'Partielle Sonnenfinsternis',
+    notiz: 'Zum Sonnenaufgang, nur knapp ein Zehntel bedeckt (Größe 0,09) · 05:09–05:24 Uhr, Höhepunkt 05:13 Uhr. Freie Sicht nach Nordosten, nur mit Sonnenfilter.' },
+  { datum: new Date(2029,5,26), titel: 'Totale Mondfinsternis',
+    notiz: 'Am frühen Morgen tief im Südwesten · Totalität ab 04:31 Uhr, Höhepunkt 05:11 Uhr, um 05:16 Uhr geht der Mond noch verfinstert unter.' },
+  { datum: new Date(2029,11,20), titel: 'Totale Mondfinsternis',
+    notiz: 'Komplett sichtbar, Mond hoch im Süden · Beginn 20:42 Uhr, Totalität 23:15–00:08 Uhr, Höhepunkt 23:42 Uhr, Ende 02:41 Uhr.' },
+  { datum: new Date(2030,5,1), titel: 'Partielle Sonnenfinsternis',
+    notiz: 'Gut zwei Drittel des Sonnendurchmessers bedeckt (Größe 0,69) · Beginn 06:15 Uhr, Höhepunkt 07:16 Uhr, Ende 08:23 Uhr. Nur mit Sonnenfilter.' },
+  { datum: new Date(2030,5,15), titel: 'Partielle Mondfinsternis',
+    notiz: 'Der Mond geht verfinstert auf, Höhepunkt 21:19 Uhr knapp über dem Horizont (Größe 0,28), Ende 22:52 Uhr. Freie Sicht nach Südosten.' },
+  { datum: new Date(2030,11,9), titel: 'Halbschatten-Mondfinsternis',
+    notiz: 'Beginn 21:08 Uhr, Höhepunkt 23:27 Uhr, Ende 01:47 Uhr, Mond hoch im Süden. Nur leichte Abdunklung – kaum vom Vollmond zu unterscheiden.' }
 ];
 
 /* Näherung für Deutschland (50°N): das galaktische Zentrum wird ab Ende Februar in
    der Morgendämmerung tief im Südosten sichtbar und verschwindet ab Ende Oktober
-   abends im Südwesten wieder in der Dämmerung. */
-const FG_MILCHSTRASSE_FENSTER_2026 = [
-  { datum: new Date(2026,1,20), titel: 'Milchstraßenkern ab jetzt sichtbar',
+   abends im Südwesten wieder in der Dämmerung. Der Sternenhimmel verschiebt sich von
+   Jahr zu Jahr nur um Minuten, deshalb gelten die Daten jedes Jahr. */
+const FG_MILCHSTRASSE_FENSTER = [
+  { monat: 1, tag: 20, titel: 'Milchstraßenkern ab jetzt sichtbar',
     notiz: 'Kernregion taucht morgens vor der Dämmerung tief im Südosten auf.' },
-  { datum: new Date(2026,9,20), titel: 'Milchstraßenkern letztmals gut sichtbar',
+  { monat: 9, tag: 20, titel: 'Milchstraßenkern letztmals gut sichtbar',
     notiz: 'Kernregion verschwindet abends nach der Dämmerung im Südwesten.' }
 ];
 
@@ -785,12 +809,13 @@ function fgIstSupermond(d){
 
 function fgIstMilchstrassenSaison(d){ const m = d.getMonth(); return m >= 3 && m <= 8; }
 
-function fgMeteorschauerZwischen(startD, endD){
+/* Termine, die jedes Jahr am selben Tag liegen ({ monat, tag, ... }). */
+function fgJaehrlichZwischen(liste, startD, endD){
   const arr = [];
   for (let jahr = startD.getFullYear(); jahr <= endD.getFullYear(); jahr++){
-    FG_METEORSCHAUER.forEach(e => {
+    liste.forEach(e => {
       const d = new Date(jahr, e.monat, e.tag);
-      if (d.getTime() >= startD.getTime() && d.getTime() <= endD.getTime()) arr.push({ datum: d, name: e.name });
+      if (d.getTime() >= startD.getTime() && d.getTime() <= endD.getTime()) arr.push({ ...e, datum: d });
     });
   }
   return arr;
@@ -816,13 +841,13 @@ function fgBaueKalender(startD, endD){
       notiz: supermond ? 'Vollmond nahe der Erdnähe – auffällig groß und hell' : 'Hellste Nacht des Monats – ungünstig für Sternspuren'
     });
   });
-  fgMeteorschauerZwischen(startD, endD).forEach(e => events.push({
+  fgJaehrlichZwischen(FG_METEORSCHAUER, startD, endD).forEach(e => events.push({
     datum: e.datum, typ: 'meteor', titel: 'Meteorschauer: ' + e.name, notiz: 'Aktivitätsmaximum'
   }));
-  fgFesteTermineZwischen(FG_FINSTERNISSE_2026, startD, endD).forEach(e => events.push({
+  fgFesteTermineZwischen(FG_FINSTERNISSE, startD, endD).forEach(e => events.push({
     datum: e.datum, typ: 'finsternis', titel: e.titel, notiz: e.notiz
   }));
-  fgFesteTermineZwischen(FG_MILCHSTRASSE_FENSTER_2026, startD, endD).forEach(e => events.push({
+  fgJaehrlichZwischen(FG_MILCHSTRASSE_FENSTER, startD, endD).forEach(e => events.push({
     datum: e.datum, typ: 'milchstrasse', titel: e.titel, notiz: e.notiz
   }));
   events.sort((a,b) => a.datum - b.datum);
@@ -834,15 +859,21 @@ const FG_FARBEN = {
   meteor: 'var(--green)', finsternis: 'var(--danger)', milchstrasse: 'var(--petrol)'
 };
 
+/* Ende des angezeigten Zeitraums: zwoelf Monate ab heute, hoechstens bis zum Ende
+   der recherchierten Daten. */
+function fgAnzeigeEnde(heute){
+  const ende = new Date(heute.getFullYear() + 1, heute.getMonth(), heute.getDate());
+  return ende.getTime() < FG_KALENDER_ENDE.getTime() ? ende : FG_KALENDER_ENDE;
+}
 function fgRenderCalendar(){
   const el = $('fg-calendar'); if(!el) return;
   const heute = heuteBerlin();
   if (heute.getTime() > FG_KALENDER_ENDE.getTime()){
-    el.innerHTML = '<div class="empty">Kalender endet am 31.12.2026 – für 2027 muss er im Modul erweitert werden.</div>';
+    el.innerHTML = leerHTML({ symbol: 'mond', titel: 'Kalender endet', text: 'Der Kalender reicht bis 31.12.2030 und muss danach im Modul erweitert werden.', klein: true });
     return;
   }
-  const events = fgBaueKalender(heute, FG_KALENDER_ENDE);
-  if (!events.length){ el.innerHTML = '<div class="empty">Keine berechneten Ereignisse bis Jahresende.</div>'; return; }
+  const events = fgBaueKalender(heute, fgAnzeigeEnde(heute));
+  if (!events.length){ el.innerHTML = leerHTML({ symbol: 'mond', titel: 'Keine Termine', text: 'In den nächsten zwölf Monaten steht nichts an.', klein: true }); return; }
   el.innerHTML = events.map((e, i) => {
     const farbe = FG_FARBEN[e.typ] || 'var(--accent)';
     return `<div class="rt-row${i === events.length - 1 ? ' last' : ''}">
@@ -850,7 +881,7 @@ function fgRenderCalendar(){
       <div class="rt-line">${fgMarkerHTML(e.typ, farbe)}</div>
       <div class="rt-body">
         <div class="rt-name" style="color:${farbe}">${esc(e.titel)}</div>
-        <div class="rt-meta">${esc(FG_WOCHENTAGE[e.datum.getDay()])}, ${e.datum.getDate()}. ${esc(FG_MONATE_LANG[e.datum.getMonth()])}</div>
+        <div class="rt-meta">${esc(FG_WOCHENTAGE[e.datum.getDay()])}, ${e.datum.getDate()}. ${esc(FG_MONATE_LANG[e.datum.getMonth()])}${e.datum.getFullYear() !== heute.getFullYear() ? ' ' + e.datum.getFullYear() : ''}</div>
         ${e.notiz ? `<div class="rt-notes">${esc(e.notiz)}</div>` : ''}
       </div>
     </div>`;
@@ -866,37 +897,9 @@ function fgBuildBackupPayload(){ return { szenarien }; }
 function fgApplyBackup(text){
   const p = safeParse(text, null);
   if (!(p && Array.isArray(p.szenarien))) return false;
-  szenarien = p.szenarien;
-  szenarien.forEach(s => {
-    if (typeof s.notizen !== 'string') s.notizen = '';
-    if (typeof s.equipment === 'string') s.equipment = s.equipment.split(' · ').map(t => t.trim()).filter(Boolean);
-    if (!Array.isArray(s.equipment)) s.equipment = [];
-    if (Array.isArray(s.einstellungen) && s.einstellungen.length && !s.einstellungen[0].titel) {
-      s.einstellungen = [{ titel: 'Kamera', zeilen: s.einstellungen }];
-    }
-    if (!Array.isArray(s.einstellungen)) s.einstellungen = [];
-    if (!Array.isArray(s.komposition)) s.komposition = s.inspiration ? [s.inspiration] : [];
-    if (typeof s.bearbeitung === 'string') s.bearbeitung = s.bearbeitung.split(' · ').map(t => t.trim()).filter(Boolean);
-    if (!Array.isArray(s.bearbeitung)) s.bearbeitung = [];
-    delete s.photopills;
-    delete s.inspiration;
-    if (!s.art) s.art = 'ms-shot';
-  });
+  szenarien = fgMitNotizen(p.szenarien);
   fgPersist();
   return true;
-}
-
-/* Kachel-Grafik: schlichte Kamera, reine Strich-Konstruktion passend zum uebrigen
-   Kachel-Stil (wie bei Impfpass), keine Vorlage aus dem Netz. Farbe Violett. */
-function fgTileArt(){
-  return `<svg viewBox="6 19 108 92" preserveAspectRatio="xMidYMid meet" fill="none" stroke="var(--violet)" stroke-width="2.2"
-       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <rect x="18" y="42" width="84" height="58" rx="12"/>
-    <rect x="42" y="30" width="26" height="16" rx="4"/>
-    <circle cx="60" cy="71" r="21"/>
-    <circle cx="60" cy="71" r="10"/>
-    <circle cx="86" cy="54" r="3.2" fill="var(--violet)" stroke="none"/>
-  </svg>`;
 }
 
 registerModule({
@@ -910,11 +913,11 @@ registerModule({
   onOpen: () => { try { fgRender(); } catch(e){} },
   summary: () => {
     try {
-      const art = fgTileArt();
+      const art = kachelMotiv('fotografie');
       const heute = heuteBerlin();
       if (heute.getTime() > FG_KALENDER_ENDE.getTime())
         return { sub: 'Guides & Kalender', value: szenarien.length, unit: szenarien.length === 1 ? 'Guide' : 'Guides', note: 'angelegt', art };
-      const events = fgBaueKalender(heute, FG_KALENDER_ENDE);
+      const events = fgBaueKalender(heute, fgAnzeigeEnde(heute));
       if (!events.length) return { sub: 'Guides & Kalender', value: szenarien.length, unit: szenarien.length === 1 ? 'Guide' : 'Guides', note: 'angelegt', art };
       const naechstes = events[0];
       const tage = Math.round((naechstes.datum - heute) / 86400000);

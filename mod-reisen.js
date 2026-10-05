@@ -2,7 +2,104 @@
    Eigenständiges Modul. Nutzt den gemeinsamen Unterbau aus index.html.
    Änderungen hier betreffen nur diesen Bereich. */
 
-document.getElementById('mod-reisen').insertAdjacentHTML('beforeend', "<div class=\"wrap\" id=\"home-wrap\">\n  \n\n  <div class=\"app-header\"><button class=\"screen-back\" aria-label=\"Zurück\" onclick=\"closeModule()\">‹</button><span>Reisen</span></div>\n\n    <div class=\"glass world-card\" id=\"world-card\"></div>\n\n  <div class=\"sub-header\"><div class=\"sub-header-text\"><h1>Meine Reisen</h1><p>Geplante und laufende Reisen</p></div></div>\n  <div id=\"trip-tiles\"></div>\n  <button class=\"add-btn\" onclick=\"rpOpenModal('trip')\">＋ Reise hinzufügen</button>\n  <div id=\"done-section\"></div>\n</div>\n\n<!-- ============ LÄNDER-AUSWAHL (Vollbild, damit die Tastatur nichts verdeckt) ============ -->\n<div class=\"screen picker-screen\" id=\"picker-screen\">\n  <div class=\"picker-head\">\n    <div class=\"screen-topbar\">\n      <button class=\"screen-back\" onclick=\"closePicker()\">‹</button>\n      <div class=\"screen-title\">\n        <h2>Wo warst du schon?</h2>\n        <p id=\"picker-count\">&nbsp;</p>\n      </div>\n    </div>\n    <input class=\"picker-search\" id=\"picker-search\" type=\"search\" placeholder=\"Land suchen …\" autocomplete=\"off\" autocorrect=\"off\" autocapitalize=\"off\" spellcheck=\"false\" oninput=\"filterPicker(this.value)\">\n  </div>\n  <div class=\"picker-list\" id=\"picker-list\"></div>\n</div>\n\n<!-- ============ REISE-DETAIL SCREEN ============ -->\n<div class=\"screen\" id=\"trip-screen\">\n  <div class=\"screen-topbar\">\n    <button class=\"screen-back\" onclick=\"closeTripScreen()\">‹</button>\n    <div class=\"screen-title\">\n      <h2 id=\"ts-name\">Reise</h2>\n      <p id=\"ts-dest\">&nbsp;</p>\n    </div>\n    <button class=\"icon-btn ts-import\" onclick=\"openImport()\" aria-label=\"Reiseplan importieren\">＋</button>\n  </div>\n  <div class=\"tab-bar\" id=\"tab-bar\"></div>\n  <div id=\"tab-content\"></div>\n</div>\n\n<!-- ============ AKTIVITÄTS-DETAIL SCREEN ============ -->\n<!-- ============ REISEPLAN-IMPORT ============ -->\n<div class=\"screen\" id=\"import-screen\">\n  <div class=\"screen-topbar\">\n    <button class=\"screen-back\" onclick=\"closeImport()\">‹</button>\n    <div class=\"screen-title\">\n      <h2>Reiseplan importieren</h2>\n      <p id=\"import-sub\">&nbsp;</p>\n    </div>\n  </div>\n  <div id=\"import-body\"></div>\n</div>\n\n<!-- ============ EINTRAG-ANSICHT (nur lesen; Bearbeiten/Löschen weiterhin per Wischen) ============ -->\n<div class=\"screen\" id=\"detail-screen\">\n  <div class=\"screen-topbar\">\n    <button class=\"screen-back\" onclick=\"rpCloseDetail()\">‹</button>\n    <div class=\"screen-title\">\n      <h2 id=\"dv-title\">Eintrag</h2>\n      <p id=\"dv-sub\">&nbsp;</p>\n    </div>\n  </div>\n  <div id=\"dv-body\"></div>\n</div>\n\n<!-- ============ EINSTELLUNGEN (exakt wie Finanzen) ============ -->\n\n\n<!-- Lock-Screen -->\n\n\n<!-- Formular-Modal -->\n<div class=\"overlay\" id=\"form-overlay\" onclick=\"if(event.target===this)rpCloseModal()\">\n  <div class=\"modal\">\n    <div class=\"grabber\"></div>\n    <h2 id=\"form-title\">Eintrag</h2>\n    <div class=\"field-stack\" id=\"form-fields\"></div>\n    <div class=\"modal-actions\">\n      <button class=\"btn btn-secondary\" onclick=\"rpCloseModal()\">Abbrechen</button>\n      <button class=\"btn btn-primary\" onclick=\"saveModal()\">Speichern</button>\n    </div>\n  </div>\n</div>\n\n<!-- Dialog -->\n\n\n<!-- Kategorie-Wahl beim Neu-Anlegen -->\n<div class=\"overlay\" id=\"add-overlay\" onclick=\"if(event.target===this)closeAddPicker()\">\n  <div class=\"modal\" style=\"max-width:420px\">\n    <div class=\"grabber\"></div>\n    <h2>Neu anlegen</h2>\n    <div class=\"add-choices\" id=\"add-choices\"></div>\n    <div class=\"modal-actions\"><button class=\"btn btn-secondary\" onclick=\"closeAddPicker()\">Abbrechen</button></div>\n  </div>\n</div>\n\n<!-- Fotografie: versteckter Datei-Input + Vollbild-Viewer -->\n<input type=\"file\" id=\"foto-file-input\" accept=\"image/*\" multiple style=\"display:none\" onchange=\"handleFotoFiles(this.files)\">\n<div class=\"overlay img-viewer\" id=\"img-viewer\" onclick=\"closeImgViewer()\"><img id=\"img-viewer-img\" src=\"\" alt=\"\"></div>\n\n<!-- Equipment-Auswahl (pro Foto-Ort aus der globalen Liste) -->\n<div class=\"overlay\" id=\"gear-overlay\" onclick=\"if(event.target===this)closeGearPicker()\">\n  <div class=\"modal\" style=\"max-width:480px\">\n    <div class=\"grabber\" onclick=\"closeGearPicker()\"></div>\n    <h2>Ausrüstung wählen</h2>\n    <div class=\"gear-choices\" id=\"gear-choices\"></div>\n    <div class=\"modal-actions\"><button class=\"btn btn-primary\" onclick=\"closeGearPicker()\">Fertig</button></div>\n  </div>\n</div>");
+document.getElementById('mod-reisen').insertAdjacentHTML('beforeend', `
+<div class="wrap" id="home-wrap">
+
+  <div class="app-header">
+    <button class="screen-back" aria-label="Zurück" onclick="closeModule()">‹</button>
+    <button class="icon-btn" aria-label="Reise hinzufügen" onclick="rpOpenModal('trip')">＋</button>
+    <span>Reisen</span>
+  </div>
+
+  <div class="karte world-card" id="world-card"></div>
+
+  <div class="sub-header"><div class="sub-header-text"><h1>Meine Reisen</h1><p>Geplante und laufende Reisen</p></div></div>
+  <div id="trip-tiles"></div>
+  <div id="done-section"></div>
+</div>
+
+<!-- ============ LÄNDER-AUSWAHL (Vollbild, damit die Tastatur nichts verdeckt) ============ -->
+<div class="screen picker-screen" id="picker-screen">
+  <div class="picker-head">
+    <div class="screen-topbar">
+      <button class="screen-back" onclick="closePicker()" aria-label="Zurück">‹</button>
+      <div class="screen-title">
+        <h2>Wo warst du schon?</h2>
+        <p id="picker-count">&nbsp;</p>
+      </div>
+    </div>
+    <input class="picker-search" id="picker-search" type="search" placeholder="Land suchen" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" oninput="filterPicker(this.value)">
+  </div>
+  <div class="picker-list" id="picker-list"></div>
+</div>
+
+<!-- ============ REISE ============
+     Plus oben rechts: Menue zum Anlegen (Stopp, Flug ...), Import und Bearbeiten.
+     Darunter die Segment-Steuerung fuer Uebersicht, Route und Fotografie. -->
+<div class="screen" id="trip-screen">
+  <div class="screen-topbar">
+    <button class="screen-back" onclick="closeTripScreen()" aria-label="Zurück">‹</button>
+    <div class="screen-title">
+      <h2 id="ts-name">Reise</h2>
+      <p id="ts-dest"></p>
+    </div>
+    <button class="icon-btn" onclick="rpPlusMenu(this)" aria-label="Hinzufügen">＋</button>
+  </div>
+  <div class="tab-bar" id="tab-bar"></div>
+  <div id="tab-content"></div>
+</div>
+
+<!-- ============ REISEPLAN-IMPORT ============ -->
+<div class="screen" id="import-screen">
+  <div class="screen-topbar">
+    <button class="screen-back" onclick="closeImport()" aria-label="Zurück">‹</button>
+    <div class="screen-title">
+      <h2>Reiseplan importieren</h2>
+      <p id="import-sub">&nbsp;</p>
+    </div>
+  </div>
+  <div id="import-body"></div>
+</div>
+
+<!-- ============ EINTRAG-ANSICHT (nur lesen; Bearbeiten/Löschen per Wischen oder langem Druck) ============ -->
+<div class="screen" id="detail-screen">
+  <div class="screen-topbar">
+    <button class="screen-back" onclick="rpCloseDetail()" aria-label="Zurück">‹</button>
+    <div class="screen-title">
+      <h2 id="dv-title">Eintrag</h2>
+      <p id="dv-sub">&nbsp;</p>
+    </div>
+  </div>
+  <div id="dv-body"></div>
+</div>
+
+<!-- Formular -->
+<div class="overlay" id="form-overlay" onclick="if(event.target===this)blattAbbrechen(this)">
+  <div class="modal">
+    <div class="blatt-kopf">
+      <button type="button" class="kopf-knopf" onclick="blattAbbrechen(this)">Abbrechen</button>
+      <h2 id="form-title">Eintrag</h2>
+      <button type="button" class="kopf-knopf fett" onclick="saveModal()">Sichern</button>
+    </div>
+    <div class="formular" id="form-fields"></div>
+  </div>
+</div>
+
+<!-- Fotografie: versteckter Datei-Input + Vollbild-Viewer -->
+<input type="file" id="foto-file-input" accept="image/*" multiple style="display:none" onchange="handleFotoFiles(this.files)">
+<div class="overlay img-viewer" id="img-viewer" onclick="closeImgViewer()"><img id="img-viewer-img" src="" alt=""></div>
+
+<!-- Ausruestung je Foto-Ort waehlen: wirkt sofort, deshalb nur "Fertig" -->
+<div class="overlay" id="gear-overlay" onclick="if(event.target===this)closeGearPicker()">
+  <div class="modal">
+    <div class="blatt-kopf">
+      <h2>Ausrüstung</h2>
+      <button type="button" class="kopf-knopf fett" onclick="closeGearPicker()">Fertig</button>
+    </div>
+    <div class="formular" id="gear-choices"></div>
+  </div>
+</div>
+`);
 
 
 /* ===== STORAGE ===== */
@@ -279,9 +376,6 @@ function persist(type){ store.set(DATA[type][1], JSON.stringify(arr(type))); }
 // Kennungen kommen aus dem Kern (neueId).
 
 /* ===== DATUM ===== */
-
-
-
 function tripYear(t){ return (t.start || t.end || '').slice(0,4); }
 /* Reisedauer in Tagen, inklusive An- und Abreisetag */
 function tripDuration(t){
@@ -291,22 +385,7 @@ function tripDuration(t){
   const n = Math.round((b - a) / 86400000) + 1;
   return n + (n===1 ? ' Tag' : ' Tage');
 }
-/* Datum zwischen interner ISO-Ablage (yyyy-mm-dd) und Anzeige/Eingabe (TT.MM.JJJJ) wie in der Finanzen-App */
-
-/* Wandelt TT.MM.JJJJ in ISO. Gibt '' zurück, wenn das Datum nicht existiert
-   (z.B. 31.02.2026) – sonst würde JS still zum 3. März weiterrechnen. */
-
-/* Beim Verlassen eines Datumsfelds sauber auf TT.MM.JJJJ bringen (10.9.26 -> 10.09.2026).
-   Ungültige Eingaben bleiben unverändert stehen, damit man sie korrigieren kann. */
-
-/* Setzt beim Tippen automatisch die Punkte (09092026 -> 09.09.2026). Selbst getippte Punkte bleiben erhalten. */
-/* Uhrzeit beim Tippen formatieren: 2155 -> 21:55, 930 -> 9:30 */
-
-/* Beim Verlassen aufräumen: 9 -> 09:00, 21:5 -> 21:05, 930 -> 09:30, Unsinn -> leer */
-
-/* ===== DIALOG / TOAST ===== */
-
-/* showToast liegt im gemeinsamen Kern (index.html). */
+/* Datumshilfen (deToISO, autoDate, fixDate, autoTime, fixTime) und showToast liegen im Kern. */
 
 /* ===== HOME ===== */
 
@@ -370,7 +449,7 @@ function worldMapSVG(){
   // Ausschnitt aus den Daten gemessen: Land reicht von y=17.8 (Nordgrönland)
   // bis y=412.3 (Südgeorgien), plus 6 Einheiten Luft ringsum -> vertikal mittig, nichts abgeschnitten.
   return `<svg class="wm-svg" viewBox="0 11.8 1000 406.5" preserveAspectRatio="xMidYMid meet">
-    <path d="${rest}" fill="rgba(255,255,255,0.12)"/>${hit?`<path d="${hit}" fill="var(--been)"/>`:''}
+    <path d="${rest}" fill="var(--land)"/>${hit?`<path d="${hit}" fill="var(--been)"/>`:''}
   </svg>`;
 }
 function renderWorldCard(){
@@ -397,8 +476,8 @@ function renderWorldCard(){
 }
 /* Länder-Auswahl mit Suche – für kleine Länder, die man schlecht antippen kann */
 let pickerFilter='';
-function openPicker(){ pickerFilter=''; const s=$('picker-search'); if(s) s.value=''; renderPickerList(); $('picker-screen').classList.add('open'); }
-function closePicker(){ $('picker-screen').classList.remove('open','settled'); const s=$('picker-search'); if(s) s.blur(); }
+function openPicker(){ pickerFilter=''; const s=$('picker-search'); if(s) s.value=''; renderPickerList(); screenOeffnen('picker-screen'); }
+function closePicker(){ screenSchliessen('picker-screen'); const s=$('picker-search'); if(s) s.blur(); }
 function filterPicker(v){ pickerFilter=(v||'').toLowerCase(); renderPickerList(); }
 function renderPickerList(){
   const q = pickerFilter;
@@ -430,7 +509,8 @@ function renderPickerList(){
       return zeile(c, false, false) + (kinder ? kinder.map((k,i)=>zeile(k, true, i===kinder.length-1)).join('') : '');
     }).join('');
   }
-  $('picker-list').innerHTML = html || `<div class="pick-empty">Kein Land gefunden.</div>`;
+  $('picker-list').innerHTML = html ? `<div class="liste">${html}</div>`
+    : leerHTML({ symbol: 'pin', titel: 'Kein Treffer', text: `Kein Land passt zu „${pickerFilter}“.`, klein: true });
 }
 
 /* ===== REISEPLAN-IMPORT =====
@@ -450,9 +530,9 @@ function openImport(){
   importItems=[]; importTripMeta=null;
   $('import-sub').textContent = 'Für: '+t.name;
   renderImportStep1();
-  $('import-screen').classList.add('open');
+  screenOeffnen('import-screen');
 }
-function closeImport(){ $('import-screen').classList.remove('open','settled'); }
+function closeImport(){ screenSchliessen('import-screen'); }
 
 function renderImportStep1(err){
   $('import-body').innerHTML = `
@@ -551,7 +631,7 @@ function renderImportStep2(){
   let html=`<p class="import-hint">${importItems.length} Einträge erkannt. Hake ab, was übernommen werden soll.</p>`
     + (dop?`<div class="import-warn">${dop} ${dop===1?'Eintrag ist':'Einträge sind'} in dieser Reise schon vorhanden und ${dop===1?'wurde':'wurden'} abgewählt. Ankreuzen legt ${dop===1?'ihn':'sie'} ein zweites Mal an.</div>`:'');
   for(const [type,idx] of Object.entries(gruppen)){
-    html+=`<div class="section-label">${titel[type]||type} <span class="sl-count">${idx.length}</span></div><div class="import-list">`;
+    html+=`<div class="section-label">${titel[type]||type} <span class="sl-count">${idx.length}</span></div><div class="import-list liste">`;
     for(const i of idx){
       const it=importItems[i];
       html+=`<button class="imp-row${it.on?' on':''}${it.doppelt?' dup':''}" onclick="toggleImport(${i})">
@@ -578,7 +658,11 @@ function runImport(){
   if(!gewaehlt.length) return;
   let n=0;
   for(const it of gewaehlt){
-    if(it.type==='__meta'){ Object.assign(t, it.data); persist('trip'); n++; continue; }
+    if(it.type==='__meta'){
+      Object.assign(t, it.data); persist('trip'); n++;
+      if (t.finId && typeof finSyncFromReisen === 'function') finSyncFromReisen(t.finId, { name:t.name, start:t.start, end:t.end, country:t.country||'' });
+      continue;
+    }
     const obj={ ...it.data, id:neueId(), tripId:t.id };
     if(it.type==='photo') obj.type='foto';
     if(it.type==='activity') obj.type='normal';
@@ -595,7 +679,6 @@ function renderHome(){
   renderWorldCard();
   renderTripCards();
   if (added.length) showToast(added.join(', ') + (added.length===1?' zu deinen Ländern':' zu deinen Ländern hinzugefügt'));
-  if (!store.persistent) $('notice').style.display = 'block';
 }
 
 function countdownParts(t){
@@ -631,8 +714,8 @@ function tripTileHTML(t, done){
   /* Huelle und Wisch-Knoepfe kommen aus dem Kern (swipeInnerHTML). Vorher war beides hier
      von Hand nachgebaut - mit <div> statt <button> und damit leicht abweichend von allen
      anderen Listen. Eine Aenderung im Kern waere hier stillschweigend nicht angekommen. */
-  const inner = `<div class="bento-tile trip-tile${done?' done':''}" onclick="openTripScreen('${t.id}')">
-        <div class="tt-name">${esc(t.name)}</div>
+  const inner = `<div class="bento-tile trip-tile${done?' done':''}">
+        ${kachelKopf(t.name, 'flugzeug', 'blau')}
         <div class="tt-country">${t.country ? esc(t.country) : (t.destination ? esc(t.destination) : '\u00A0')}</div>
         ${map ? `<div class="tt-map">${map}</div>` : ''}
         <div class="tt-cd"><span class="tt-cd-val ${cls}">${typeof big==='number'?big:esc(big)}</span>${unit?`<span class="tt-cd-unit">${unit}</span>`:''}</div>
@@ -645,25 +728,28 @@ function tripTileHTML(t, done){
 async function deleteEntryById(type, id){
   await loeschenMitRueckfrage({
     liste: arr(type), id,
-    // Bilder gehoeren zum Eintrag und werden vor dem Entfernen mit aufgeraeumt.
-    vorher: async (e) => { if (idbReady && e.images) for (const ref of e.images) if(!isDataUri(ref)) await idbDelete(ref); },
+    // Bilder gehoeren zum Eintrag. Sie verschwinden erst, wenn Rueckgaengig nicht
+    // mehr geht - sonst kaeme der Eintrag ohne seine Bilder zurueck.
+    endgueltig: async (e) => { if (idbReady && e.images) for (const ref of e.images) if(!isDataUri(ref)) await idbDelete(ref); },
     speichern: () => persist(type),
     zeichnen: () => { renderTabContent(); renderHome(); }
   });
 }
 /* Hängt die Swipe-Gesten an alle Einträge im Reiter */
+/* Antippen oeffnet den Eintrag (die ganze Zeile, nicht nur der Pfeil); Wischen
+   und langes Druecken bieten Bearbeiten und Loeschen. */
 function wireEntrySwipe(){
   const el = $('tab-content'); if(!el) return;
   el.querySelectorAll('.entry-wrap').forEach(wrap => {
     const id = wrap.dataset.id, type = wrap.dataset.type;
-    attachSwipeGeneric(wrap, () => deleteEntryById(type, id), () => rpOpenModal(type, id));
+    attachSwipeGeneric(wrap, () => deleteEntryById(type, id), () => rpOpenModal(type, id), () => rpOpenDetail(type, id));
   });
 }
 
 function wireSwipe(container){
   container.querySelectorAll('.tile-wrap').forEach(wrap => {
     const id = wrap.dataset.id;
-    attachSwipeGeneric(wrap, () => deleteTripById(id), () => rpOpenModal('trip', id));
+    attachSwipeGeneric(wrap, () => deleteTripById(id), () => rpOpenModal('trip', id), () => openTripScreen(id));
   });
 }
 /* Reise gilt als abgeschlossen, sobald das Enddatum vorbei ist */
@@ -675,9 +761,12 @@ function renderTripCards(){
   const done = trips.filter(isDone).sort((a,b)=>(b.end||'').localeCompare(a.end||'')); // neueste zuerst
 
   if (!trips.length) {
-    el.innerHTML = `<div class="empty glass"><b>Noch keine Reise angelegt</b>Leg deine erste Reise an – Route, Flüge, Hotels, Fotografie-Planung und Packliste an einem Ort.</div>`;
+    el.innerHTML = leerHTML({ symbol: 'koffer', titel: 'Keine Reisen',
+      text: 'Route, Flüge, Hotels, Fotografie und Packliste an einem Ort.',
+      knopf: 'Reise hinzufügen', aktion: "rpOpenModal('trip')" });
   } else if (!upcoming.length) {
-    el.innerHTML = `<div class="empty glass"><b>Keine geplante Reise</b>Zeit für die nächste? Leg unten eine neue Reise an.</div>`;
+    el.innerHTML = leerHTML({ symbol: 'koffer', titel: 'Keine geplante Reise', text: 'Zeit für die nächste?',
+      knopf: 'Reise hinzufügen', aktion: "rpOpenModal('trip')", klein: true });
   } else {
     el.innerHTML = `<div class="bento">${upcoming.map(t=>tripTileHTML(t,false)).join('')}</div>`;
     wireSwipe(el);
@@ -736,7 +825,9 @@ function rpSyncFromFinanzen(reiseId, daten){
   t.name = daten.name || t.name;
   if (daten.start) t.start = daten.start;
   t.end = daten.end || daten.start || t.end;
-  if (daten.country) t.country = daten.country; else delete t.country;
+  // Ohne Angabe bleibt das Land stehen - aeltere Finanzen-Eintraege kennen keins,
+  // ein Bearbeiten dort loeschte sonst Kartenumriss und "besucht"-Eintrag.
+  if (daten.country) t.country = daten.country;
   persist('trip');
   renderHome();
   if (currentTripId === reiseId) renderTripScreen();
@@ -744,7 +835,7 @@ function rpSyncFromFinanzen(reiseId, daten){
 
 async function deleteTripById(id){
   const t = trips.find(x=>x.id===id); if(!t) return;
-  const ok = await showDialog('Die Reise inkl. aller Stopps, Flüge, Hotels, Aktivitäten und Listen wird unwiderruflich gelöscht.', { title:'Löschen?', okText:'Löschen' });
+  const ok = await showDialog('Mit allen Stopps, Flügen, Hotels, Aktivitäten und Listen.', { title:`„${t.name}“ löschen?`, okText:'Reise löschen', rot:true, blatt:true });
   if(!ok) return;
   // Ein verknuepfter Finanzen-Eintrag wird hier NICHT mitgeloescht (Geld-Daten sind
   // sensibler als Reise-Logistik) - nur die Verknuepfung faellt weg, damit er nicht auf
@@ -759,10 +850,11 @@ async function deleteTripById(id){
 let currentTripId = null, activeTab = 'overview';
 const TABS = [['overview','Übersicht'],['route','Route'],['photos','Fotografie']];
 
-function openTripScreen(id){ currentTripId=id; activeTab='overview'; renderTripScreen(); $('trip-screen').classList.add('open'); }
-function closeTripScreen(){ $('trip-screen').classList.remove('open','settled'); currentTripId=null; renderHome(); }
+function openTripScreen(id){ currentTripId=id; activeTab='overview'; renderTripScreen(); screenOeffnen('trip-screen'); }
+function closeTripScreen(){ screenSchliessen('trip-screen'); currentTripId=null; renderHome(); }
 function currentTrip(){ return trips.find(t=>t.id===currentTripId); }
 function switchTab(k){
+  if (k === activeTab) return;
   activeTab=k;
   renderTripScreen();
   // iOS: nach dem Inhaltswechsel den fixierten Scroll-Container zurücksetzen und
@@ -786,9 +878,11 @@ function renderTripScreen(){
   if (!t) { closeTripScreen(); return; }
   $('ts-name').textContent = t.name;
   // Zeitraum und Dauer stehen in der Übersichtskarte – hier bleibt nur das Land,
-  // sonst bricht die Kopfzeile auf zwei Zeilen um.
-  $('ts-dest').textContent = t.country || t.destination || '\u00A0';
-  $('tab-bar').innerHTML = TABS.map(([k,l]) => `<button class="tab-btn ${activeTab===k?'active':''}" onclick="switchTab('${k}')">${l}</button>`).join('');
+  // und auch das nur, wenn es nicht ohnehin schon der Name der Reise ist.
+  const ziel = t.country || t.destination || '';
+  $('ts-dest').textContent = ziel;
+  $('ts-dest').hidden = !ziel || ziel === t.name;
+  segmentRendern($('tab-bar'), TABS, activeTab, 'switchTab');
   renderTabContent();
 }
 function renderTabContent(){
@@ -801,19 +895,16 @@ function renderTabContent(){
 
 function renderOverviewTab(t){
   const c = id => arr(id).filter(x=>x.tripId===t.id).length;
-  const du = daysUntil(t.start);
-  // Countdown-Text
-  let big='—', sub='Kein Datum festgelegt';
-  if (t.start) {
-    if (du>0){ big=du; sub=`Tag${du===1?'':'e'} bis ${esc(t.name)}`; }
-    else if (du===0){ big='Heute'; sub='Die Reise beginnt!'; }
-    else { big='Unterwegs'; sub=(t.end&&todayISO()>t.end)?'Reise abgeschlossen':'Reise läuft'; }
-  }
+  // Countdown wie auf der Reisekachel; vorher stand bei einer abgeschlossenen
+  // Reise hier "Unterwegs".
+  const cd = countdownParts(t);
+  const big = cd.big;
+  const sub = (typeof cd.big === 'number') ? `${cd.unit} bis ${esc(t.name)}` : esc(cd.label);
   const map = t.country ? tripMapSVG(t.country) : '';
   const range = (t.start || t.end) ? `${displayDate(t.start)||'?'} – ${displayDate(t.end)||'?'}` : '';
   const dur = tripDuration(t);
   // Eine Karte: Countdown + Weltkarte oben, Zeitraum darunter, dann die Zahlen
-  const hero = `<div class="glass ov-card">
+  const hero = `<div class="karte ov-card">
     <div class="ov-top">
       <div class="ov-cd">
         <div class="ov-cd-label">Countdown</div>
@@ -837,6 +928,27 @@ function renderOverviewTab(t){
   </div>`;
   return hero + renderOperatorSection(t) + renderTodosSection(t) + renderPackSection(t);
 }
+/* Plus oben rechts: anlegen, was zur Reise gehoert - wie das Plus-Menue in
+   Kalender oder Dateien. Wer gerade nicht auf dem passenden Reiter steht, wird
+   dorthin mitgenommen, damit das Neue nach dem Sichern sichtbar ist. */
+const ICON_STOPP = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg>';
+function rpPlusMenu(anker){
+  const auf = (tab, fn) => () => { if (activeTab !== tab) switchTab(tab); fn(); };
+  menuOeffnen(anker, [
+    { text: 'Stopp',      symbol: ICON_STOPP,    tun: auf('route', () => rpOpenModal('stop')) },
+    { text: 'Flug',       symbol: ICON_PLANE,    tun: auf('route', () => rpOpenModal('flight')) },
+    { text: 'Hotel',      symbol: ICON_BED,      tun: auf('route', () => rpOpenModal('hotel')) },
+    { text: 'Mietwagen',  symbol: ICON_CAR,      tun: auf('route', () => rpOpenModal('car')) },
+    { text: 'Transfer',   symbol: ICON_TRANSFER, tun: auf('route', () => rpOpenModal('transfer')) },
+    { text: 'Aktivität',  symbol: ICON_PIN,      tun: auf('route', () => rpOpenModal('activity')) },
+    '-',
+    { text: 'Foto-Ort',   symbol: ICON_CAMERA,   tun: auf('photos', addFotoPlace) },
+    '-',
+    { text: 'Reiseplan importieren', symbol: 'import', tun: openImport },
+    { text: 'Reise bearbeiten',      symbol: 'stift',  tun: () => rpOpenModal('trip', currentTripId) }
+  ]);
+}
+
 /* Veranstalter-Kontakt. Gilt fuer die ganze Reise, nicht fuer eine einzelne Station -
    deshalb auf Reise-Ebene und nicht am Hotel. Der Notruf ist abgesetzt, damit er im
    Ernstfall nicht mit der Nummer fuer Geschaeftszeiten verwechselt wird. */
@@ -859,9 +971,9 @@ function renderOperatorSection(t){
     zeile('E-Mail', t.opEmail ? mail(t.opEmail) : '')
   ].join('');
   const hinweis = String(t.opNotes||'').trim()
-    ? `<div class="dv-card glass dv-prose">${String(t.opNotes).trim().split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x).replace(/\n/g,'<br>')}</p>`).join('')}</div>`
+    ? `<div class="dv-card karte dv-prose">${String(t.opNotes).trim().split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x).replace(/\n/g,'<br>')}</p>`).join('')}</div>`
     : '';
-  return `<div class="section-label">Veranstalter</div>${zeilen?`<div class="dv-card glass">${zeilen}</div>`:''}${hinweis}`;
+  return `<div class="section-label">Veranstalter</div>${zeilen?`<div class="dv-card karte">${zeilen}</div>`:''}${hinweis}`;
 }
 /* Packliste – gleiche Mechanik wie die Checkliste, direkt in der Übersicht */
 function renderPackSection(t){
@@ -959,8 +1071,9 @@ function renderRouteTab(t){
   ungrouped.forEach(n=> top.push({...n, prio: n.art==='hotel'?4:5}));
   top.sort((a,b)=> ((a.datum||'9999-99-99')+a.prio+(a.zeit||'~~')).localeCompare((b.datum||'9999-99-99')+b.prio+(b.zeit||'~~')));
 
-  if(!top.length) return `<div class="empty glass"><b>Noch keine Route</b>Leg Stopps, Flüge, Transfers, Hotels, Mietwagen und Aktivitäten an – Hotels und Aktivitäten ordnen sich automatisch unter dem passenden Stopp ein.</div>`
-    + `<button class="add-btn" onclick="openAddPicker()">＋ Hinzufügen</button>`;
+  if(!top.length) return leerHTML({ symbol: 'route', titel: 'Noch keine Route',
+    text: 'Stopps, Flüge, Transfers, Hotels, Mietwagen und Aktivitäten. Hotels und Aktivitäten ordnen sich dem passenden Stopp zu.',
+    knopf: 'Hinzufügen', aktion: 'rpPlusMenu(this)' });
 
   // Flache Render-Sequenz: Kinder direkt hinter ihren Stopp
   const seq = [];
@@ -974,7 +1087,7 @@ function renderRouteTab(t){
   });
 
   const body = seq.map((item,i)=> renderRouteRow(item, i===seq.length-1)).join('');
-  return `<div class="rt-list">${body}</div><button class="add-btn" onclick="openAddPicker()">＋ Hinzufügen</button>`;
+  return `<div class="rt-list">${body}</div>`;
 }
 /* Dauer (Naechte/Tage) steht jetzt unter Tag und Monat statt als Pille in der Meta-Zeile -
    ruhiger als eine zusaetzliche farbige Flaeche neben dem Text, und an derselben Stelle
@@ -990,18 +1103,13 @@ function rtDateCol(iso, opts){
   const dauerHtml = dauer ? `<span class="rt-dauer">${dauer.n}<em>${esc(dauer.label)}</em></span>` : '';
   return `<div class="${cls}">${kopf}${dauerHtml}</div>`;
 }
-/* Im Zeitstrahl steht bewusst kein Notiztext mehr. Die Zeile beantwortet nur Was, Wann
-   und Wo; jede weiterfuehrende Angabe steht in der Eintrag-Ansicht. Die Funktion bleibt
-   als eine Stelle erhalten, damit alle fuenf Zeilentypen gleich behandelt werden. */
-function rtNotesHTML(o){ return ''; }
+/* Pfeil am rechten Zeilenrand: zeigt nur an, dass die Zeile in die Ansicht fuehrt -
+   antippen laesst sich die ganze Zeile (wireEntrySwipe). */
+function rtChevron(){
+  return `<span class="rt-chev" aria-hidden="true">›</span>`;
+}
 /* Telefonnummer als waehlbare Unterzeile. stopPropagation, weil ein Tipp auf die Zeile
    sonst die Eintrag-Ansicht oeffnet statt zu waehlen. */
-/* Chevron am rechten Zeilenrand: einziger Weg in die Detailansicht. Die Zeile selbst
-   bleibt stumm, Bearbeiten und Loeschen laufen ueber das Wischen - damit verhaelt sich
-   der Zeitstrahl wie die Listen in Finanzen und Impfpass. */
-function rtChevron(type, id){
-  return `<button type="button" class="rt-chev" aria-label="Mehr Infos" onclick="event.stopPropagation();rpOpenDetail('${type}','${id}')">›</button>`;
-}
 function rtPhoneHTML(o){
   const nr = String(o.phone||'').trim();
   if (!nr) return '';
@@ -1020,9 +1128,8 @@ function renderRouteRow(item, last){
         ${o.time?`<div class="rt-meta"><span>${esc(o.time)} Uhr</span></div>`:''}
         ${kurz?`<div class="rt-sub">${esc(kurz)}</div>`:''}
         ${rtPhoneHTML(o)}
-        ${rtNotesHTML(o)}
       </div>
-      ${rtChevron('transfer', o.id)}
+      ${rtChevron()}
     </div>`);
   }
   if (item.art === 'flight'){
@@ -1039,9 +1146,8 @@ function renderRouteRow(item, last){
         </div>
         ${(o.airline||o.flightNo)?`<div class="rt-sub">${esc([o.airline,o.flightNo].filter(Boolean).join(' · '))}</div>`:''}
         ${rtPhoneHTML(o)}
-        ${rtNotesHTML(o)}
       </div>
-      ${rtChevron('flight', o.id)}
+      ${rtChevron()}
     </div>`);
   }
   if (item.art === 'car'){
@@ -1058,9 +1164,8 @@ function renderRouteRow(item, last){
         </div>
         ${[o.vehicle, routeTxt].filter(Boolean).map(t=>`<div class="rt-sub">${esc(t)}</div>`).join('')}
         ${rtPhoneHTML(o)}
-        ${rtNotesHTML(o)}
       </div>
-      ${rtChevron('car', o.id)}
+      ${rtChevron()}
     </div>`);
   }
   if (item.art === 'hotel'){
@@ -1078,9 +1183,8 @@ function renderRouteRow(item, last){
         </div>
         ${(ort||o.board)?`<div class="rt-sub">${esc([ort,o.board].filter(Boolean).join(' · '))}</div>`:''}
         ${rtPhoneHTML(o)}
-        ${rtNotesHTML(o)}
       </div>
-      ${rtChevron('hotel', o.id)}
+      ${rtChevron()}
     </div>`);
   }
   if (item.art === 'activity'){
@@ -1093,9 +1197,8 @@ function renderRouteRow(item, last){
         <div class="rt-name">${esc(o.name)}</div>
         ${o.time?`<div class="rt-meta"><span>${esc(o.time)} Uhr</span></div>`:''}
         ${rtPhoneHTML(o)}
-        ${rtNotesHTML(o)}
       </div>
-      ${rtChevron('activity', o.id)}
+      ${rtChevron()}
     </div>`);
   }
   // stop (Gruppen-Header)
@@ -1108,9 +1211,8 @@ function renderRouteRow(item, last){
       <div class="rt-meta">
         ${(o.arrival||o.departure)?`<span>${displayDate(o.arrival)||'?'} – ${displayDate(o.departure)||'?'}</span>`:''}
       </div>
-      ${rtNotesHTML(o)}
     </div>
-    ${rtChevron('stop', o.id)}
+    ${rtChevron()}
   </div>`);
 }
 /* Fotografie: immer offene Foto-Ort-Karten direkt im Tab.
@@ -1120,9 +1222,10 @@ function renderPhotosTab(t){
                  .sort((a,b)=>((a.order||0)-(b.order||0)) || String(a.id).localeCompare(String(b.id)));
   const body = list.length
     ? `<div class="foto-list">${list.map(fotoCardHTML).join('')}</div>`
-    : `<div class="empty glass"><b>Noch kein Foto-Ort</b>Leg Orte für deine Shootings an – mit Ausrüstung, Notizen und Referenzbildern.</div>`;
+    : leerHTML({ symbol: 'kamera', titel: 'Noch kein Foto-Ort', text: 'Orte für deine Shootings, mit Ausrüstung, Notizen und Referenzbildern.',
+                 knopf: 'Foto-Ort hinzufügen', aktion: 'addFotoPlace()' });
   setTimeout(() => { loadFotoImages(); sizeFotoTextareas(); }, 0);
-  return body + `<button class="add-btn" onclick="addFotoPlace()">＋ Hinzufügen</button>`;
+  return body;
 }
 function fotoCardHTML(p){
   const imgs = (p.images||[]).map((ref,idx)=>
@@ -1130,7 +1233,7 @@ function fotoCardHTML(p){
        <div class="foto-thumb-ph">…</div>
        <button class="img-del" onclick="event.stopPropagation();deleteFotoImage('${p.id}','${esc(ref)}')" aria-label="Bild löschen">✕</button>
      </div>`).join('');
-  return `<div class="glass foto-card" data-id="${p.id}">
+  return `<div class="karte foto-card" data-id="${p.id}">
     <div class="foto-head">
       <input class="foto-ort" value="${esc(p.name||'')}" placeholder="Ort, z.B. Sossusvlei – Dünen"
              onchange="renameFotoPlace('${p.id}', this.value)"
@@ -1189,8 +1292,8 @@ function setFotoNotes(id,val){ const p=activities.find(x=>x.id===id); if(!p) ret
 async function deleteFotoPlace(id){
   await loeschenMitRueckfrage({
     liste: arr('activity'), id,
-    text: 'Der Foto-Ort wird unwiderruflich gelöscht.',
-    vorher: async (p) => { if(idbReady && p.images) for(const ref of p.images) if(!isDataUri(ref)) await idbDelete(ref); },
+    text: 'Der Foto-Ort wird gelöscht.',
+    endgueltig: async (p) => { if(idbReady && p.images) for(const ref of p.images) if(!isDataUri(ref)) await idbDelete(ref); },
     speichern: () => persist('activity'),
     zeichnen: () => renderTabContent()
   });
@@ -1231,31 +1334,28 @@ function closeImgViewer(){ schliesseOverlay('img-viewer'); $('img-viewer-img').s
 
 /* ===== AUSRÜSTUNG (global, kategorisiert, in Einstellungen pflegbar) ===== */
 function persistGear(){ store.set(KEYS.gear, JSON.stringify(gear)); }
-function gearRowTap(){
-  const el=$('gear-cfg'); if(!el) return;
-  const show=el.style.display==='none';
-  el.style.display=show?'':'none';
-  const c=$('gear-row-chevron'); if(c) c.textContent=show?'⌄':'›';
-  if(show) renderGearManage();
-}
+function gearRowTap(){ renderGearManage(); screenOeffnen('einst-ausruestung'); }
+function gearZeilenWert(){ const w=$('gear-row-wert'); if(w) w.textContent = String(gearAll().length); }
+/* Je Kategorie eine Gruppe wie in den Einstellungen: Minuskreis entfernt,
+   die letzte Zeile mit Pluskreis nimmt Neues auf. Aenderungen wirken sofort. */
 function renderGearManage(){
   const el=$('gear-list'); if(!el) return;
-  const sub=$('gear-row-sub'); if(sub){ const n=gearAll().length; sub.textContent=n+' '+(n===1?'Gegenstand':'Gegenstände'); }
+  gearZeilenWert();
   el.innerHTML = GEAR_CATS.map(cat=>{
     const items=gear[cat]||[];
     const rows=items.map((g,i)=>`
-      <div class="gear-row">
-        <input value="${esc(g)}" onchange="gearRename('${cat}',${i}, this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">
-        <button class="gear-del" onclick="gearRemove('${cat}',${i})" aria-label="Löschen">✕</button>
+      <div class="feld reihe">
+        <button type="button" class="minus-kreis" onclick="gearRemove('${cat}',${i})" aria-label="${esc(g)} entfernen"></button>
+        <input value="${esc(g)}" aria-label="${esc(cat)}" onchange="gearRename('${cat}',${i}, this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">
       </div>`).join('');
     const newRow=`
-      <div class="gear-row gear-new">
-        <span class="gear-plus">＋</span>
-        <input id="gear-new-${cat}" placeholder="Hinzufügen …"
+      <div class="feld reihe">
+        <span class="plus-kreis" aria-hidden="true"></span>
+        <input id="gear-new-${cat}" placeholder="Hinzufügen" aria-label="${esc(cat)} hinzufügen"
                onkeydown="if(event.key==='Enter'){event.preventDefault();gearAddManage('${cat}');}"
                onblur="gearAddManage('${cat}', true)">
       </div>`;
-    return `<div class="gear-cat"><div class="gear-cat-label">${cat}</div><div>${rows}${newRow}</div></div>`;
+    return `<div class="gruppe-titel">${cat}</div><div class="gruppe">${rows}${newRow}</div>`;
   }).join('');
 }
 function gearRename(cat,i,val){
@@ -1283,20 +1383,21 @@ function renderGearChoices(){
   const sel=p.equipment||[];
   const all=gearAll();
   _gearItems=[];
-  const check='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+  const check='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
   let html='';
   GEAR_CATS.forEach(cat=>{
     let items=[...(gear[cat]||[])];
     if(cat==='Zubehör'){ sel.forEach(s=>{ if(!all.includes(s) && !items.includes(s)) items.push(s); }); }
     if(!items.length) return;
-    html+=`<div class="gc-cat-label">${cat}</div>`;
+    html+=`<div class="gruppe-titel">${cat}</div><div class="gruppe">`;
     items.forEach(it=>{
       const idx=_gearItems.length; _gearItems.push(it);
       const on=sel.includes(it);
-      html+=`<button class="gear-choice${on?' on':''}" onclick="toggleGearForPlace(${idx})"><span class="gc-check">${check}</span><span class="gc-label">${esc(it)}</span></button>`;
+      html+=`<button type="button" class="gear-choice${on?' on':''}" onclick="toggleGearForPlace(${idx})"><span class="gc-label">${esc(it)}</span><span class="gc-check">${check}</span></button>`;
     });
+    html+='</div>';
   });
-  $('gear-choices').innerHTML = html || '<div class="foto-equip-empty inset">Noch keine Ausrüstung – lege sie in den Einstellungen an.</div>';
+  $('gear-choices').innerHTML = html || leerHTML({ symbol: 'kamera', titel: 'Keine Ausrüstung', text: 'Lege sie in den Einstellungen unter Ausrüstung an.', klein: true });
 }
 function toggleGearForPlace(idx){
   const item=_gearItems[idx]; if(item===undefined) return;
@@ -1376,7 +1477,7 @@ function dvKV(titel, paare){
   const zeilen = paare
     .map(([k,v]) => `<div class="dv-row"><span class="dv-k">${esc(k)}</span><span class="dv-v">${dvWert(k, v)}</span></div>`)
     .join('');
-  return (titel ? `<div class="section-label">${esc(titel)}</div>` : '') + `<div class="dv-card glass">${zeilen}</div>`;
+  return (titel ? `<div class="section-label">${esc(titel)}</div>` : '') + `<div class="dv-card karte">${zeilen}</div>`;
 }
 /* Freitext mit echten Absaetzen: Leerzeile trennt Absaetze, einzelner Umbruch bleibt Umbruch. */
 function dvProse(titel, txt){
@@ -1384,7 +1485,7 @@ function dvProse(titel, txt){
   const inhalt = t
     ? t.split(/\n\s*\n/).map(p=>p.trim()).filter(Boolean).map(p=>`<p>${esc(p).replace(/\n/g,'<br>')}</p>`).join('')
     : `<p>${DV_LEER}</p>`;
-  return `<div class="section-label">${esc(titel)}</div><div class="dv-card glass dv-prose">${inhalt}</div>`;
+  return `<div class="section-label">${esc(titel)}</div><div class="dv-card karte dv-prose">${inhalt}</div>`;
 }
 /* Eine Zeile pro Punkt -> Aufzaehlung */
 function dvListe(titel, txt){
@@ -1392,7 +1493,7 @@ function dvListe(titel, txt){
   const inhalt = zeilen.length
     ? `<ul class="dv-bullets">${zeilen.map(z=>`<li>${esc(z)}</li>`).join('')}</ul>`
     : `<div class="dv-prose"><p>${DV_LEER}</p></div>`;
-  return `<div class="section-label">${esc(titel)}</div><div class="dv-card glass">${inhalt}</div>`;
+  return `<div class="section-label">${esc(titel)}</div><div class="dv-card karte">${inhalt}</div>`;
 }
 function dvZeitraum(a, b){
   if (!a && !b) return '';
@@ -1470,9 +1571,9 @@ function rpOpenDetail(type, id){
   $('dv-title').textContent = dvKopf(type, o);
   $('dv-sub').textContent = TITLES[type] || '\u00A0';
   $('dv-body').innerHTML = dvBody(type, o);
-  $('detail-screen').classList.add('open');
+  screenOeffnen('detail-screen');
 }
-function rpCloseDetail(){ $('detail-screen').classList.remove('open','settled'); }
+function rpCloseDetail(){ screenSchliessen('detail-screen'); }
 
 /* ===== FORMULAR-MODAL ===== */
 const TITLES = { trip:'Reise', stop:'Stopp', hotel:'Hotel', flight:'Flug', car:'Mietwagen', transfer:'Transfer', activity:'Aktivität', photo:'Fotografie', pack:'Gegenstand', todo:'Aufgabe' };
@@ -1480,192 +1581,143 @@ const TITLES = { trip:'Reise', stop:'Stopp', hotel:'Hotel', flight:'Flug', car:'
 const TITLE_NEW = { trip:'Neue Reise', stop:'Neuer Stopp', hotel:'Neues Hotel', flight:'Neuer Flug', car:'Neuer Mietwagen', transfer:'Neuer Transfer',
   activity:'Neue Aktivität', photo:'Neue Foto-Session', pack:'Neuer Gegenstand', todo:'Neue Aufgabe' };
 function modalTitle(type, id){ return id ? `${TITLES[type]} bearbeiten` : (TITLE_NEW[type] || 'Neuer Eintrag'); }
+/* Felder je Typ. gruppe: beginnt eine neue Gruppe (Text = Ueberschrift darueber).
+   Mehrzeiliger Text steht immer in einer eigenen Gruppe mit seiner Bezeichnung als
+   Ueberschrift. Die Platzhalter sind kurz gehalten - sie stehen rechtsbuendig
+   neben der Bezeichnung. */
 const SCHEMAS = {
   trip: [
-    { key:'name', label:'Reisename', type:'text', required:true, placeholder:'z.B. Namibia' },
+    { key:'name', label:'Name', type:'text', required:true, placeholder:'z.B. Namibia' },
     { key:'country', label:'Land', type:'text', placeholder:'z.B. Namibia' },
-    { key:'start', label:'Start', type:'text', date:true, placeholder:'z.B. 09.09.2026', pair:'start' },
-    { key:'end', label:'Ende', type:'text', date:true, placeholder:'z.B. 23.09.2026', pair:'end' },
-    { key:'operator', label:'Veranstalter', type:'text', placeholder:'z.B. Wilderness Safaris Namibia' },
-    { key:'opContact', label:'Ansprechpartner', type:'text', placeholder:'z.B. Daleen Steyn, Reiseberaterin' },
-    { key:'opPhone', label:'Telefon', type:'text', placeholder:'z.B. +264 61 274 500', pair:'start' },
-    { key:'opEmergency', label:'Notruf', type:'text', placeholder:'z.B. +264 81 124 3066', pair:'end' },
-    { key:'opOffice', label:'Weiteres Büro', type:'text', placeholder:'z.B. +264 62 540 055' },
-    { key:'opEmail', label:'E-Mail', type:'text', placeholder:'z.B. notruf@anbieter.com' },
+    { key:'start', label:'Start', type:'text', date:true, gruppe:true },
+    { key:'end', label:'Ende', type:'text', date:true },
+    { key:'operator', label:'Veranstalter', type:'text', placeholder:'Optional', gruppe:'Veranstalter' },
+    { key:'opContact', label:'Ansprechpartner', type:'text', placeholder:'Optional' },
+    { key:'opPhone', label:'Telefon', type:'text', placeholder:'+264 …' },
+    { key:'opEmergency', label:'Notruf', type:'text', placeholder:'+264 …' },
+    { key:'opOffice', label:'Weiteres Büro', type:'text', placeholder:'Telefon' },
+    { key:'opEmail', label:'E-Mail', type:'text', placeholder:'name@anbieter.com' },
     { key:'opNotes', label:'Hinweise zum Veranstalter', type:'textarea' }
   ],
   stop: [
     { key:'name', label:'Ort', type:'text', required:true, placeholder:'z.B. NamibRand' },
-    { key:'arrival', label:'Ankunft', type:'text', date:true, placeholder:'z.B. 09.09.2026', pair:'start' },
-    { key:'departure', label:'Abfahrt', type:'text', date:true, placeholder:'z.B. 12.09.2026', pair:'end' },
+    { key:'arrival', label:'Ankunft', type:'text', date:true, gruppe:true },
+    { key:'departure', label:'Abfahrt', type:'text', date:true },
     { key:'notes', label:'Notizen', type:'textarea' }
   ],
   hotel: [
-    { key:'name', label:'Hotel', type:'text', required:true, placeholder:'z.B. Kulala Desert Lodge' },
-    { key:'checkin', label:'Check-in', type:'text', date:true, placeholder:'z.B. 09.09.2026', pair:'start' },
-    { key:'checkout', label:'Check-out', type:'text', date:true, placeholder:'z.B. 12.09.2026', pair:'end' },
-    { key:'checkinTime', label:'Check-in ab', type:'time', pair:'start' },
-    { key:'checkoutTime', label:'Check-out bis', type:'time', pair:'end' },
-    { key:'city', label:'Ort', type:'text', placeholder:'z.B. Windhoek, Namibia', pair:'start' },
-    { key:'room', label:'Zimmer', type:'text', placeholder:'z.B. Standard Zelt', pair:'end' },
+    { key:'name', label:'Hotel', type:'text', required:true, placeholder:'z.B. Kulala Lodge' },
+    { key:'city', label:'Ort', type:'text', placeholder:'z.B. Windhoek' },
+    { key:'checkin', label:'Check-in', type:'text', date:true, gruppe:'Aufenthalt' },
+    { key:'checkout', label:'Check-out', type:'text', date:true },
+    { key:'checkinTime', label:'Check-in ab', type:'time' },
+    { key:'checkoutTime', label:'Check-out bis', type:'time' },
+    { key:'room', label:'Zimmer', type:'text', placeholder:'z.B. Zelt', gruppe:true },
     { key:'board', label:'Verpflegung', type:'text', placeholder:'z.B. Frühstück' },
-    { key:'included', label:'Inklusive (eine Zeile pro Leistung)', type:'textarea', placeholder:'z.B. Übernachtung und Frühstück' },
-    { key:'gps', label:'GPS', type:'text', placeholder:'z.B. S 22° 33\' 24.6", E 17° 05\' 50.3"' },
-    { key:'phone', label:'Telefon', type:'text', placeholder:'z.B. (+264) 61 123 456', pair:'start' },
-    { key:'contact', label:'Ansprechpartner', type:'text', placeholder:'z.B. Edna Mohrmann', pair:'end' },
+    { key:'included', label:'Inklusive', type:'textarea', placeholder:'Eine Zeile pro Leistung' },
+    { key:'phone', label:'Telefon', type:'text', placeholder:'+264 …', gruppe:'Kontakt' },
+    { key:'contact', label:'Ansprechpartner', type:'text', placeholder:'Optional' },
+    { key:'gps', label:'GPS', type:'text', placeholder:'S 22° 33′, E 17° 05′' },
     { key:'notes', label:'Notizen', type:'textarea' }
   ],
   transfer: [
-    { key:'from', label:'Von', type:'text', required:true, placeholder:'z.B. Windhoek', pair:'start' },
-    { key:'to', label:'Nach', type:'text', required:true, placeholder:'z.B. Wolwedans', pair:'end' },
-    { key:'date', label:'Datum', type:'text', date:true, placeholder:'z.B. 11.09.2026', pair:'start' },
-    { key:'time', label:'Abfahrt', type:'time', pair:'end' },
-    { key:'distance', label:'Entfernung', type:'text', placeholder:'z.B. ca. 422 km', pair:'start' },
-    { key:'duration', label:'Fahrzeit', type:'text', placeholder:'z.B. ca. 6 Std. 45 Min.', pair:'end' },
+    { key:'from', label:'Von', type:'text', required:true, placeholder:'z.B. Windhoek' },
+    { key:'to', label:'Nach', type:'text', required:true, placeholder:'z.B. Wolwedans' },
+    { key:'date', label:'Datum', type:'text', date:true, gruppe:true },
+    { key:'time', label:'Abfahrt', type:'time' },
+    { key:'distance', label:'Entfernung', type:'text', placeholder:'ca. 422 km', gruppe:true },
+    { key:'duration', label:'Fahrzeit', type:'text', placeholder:'ca. 6 Std.' },
     { key:'notes', label:'Wegbeschreibung', type:'textarea', placeholder:'Leerzeile trennt die Absätze' }
   ],
   flight: [
-    { key:'from', label:'Von', type:'text', required:true, placeholder:'z.B. Frankfurt (FRA)', pair:'start' },
-    { key:'to', label:'Nach', type:'text', required:true, placeholder:'z.B. Windhoek (WDH)', pair:'end' },
-    { key:'date', label:'Abflug am', type:'text', date:true, placeholder:'z.B. 09.09.2026', pair:'start' },
-    { key:'time', label:'Abflug um', type:'time', pair:'end' },
-    { key:'arrivalDate', label:'Ankunft am', type:'text', date:true, placeholder:'z.B. 10.09.2026', pair:'start' },
-    { key:'arrivalTime', label:'Ankunft um', type:'time', pair:'end' },
-    { key:'duration', label:'Flugdauer', type:'text', placeholder:'z.B. 10h 15min', pair:'start' },
-    { key:'airline', label:'Airline', type:'text', placeholder:'z.B. Discover Airlines', pair:'end' },
-    { key:'flightNo', label:'Flugnummer', type:'text', placeholder:'z.B. 4Y 132', pair:'start' },
-    { key:'cabin', label:'Klasse', type:'text', placeholder:'z.B. Economy', pair:'end' },
-    { key:'seat', label:'Sitzplatz', type:'text', placeholder:'z.B. 32A', pair:'start' },
-    { key:'bookingRef', label:'Buchungsnummer', type:'text', placeholder:'z.B. 9DXP4O', pair:'end' },
+    { key:'from', label:'Von', type:'text', required:true, placeholder:'Frankfurt (FRA)' },
+    { key:'to', label:'Nach', type:'text', required:true, placeholder:'Windhoek (WDH)' },
+    { key:'date', label:'Datum', type:'text', date:true, gruppe:'Abflug' },
+    { key:'time', label:'Uhrzeit', type:'time' },
+    { key:'arrivalDate', label:'Datum', type:'text', date:true, gruppe:'Ankunft' },
+    { key:'arrivalTime', label:'Uhrzeit', type:'time' },
+    { key:'duration', label:'Flugdauer', type:'text', placeholder:'10h 15min', gruppe:true },
+    { key:'airline', label:'Airline', type:'text', placeholder:'z.B. Condor' },
+    { key:'flightNo', label:'Flugnummer', type:'text', placeholder:'4Y 132' },
+    { key:'cabin', label:'Klasse', type:'text', placeholder:'Economy' },
+    { key:'seat', label:'Sitzplatz', type:'text', placeholder:'32A' },
+    { key:'bookingRef', label:'Buchungsnummer', type:'text', placeholder:'9DXP4O' },
     { key:'notes', label:'Notizen', type:'textarea' }
   ],
   car: [
-    { key:'company', label:'Anbieter', type:'text', required:true, placeholder:'z.B. Europcar', pair:'start' },
-    { key:'vehicle', label:'Fahrzeug', type:'text', placeholder:'z.B. Toyota Hilux', pair:'end' },
-    { key:'pickupPlace', label:'Abholung Ort', type:'text', placeholder:'z.B. Windhoek Flughafen', pair:'start' },
-    { key:'dropoffPlace', label:'Rückgabe Ort', type:'text', placeholder:'z.B. Windhoek Flughafen', pair:'end' },
-    { key:'pickupDate', label:'Abholung am', type:'text', date:true, placeholder:'z.B. 10.09.2026', pair:'start' },
-    { key:'pickupTime', label:'Abholung um', type:'time', pair:'end' },
-    { key:'dropoffDate', label:'Rückgabe am', type:'text', date:true, placeholder:'z.B. 22.09.2026', pair:'start' },
-    { key:'dropoffTime', label:'Rückgabe um', type:'time', pair:'end' },
-    { key:'bookingRef', label:'Buchungsnummer', type:'text', placeholder:'z.B. 9DXP4O', pair:'start' },
-    { key:'phone', label:'Telefon', type:'text', placeholder:'z.B. +264 62 543700', pair:'end' },
+    { key:'company', label:'Anbieter', type:'text', required:true, placeholder:'z.B. Europcar' },
+    { key:'vehicle', label:'Fahrzeug', type:'text', placeholder:'z.B. Hilux' },
+    { key:'pickupPlace', label:'Ort', type:'text', placeholder:'z.B. Flughafen', gruppe:'Abholung' },
+    { key:'pickupDate', label:'Datum', type:'text', date:true },
+    { key:'pickupTime', label:'Uhrzeit', type:'time' },
+    { key:'dropoffPlace', label:'Ort', type:'text', placeholder:'z.B. Flughafen', gruppe:'Rückgabe' },
+    { key:'dropoffDate', label:'Datum', type:'text', date:true },
+    { key:'dropoffTime', label:'Uhrzeit', type:'time' },
+    { key:'bookingRef', label:'Buchungsnummer', type:'text', placeholder:'9DXP4O', gruppe:true },
+    { key:'phone', label:'Telefon', type:'text', placeholder:'+264 …' },
     { key:'notes', label:'Notizen', type:'textarea' }
   ],
   activity: [
-    { key:'name', label:'Aktivität', type:'text', required:true, placeholder:'z.B. Sundowner Düne 45' },
-    { key:'date', label:'Datum', type:'text', date:true, placeholder:'z.B. 09.09.2026', pair:'start' },
-    { key:'time', label:'Uhrzeit', type:'time', pair:'end' },
-    { key:'phone', label:'Telefon', type:'text', placeholder:'z.B. +264 63 683 188' },
+    { key:'name', label:'Aktivität', type:'text', required:true, placeholder:'z.B. Sundowner' },
+    { key:'date', label:'Datum', type:'text', date:true, gruppe:true },
+    { key:'time', label:'Uhrzeit', type:'time' },
+    { key:'phone', label:'Telefon', type:'text', placeholder:'+264 …', gruppe:true },
     { key:'notes', label:'Notizen', type:'textarea' }
   ],
   photo: [
-    { key:'name', label:'Session', type:'text', required:true, placeholder:'z.B. Milchstraße über den Dünen' },
-    { key:'stopId', label:'Stopp', type:'select-stop' },
-    { key:'date', label:'Datum', type:'text', date:true, placeholder:'z.B. 09.09.2026', pair:'start' },
-    { key:'time', label:'Uhrzeit', type:'time', pair:'end' },
+    { key:'name', label:'Session', type:'text', required:true, placeholder:'z.B. Milchstraße' },
+    { key:'date', label:'Datum', type:'text', date:true, gruppe:true },
+    { key:'time', label:'Uhrzeit', type:'time' },
     { key:'notes', label:'Notizen', type:'textarea' },
-    { key:'equipment', label:'Equipment (Komma-getrennt)', type:'text', placeholder:'z.B. 14mm GM, Stativ, L-Bracket' },
-    { key:'motives', label:'Motive (eine Zeile pro Motiv)', type:'textarea', placeholder:'z.B. Milchstraße über den Dünen' },
-    { key:'images', label:'Referenzbilder', type:'images' }
+    { key:'equipment', label:'Equipment', type:'text', placeholder:'Komma-getrennt', gruppe:true },
+    { key:'motives', label:'Motive', type:'textarea', placeholder:'Eine Zeile pro Motiv' }
   ],
-  pack: [ { key:'name', label:'Gegenstand', type:'text', required:true }, { key:'category', label:'Kategorie', type:'text', placeholder:'z.B. Technik, Fotografie' } ],
+  pack: [ { key:'name', label:'Gegenstand', type:'text', required:true }, { key:'category', label:'Kategorie', type:'text', placeholder:'z.B. Technik' } ],
   todo: [ { key:'name', label:'Aufgabe', type:'text', required:true, placeholder:'z.B. Visum beantragen' } ]
 };
 
-let modalType=null, modalId=null, formImages=[];
+let modalType=null, modalId=null;
+/* Eine Formularzeile: Bezeichnung links, Eingabe rechts. Datum und Uhrzeit sind
+   Textfelder mit Eingabehilfe - tippen ist schneller als das iOS-Rad. */
 function fieldHTML(f, value){
   const v = value ?? '';
-  if (f.date) return `<div class="field"><label>${f.label}</label><input type="text" id="f_${f.key}" value="${esc(isoToDE(v))}" placeholder="${esc(f.placeholder||'z.B. 31.12.2026')}" inputmode="decimal" autocomplete="off" oninput="autoDate(this)" onblur="fixDate(this)"></div>`;
-  // Uhrzeit wie in innerField als Textfeld mit Eingabehilfe - fehlte hier und waere bei
-  // einem Zeitfeld ohne pair-Partner still zum iOS-Rad geworden.
-  if (f.type==='time') return `<div class="field"><label>${f.label}</label><input type="text" id="f_${f.key}" value="${esc(v)}" placeholder="${esc(f.placeholder||'z.B. 21:55')}" inputmode="numeric" autocomplete="off" oninput="autoTime(this)" onblur="fixTime(this)"></div>`;
-  if (f.type==='textarea') return `<div class="field"><label>${f.label}</label><textarea id="f_${f.key}" placeholder="${esc(f.placeholder||'')}">${esc(v)}</textarea></div>`;
-  if (f.type==='select-stop'){ const l=stops.filter(s=>s.tripId===currentTripId); return `<div class="field"><label>${f.label}</label><select id="f_${f.key}"><option value="">Kein Stopp</option>${l.map(s=>`<option value="${s.id}" ${v===s.id?'selected':''}>${esc(s.name)}</option>`).join('')}</select></div>`; }
-  if (f.type==='images') return `<div class="field"><label>${f.label}</label><div class="img-grid" id="f_images_grid"></div><input type="file" id="f_images_input" accept="image/*" multiple style="display:none" onchange="handleImageFiles(this.files)"></div>`;
-  return `<div class="field"><label>${f.label}</label><input type="${f.type}" id="f_${f.key}" value="${esc(v)}" placeholder="${esc(f.placeholder||'')}"></div>`;
+  const id = `f_${f.key}`;
+  const lab = `<label for="${id}">${esc(f.label)}</label>`;
+  if (f.date) return `<div class="feld">${lab}<input type="text" id="${id}" value="${esc(isoToDE(v))}" placeholder="TT.MM.JJJJ" inputmode="decimal" autocomplete="off" oninput="autoDate(this)" onblur="fixDate(this)"></div>`;
+  if (f.type==='time') return `<div class="feld">${lab}<input type="text" id="${id}" value="${esc(v)}" placeholder="HH:MM" inputmode="decimal" autocomplete="off" oninput="autoTime(this)" onblur="fixTime(this)"></div>`;
+  if (f.type==='textarea') return `<div class="feld lang"><textarea id="${id}" placeholder="${esc(f.placeholder||'')}" aria-label="${esc(f.label)}">${esc(v)}</textarea></div>`;
+  return `<div class="feld">${lab}<input type="${f.type}" id="${id}" value="${esc(v)}" placeholder="${esc(f.placeholder||'')}" autocomplete="off"></div>`;
 }
-/* Baut die Felder; Felder mit pair:'start'/'end' landen nebeneinander in einer .field-row (wie Finanzen). */
+/* Baut die Gruppen: Felder sammeln sich, bis eines mit gruppe eine neue beginnt;
+   mehrzeiliger Text steht immer fuer sich, mit Ueberschrift. */
 function buildFields(list, entry){
-  let out='';
-  for (let i=0;i<list.length;i++){
-    const f=list[i];
-    if (f.pair==='start' && list[i+1] && list[i+1].pair==='end'){
-      const g=list[i+1];
-      out += `<div class="field field-row"><div>${innerField(f, entry?entry[f.key]:'')}</div><div>${innerField(g, entry?entry[g.key]:'')}</div></div>`;
-      i++;
-    } else out += fieldHTML(f, entry?entry[f.key]:'');
+  const gruppen = [];
+  let akt = null;
+  const neu = (titel) => { akt = { titel: titel || '', zeilen: [] }; gruppen.push(akt); };
+  for (const f of list){
+    const v = entry ? entry[f.key] : '';
+    if (f.type === 'textarea'){ neu(f.label); akt.zeilen.push(fieldHTML(f, v)); akt = null; continue; }
+    if (!akt || f.gruppe) neu(typeof f.gruppe === 'string' ? f.gruppe : '');
+    akt.zeilen.push(fieldHTML(f, v));
   }
-  return out;
+  return gruppen.map(g => (g.titel ? `<div class="gruppe-titel">${esc(g.titel)}</div>` : '') + `<div class="gruppe">${g.zeilen.join('')}</div>`).join('');
 }
-/* Label+Input ohne äußeren .field-Wrapper (für die zweispaltige Zeile) */
-function innerField(f, value){
-  const v = value ?? '';
-  if (f.date) return `<label>${f.label}</label><input type="text" id="f_${f.key}" value="${esc(isoToDE(v))}" placeholder="${esc(f.placeholder||'z.B. 31.12.2026')}" inputmode="decimal" autocomplete="off" oninput="autoDate(this)" onblur="fixDate(this)">`;
-  // Uhrzeit als normales Textfeld statt iOS-Rad – tippen ist schneller als scrollen
-  if (f.type==='time') return `<label>${f.label}</label><input type="text" id="f_${f.key}" value="${esc(v)}" placeholder="${esc(f.placeholder||'z.B. 21:55')}" inputmode="numeric" autocomplete="off" oninput="autoTime(this)" onblur="fixTime(this)">`;
-  return `<label>${f.label}</label><input type="${f.type}" id="f_${f.key}" value="${esc(v)}" placeholder="${esc(f.placeholder||'')}">`;
-}
-function renderImageGrid(){ const g=$('f_images_grid'); if(!g) return; g.innerHTML = formImages.map((im,i)=> im.data
-    ? `<div class="img-thumb"><img src="${im.data}"><button class="img-del" onclick="removeFormImage(${i})">✕</button></div>`
-    : `<div class="img-thumb"><div class="img-loading">…</div><button class="img-del" onclick="removeFormImage(${i})">✕</button></div>`
-  ).join('') + `<div class="img-upload-btn" onclick="document.getElementById('f_images_input').click()"><span class="plus">＋</span><span>Foto</span></div>`; }
-function removeFormImage(i){ formImages.splice(i,1); renderImageGrid(); }
 function resizeImage(file, maxW=900, q=0.72){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>{ const img=new Image(); img.onload=()=>{ let w=img.width,h=img.height; if(w>maxW){h=Math.round(h*maxW/w);w=maxW;} const cv=document.createElement('canvas'); cv.width=w;cv.height=h; cv.getContext('2d').drawImage(img,0,0,w,h); res(cv.toDataURL('image/jpeg',q)); }; img.onerror=rej; img.src=e.target.result; }; r.onerror=rej; r.readAsDataURL(file); }); }
-async function handleImageFiles(files){ for(const f of files){ try{ formImages.push({ data: await resizeImage(f), isNew:true }); }catch(e){} } renderImageGrid(); const inp=$('f_images_input'); if(inp) inp.value=''; }
 
-/* Beim „＋" zuerst die Kategorie wählen, dann das passende Formular öffnen */
-function openAddPicker(){
-  const opts = [
-    ['stop','Stopp','<span class="ac-dot"></span>','ac-stop'],
-    ['flight','Flug',ICON_PLANE,'ac-flight'],
-    ['hotel','Hotel',ICON_BED,'ac-hotel'],
-    ['car','Mietwagen',ICON_CAR,'ac-car'],
-    ['transfer','Transfer',ICON_TRANSFER,'ac-transfer'],
-    ['activity','Aktivität',ICON_PIN,'ac-activity']
-  ];
-  $('add-choices').innerHTML = opts.map(([type,label,icon,cls])=>
-    `<button class="add-choice ${cls}" onclick="pickAdd('${type}')"><span class="ac-ic">${icon}</span><span class="ac-label">${label}</span><span class="ac-arrow">›</span></button>`
-  ).join('');
-  oeffneOverlay('add-overlay', closeAddPicker);
-}
-function closeAddPicker(){ schliesseOverlay('add-overlay'); }
-function pickAdd(type){ closeAddPicker(); rpOpenModal(type); }
 
 function rpOpenModal(type, id){
-  modalType=type; modalId=id||null; formImages=[];
+  modalType=type; modalId=id||null;
   const schema=SCHEMAS[type];
   const entry = id ? arr(type).find(x=>x.id===id) : null;
   $('form-title').textContent = modalTitle(type, id);
-  $('form-fields').innerHTML = buildFields(schema.filter(f=>!(f.editOnly && !id)), entry);
-  // Arrays zurück in Text
-  if (entry) {
-    if (entry.equipment && $('f_equipment')) $('f_equipment').value = entry.equipment.join(', ');
-    if (entry.motives && $('f_motives')) $('f_motives').value = entry.motives.join('\n');
-  }
-  if (type==='photo'){
-    formImages = [];
-    renderImageGrid();
-    if (entry && entry.images && entry.images.length) loadFormImages(entry.images);
-  }
+  $('form-fields').innerHTML = buildFields(schema, entry);
   oeffneOverlay('form-overlay', rpCloseModal);
 }
-async function loadFormImages(refs){
-  // Platzhalter-Einträge anlegen, damit Reihenfolge/Anzahl stimmen, dann Bilddaten nachladen
-  formImages = refs.map(ref => ({ id: isDataUri(ref)?null:ref, existingRef: ref, data: isDataUri(ref)?ref:'' }));
-  renderImageGrid();
-  for (const im of formImages) {
-    if (!im.data && im.id && idbReady) { const d=await idbGet(im.id); if(d) im.data=d; }
-  }
-  if (modalType==='photo') renderImageGrid();
-}
-function rpCloseModal(){ schliesseOverlay('form-overlay'); modalType=null; modalId=null; formImages=[]; }
+function rpCloseModal(){ schliesseOverlay('form-overlay'); modalType=null; modalId=null; }
 async function saveModal(){
   if(!modalType || !SCHEMAS[modalType]) return;   // kein Formular offen
   const type=modalType, schema=SCHEMAS[type], obj={};
   for (const f of schema){
-    if (f.editOnly && !modalId) continue;
-    if (f.type==='images'){ obj.images = await persistFormImages(); continue; }
     const el=$('f_'+f.key); let val=el?el.value.trim():'';
     if (f.date){
       const iso=deToISO(val);
@@ -1673,16 +1725,18 @@ async function saveModal(){
       if (val && !iso){ await notify(`„${val}" ist kein gültiges Datum. Bitte im Format TT.MM.JJJJ eingeben.`,'Datum prüfen'); return; }
       obj[f.key]=iso; continue;
     }
-    if (f.key==='equipment'){ obj.equipment = val?val.split(',').map(s=>s.trim()).filter(Boolean):[]; continue; }
-    if (f.key==='motives'){ obj.motives = val?val.split('\n').map(s=>s.trim()).filter(Boolean):[]; continue; }
     if (f.required && !val){ await notify(`Bitte "${f.label}" ausfüllen.`,'Angabe fehlt'); return; }
     obj[f.key]=val;
   }
   if (type!=='trip') obj.tripId=currentTripId;
   // Typ wird nicht mehr im Formular gewählt, sondern ergibt sich aus dem Bereich
-  if (type==='photo') obj.type='foto';
-  else if (type==='activity') obj.type='normal';
-  if (modalId){ Object.assign(arr(type).find(x=>x.id===modalId), obj); }
+  if (type==='activity') obj.type='normal';
+  if (modalId){
+    const alt = arr(type).find(x=>x.id===modalId);
+    // Waehrend das Formular offen war, verschwunden (z.B. Wiederherstellen einer Sicherung)
+    if (!alt){ rpCloseModal(); await notify('Der Eintrag existiert nicht mehr.'); return; }
+    Object.assign(alt, obj);
+  }
   else { obj.id=neueId(); if(type==='pack'||type==='todo') obj.checked=false; arr(type).push(obj); }
   persist(type);
   // Wurde diese Reise aus Finanzen heraus angelegt, ziehen Name/Zeitraum/Land dort nach.
@@ -1698,23 +1752,6 @@ async function saveModal(){
   if (type==='trip'){ renderHome(); if(currentTripId) renderTripScreen(); }
   else renderTabContent();
   showToast('Gespeichert');
-}
-/* Schreibt neue Bilder in IndexedDB, behält bestehende IDs, löscht entfernte Bilder. Gibt die ID-Liste zurück. */
-async function persistFormImages(){
-  const originalRefs = modalId ? ((arr('activity').find(x=>x.id===modalId)||{}).images || []) : [];
-  const kept=[];
-  for (const im of formImages) {
-    if (im.id) { kept.push(im.id); }
-    else if (im.existingRef && isDataUri(im.existingRef)) {
-      if (idbReady) { const nid='img_'+neueId(); await idbPut(nid, im.existingRef); kept.push(nid); }
-      else kept.push(im.existingRef);
-    } else if (im.data) {
-      if (idbReady) { const nid='img_'+neueId(); await idbPut(nid, im.data); kept.push(nid); }
-      else kept.push(im.data);
-    }
-  }
-  if (idbReady) { for (const ref of originalRefs) { if (!isDataUri(ref) && !kept.includes(ref)) await idbDelete(ref); } }
-  return kept;
 }
 
 /* ===== BACKUP (Payload) – von Cloud-Backup genutzt ===== */
@@ -1736,23 +1773,11 @@ async function rpApplyBackup(rawText){
   return true;
 }
 
-/* ===== CLOUD-BACKUP (GitHub, verschlüsselt) ===== */
-
-/* Metadaten (u.a. sha zum Überschreiben). Bei Dateien über 1 MB ist "content" hier leer. */
-
-/* Dateiinhalt direkt laden – funktioniert auch über 1 MB (Contents-API liefert dort kein content-Feld mehr). */
-
-/* ===== APP-SPERRE (FaceID via WebAuthn) ===== */
-
-/* Der Escape-Zuhoerer lag frueher hier und schloss immer nur das Formular dieses
-   Bereichs. Er liegt jetzt im Kern und schliesst das jeweils oberste offene Blatt. */
-
 /* ===== INIT ===== */
 async function rpInit(){
   await idbInit();
   await migrateInlineImages();
   renderHome();
-  // Die App-Sperre gehoert dem Kern und wird dort einmalig gestartet.
   // Fotografie-Karten sind dauerhaft im Bearbeiten-Modus. Ist ein Feld fokussiert,
   // verbraucht iOS den ersten Tab-Tap nur zum Schließen der Tastatur. Deshalb ein evtl.
   // fokussiertes Feld schon beim pointerdown auf die Tab-Leiste defokussieren -> ein Tap reicht.
@@ -1765,26 +1790,6 @@ async function rpInit(){
     tb.addEventListener('pointerdown', blurActive, { passive: true });
     tb.addEventListener('touchstart', blurActive, { passive: true });
   }
-  // Nach Abschluss der Öffnen-Animation die Transform entfernen (sauberes iOS-Scrollen)
-  document.querySelectorAll('.screen').forEach(sc=>{
-    sc.addEventListener('transitionend', e=>{
-      if (e.target===sc && e.propertyName==='transform' && sc.classList.contains('open')) sc.classList.add('settled');
-    });
-  });
-  // Fallback: Ein position:fixed-Container mit Transform scrollt auf iOS nicht. 'settled'
-  // entfernt den Transform. Feuert transitionend mal nicht (iOS-Eigenart), setzt dieser
-  // Observer 'settled' trotzdem garantiert kurz nach dem Öffnen -> Scrollen funktioniert immer.
-  const settleObserver = new MutationObserver(muts=>{
-    for(const m of muts){
-      const sc=m.target;
-      if(sc.classList.contains('open') && !sc.classList.contains('settled')){
-        setTimeout(()=>{ if(sc.classList.contains('open')) sc.classList.add('settled'); }, 460);
-      }
-    }
-  });
-  document.querySelectorAll('.screen').forEach(sc=> settleObserver.observe(sc, {attributes:true, attributeFilter:['class']}));
-  // Service Worker registrieren (Offline-Fähigkeit); scheitert leise wenn nicht unterstützt (z.B. file://)
-  
 }
 
 
@@ -1798,6 +1803,7 @@ registerModule({
   detect: p => !!(p && Array.isArray(p.trips)),
   init: () => rpInit(),
   onOpen: () => { try { renderHome(); } catch(e){} },
+  einstellungen: () => gearZeilenWert(),
   summary: () => {
     try {
       const heute = heuteBerlin();
@@ -1806,7 +1812,9 @@ registerModule({
       if (kommend) {
         const tage = Math.round((kommend.d - heute) / 86400000);
         const ziel = kommend.t.name || '';
-        return { sub: ziel, value: tage, unit: 'Tage', note: 'bis zur Abreise',
+        if (tage === 0) return { sub: ziel, value: 'Heute', unit: '', note: 'Abreise',
+                 art: (kommend.t.country ? tripMapSVG(kommend.t.country) : '') };
+        return { sub: ziel, value: tage, unit: tage === 1 ? 'Tag' : 'Tage', note: 'bis zur Abreise',
                  art: (kommend.t.country ? tripMapSVG(kommend.t.country) : '') };
       }
       return { sub: trips.length ? 'Keine kommende Reise' : 'Noch keine Reise',
