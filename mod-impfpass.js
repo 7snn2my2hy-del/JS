@@ -7,11 +7,12 @@ document.getElementById('mod-impfpass').insertAdjacentHTML('beforeend', `
 
   <div class="app-header">
     <button class="screen-back" aria-label="Zurück" onclick="closeModule()">‹</button>
+    <button class="icon-btn teilen" aria-label="Impfpass teilen" onclick="impTeilen()"></button>
     <button class="icon-btn" aria-label="Impfung hinzufügen" onclick="impOpenModal()">＋</button>
     <span>Impfpass</span>
   </div>
 
-  <div id="imp-alert-wrap"></div>
+  <div id="imp-alert-wrap" class="suche-aus"></div>
 
   <div id="imp-list"></div>
 
@@ -424,16 +425,56 @@ function impRenderList(){
   IMP_KATEGORIEN.forEach((kat, i) => {
     const gruppe = liste.filter(e => impKategorie(e) === kat.key);
     if (!gruppe.length) return;
-    html += `<div class="sub-header"><div class="sub-header-text"><h1>${kat.label}</h1><p>${kat.unter}</p></div></div>`;
-    html += `<div class="list">${gruppe.map(e => swipeWrap('impf', e.id, impEntryHTML(e))).join('')}</div>`;
+    html += `<div class="imp-gruppe"><div class="sub-header"><div class="sub-header-text"><h1>${kat.label}</h1><p>${kat.unter}</p></div></div>`;
+    html += `<div class="list">${gruppe.map(e => swipeWrap('impf', e.id, impEntryHTML(e))).join('')}</div></div>`;
   });
   el.innerHTML = html;
   // Antippen oeffnet den Eintrag, Wischen bietet Bearbeiten und Loeschen.
   el.querySelectorAll('.entry-wrap').forEach(wrap => {
     const id = wrap.dataset.id;
     attachSwipeGeneric(wrap, () => impDelete(id), () => impOpenModal(id), () => impOpenModal(id));
+    // Langes Druecken: zusaetzlich "Zum Kalender hinzufuegen", wenn eine Auffrischung ansteht.
+    wrap._kontextExtras = () => {
+      const e = impfungen.find(x => x.id === id); const t = e && impTermin(e);
+      return t ? [{ text: 'Zum Kalender hinzufügen', symbol: 'kalender', tun: () => kalenderExport([t], e.name) }] : [];
+    };
   });
 }
+
+/* ---------------- Kalender, Heute, Teilen ---------------- */
+/* Naechste Auffrischung als Termin, Erinnerung vier Wochen vorher. */
+function impTermin(e){
+  const st = impStatus(e);
+  if (!st.next || st.next < todayISO()) return null;
+  return { id: 'impf-' + e.id, titel: e.name + ' auffrischen', datum: st.next, notiz: 'Impfung: ' + e.name, erinnerungTage: 28 };
+}
+function impHeute(){
+  return impfungen.map(e => ({ e, st: impStatus(e) }))
+    .filter(x => x.st.next && daysUntil(x.st.next) <= 60)
+    .map(({ e, st }) => {
+      const tage = daysUntil(st.next);
+      return { tage, titel: e.name, symbol: DOCK_ICONS.impfpass, farbe: 'petrol',
+        unter: (tage < 0 ? 'Auffrischung fällig seit ' : 'Auffrischung am ') + displayDate(st.next),
+        aktion: () => zuBereich('impfpass', () => hervorheben(document.querySelector(`#imp-list .entry-wrap[data-id="${e.id}"]`))) };
+    });
+}
+/* Uebersicht als Text, z.B. fuer den Arzt. */
+function impTeilen(){
+  const z = ['Impfpass – Stand ' + displayDate(todayISO())];
+  IMP_KATEGORIEN.forEach(kat => {
+    const gruppe = impSorted().filter(e => impKategorie(e) === kat.key);
+    if (!gruppe.length) return;
+    z.push('', kat.label);
+    gruppe.forEach(e => {
+      const st = impStatus(e), dosen = impDosenListe(e), l = dosen[dosen.length - 1];
+      const teile = [l ? 'zuletzt ' + displayDate(l.datum) + (l.impfstoff ? ' (' + l.impfstoff + ')' : '') : 'keine Impfung eingetragen', st.label];
+      if (st.next && st.key !== 'done') teile.push('nächste ' + displayDate(st.next));
+      z.push('• ' + e.name + ': ' + teile.join(', '));
+    });
+  });
+  teilen({ titel: 'Impfpass', text: z.join('\n') });
+}
+sucheEinrichten(document.getElementById('mod-impfpass'), { zeilen: '#imp-list .entry-wrap', gruppen: '#imp-list .imp-gruppe' });
 
 function impRender(){ impRenderAlert(); impRenderList(); }
 
@@ -550,6 +591,8 @@ registerModule({
   detect: p => !!(p && Array.isArray(p.impfungen)),
   init: () => { try { impRender(); } catch(e){} },
   onOpen: () => { try { impRender(); } catch(e){} },
+  heute: () => impHeute(),
+  kalender: () => impfungen.map(impTermin).filter(Boolean),
   summary: () => {
     try {
       const art = kachelMotiv('impfpass');

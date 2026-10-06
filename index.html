@@ -9,7 +9,7 @@
 <!-- Name unter dem Symbol auf dem Home-Bildschirm. iOS wertet dieses Tag aus,
      nicht short_name aus dem Manifest. -->
 <meta name="apple-mobile-web-app-title" content="Jörg">
-<link rel="manifest" href="manifest.json?v=2610041940">
+<link rel="manifest" href="manifest.json?v=2610061908">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg</title>
@@ -77,18 +77,24 @@
        Werte in pt bei Standard-Textgroesse; die rem-Basis waechst mit der
        Systemschrift mit. Untergrenze ist Caption 2 mit 11pt - kleiner setzt iOS
        selbst keine Schrift. Vorher standen 46 verschiedene Groessen im Blatt. */
-    --fs-caption2: 0.6875rem;  /* 11 */
-    --fs-caption1: 0.75rem;    /* 12 */
-    --fs-footnote: 0.8125rem;  /* 13 */
-    --fs-subhead:  0.9375rem;  /* 15 */
-    --fs-callout:  1rem;       /* 16 - Eingabefelder nie kleiner, sonst zoomt iOS */
-    --fs-body:     1.0625rem;  /* 17 */
-    --fs-title3:   1.25rem;    /* 20 */
-    --fs-title2:   1.375rem;   /* 22 - Abschnittsueberschrift */
-    --fs-title1:   1.75rem;    /* 28 - Bereichstitel */
-    --fs-large:    2.125rem;   /* 34 */
-    --fs-display:  2.625rem;   /* 42 - grosse Kennzahl */
-    --fs-hero:     3rem;       /* 48 - Gesamtvermoegen */
+    /* Schriftgroessen folgen der Textgroesse aus den iOS-Einstellungen (Dynamic Type).
+       Der Wurzel-Schriftgrad ist die Systemgroesse fuer Fliesstext (17px bei Standard);
+       --typo rechnet sie auf die bisherige Basis 16px um und deckelt bei 130 % - darueber
+       brechen Kacheln und Zeilen um. Nach unten endet sie dort, wo Fliesstext 16px
+       erreicht: kleinere Eingabefelder liessen iOS beim Antippen hineinzoomen. */
+    --typo: clamp(15.06px, calc(1rem * 0.941176), 20.8px);
+    --fs-caption2: calc(var(--typo) * 0.6875);  /* 11 */
+    --fs-caption1: calc(var(--typo) * 0.75);    /* 12 */
+    --fs-footnote: calc(var(--typo) * 0.8125);  /* 13 */
+    --fs-subhead:  calc(var(--typo) * 0.9375);  /* 15 */
+    --fs-callout:  max(16px, calc(var(--typo) * 1));       /* 16 - Eingabefelder nie kleiner, sonst zoomt iOS */
+    --fs-body:     calc(var(--typo) * 1.0625);  /* 17 */
+    --fs-title3:   calc(var(--typo) * 1.25);    /* 20 */
+    --fs-title2:   calc(var(--typo) * 1.375);   /* 22 - Abschnittsueberschrift */
+    --fs-title1:   calc(var(--typo) * 1.75);    /* 28 - Bereichstitel */
+    --fs-large:    calc(var(--typo) * 2.125);   /* 34 */
+    --fs-display:  calc(var(--typo) * 2.625);   /* 42 - grosse Kennzahl */
+    --fs-hero:     calc(var(--typo) * 3);       /* 48 - Gesamtvermoegen */
     /* Versal-Beschriftung: eine Rolle fuer alle Bereiche. Vorher 22 Regeln mit
        9 Groessen, 7 Laufweiten und 4 Farben. Grau wie iOS-Sekundaertext. */
     --label-fs:    var(--fs-caption2);
@@ -119,7 +125,8 @@
     --zahl-font: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   }
 
-  html { -webkit-text-size-adjust: 100%; overflow-x: hidden; background: var(--bg); }
+  html { -webkit-text-size-adjust: 100%; overflow-x: hidden; background: var(--bg); font-size: 17px; }
+  @supports (font: -apple-system-body) { html { font: -apple-system-body; line-height: normal; } }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
@@ -192,7 +199,7 @@
     transition: transform var(--dur-3) var(--spring), color var(--dur-1), box-shadow var(--dur-1);
   }
   .gear-btn:active { transform: rotate(90deg) scale(0.94); color: var(--accent); opacity: 1; }
-  .gear-btn svg { width: 16px; height: 16px; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35)); }
+  .gear-btn svg { width: 16px; height: 16px; }
 
   /* Karte: deckende Flaeche wie in Health und Wallet - kein Weichzeichner,
      kein Rahmen, kein Schatten. Vorher trug jede Karte Glas mit 48px
@@ -289,7 +296,9 @@
   /* Bento */
   /* Kachelraster: alle Zeilen gleich hoch, Hoehe ergibt sich aus der inhaltsreichsten
      Kachel. Steht bewusst im Kern, damit jedes Modul dieselbe Kachel erbt. */
-  .bento { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: auto; gap: 12px; max-width: 100%; }
+  /* Zwei Spalten; bei grosser Systemschrift (Dynamic Type) wird es eine, sobald eine
+     Kachel schmaler als 9.6em wuerde - wie Health bei grossen Textgroessen. */
+  .bento { display: grid; grid-template-columns: repeat(auto-fit, minmax(max(9.6em, calc(50% - 6px)), 1fr)); grid-auto-rows: auto; gap: 12px; max-width: 100%; }
   /* Kachel wie in Health: deckend, flach, ohne Rahmen. Nur Kacheln geben beim
      Antippen nach - Zeilen markieren, Knoepfe dimmen. */
   .bento-tile { height: 100%; background: var(--flaeche); border-radius: var(--r-tile); padding: 15px 16px; min-width: 0; display: flex; flex-direction: column; overflow: hidden; cursor: pointer; transition: transform var(--dur-1) var(--spring); }
@@ -317,7 +326,7 @@
   .tile-action-bg.voll .swipe-edit { flex-grow: 0.0001; padding: 0; }
   /* Die Grafik liegt als grossflaechiges Wasserzeichen HINTER dem Text (siehe .tt-map),
      deshalb braucht die Kachel keine eigene Spalte dafuer – schlichter Textfluss. */
-  .trip-tile { height: 156px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+  .trip-tile { min-height: 156px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
   .trip-tile.done { opacity: 0.72; }
   .trip-tile.done .tt-map { opacity: 0.1; }
   .trip-tile.done .tt-map path[fill="var(--accent)"] { fill: var(--muted); }
@@ -447,7 +456,7 @@
   .rt-list { margin-top: 4px; min-width: 0; }
   /* Datumsspalte 50px: die Beschriftung "Nächte" braucht bei 11pt (kleinster
      iOS-Textstil) 50px - bei 38px wurde sie links abgeschnitten. */
-  .rt-row { display: grid; grid-template-columns: 50px 22px 1fr 26px; align-items: start; }
+  .rt-row { display: grid; grid-template-columns: max(50px, 2.95em) 22px 1fr 26px; align-items: start; }
   /* Pfeil am Zeilenende: zeigt, dass die ganze Zeile in die Ansicht fuehrt. */
   .rt-chev { display: flex; align-items: center; justify-content: center; width: 26px; min-height: 26px; margin-top: -2px; font-size: var(--fs-body); line-height: 1; color: var(--muted-2); }
   .rt-row { cursor: pointer; transition: background-color var(--dur-1) var(--ease-ios); }
@@ -798,7 +807,7 @@
   /* Untergrenze fuer ALLE Eingabefelder: iOS zoomt beim Hineintippen hinein, sobald ein
      Feld kleiner als 16px schreibt - und zoomt danach nicht zurueck. Die Seite bleibt
      dann vergroessert stehen. 1rem entspricht hier 16px. */
-  input, select, textarea { font-size: max(1rem, 1em); }
+  input, select, textarea { font-size: max(16px, 1em); }
 
   /* ===== Formular wie in Kalender und Kontakte =====
      Gruppen untereinander; jede Zeile: Bezeichnung links, Eingabe rechts.
@@ -889,6 +898,63 @@
   .sr-icon.blau    { --sr-farbe: var(--accent); }
   .sr-icon.gruen   { --sr-farbe: var(--green); }
   .sr-icon.violett { --sr-farbe: var(--violet); }
+  .sr-icon.rot     { --sr-farbe: var(--danger); }
+  .sr-icon.petrol  { --sr-farbe: var(--petrol); }
+  .zeile-wert.rot { color: var(--danger); }
+
+  /* ---- Heute (Startseite) ---- */
+  #heute > .section-label:first-child { margin-top: 4px; }
+  #heute .zeile-wert { font-size: var(--fs-subhead); flex-shrink: 0; }
+
+  /* Kurzes Aufleuchten nach einem Sprung (hervorheben) */
+  @keyframes markiert { 0%, 35% { background-color: var(--flaeche-3); } 100% { background-color: transparent; } }
+  .markiert, .markiert > .tile-slider > * { animation: markiert 1.6s var(--ease-ios); }
+
+  /* ---- Diagramm zum Abfahren ---- */
+  .abfahrbar { position: relative; touch-action: pan-y; cursor: crosshair; }
+  .abfahr { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+  .abfahr-linie { position: absolute; width: 1px; margin-left: -0.5px; background: rgba(235, 235, 245, 0.45); }
+  .abfahr-punkt { position: absolute; width: 11px; height: 11px; margin: -5.5px 0 0 -5.5px; border-radius: 50%;
+                  background: var(--farbe); box-shadow: 0 0 0 3px var(--flaeche); }
+  .abfahr-wert { position: absolute; top: 0; transform: translateY(calc(-100% - 8px)); display: flex; flex-direction: column; align-items: center;
+                 gap: 1px; padding: 5px 10px; border-radius: 10px; background: var(--flaeche-3); white-space: nowrap; }
+  .abfahr-wert span { font-size: var(--fs-caption2); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .abfahr-wert b { font-size: var(--fs-footnote); font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); }
+
+  /* ---- Suche durch Herunterziehen ---- */
+  .suchfeld { max-height: 0; overflow: hidden; opacity: 0; margin: -10px 0 0;
+              transition: max-height var(--dur-2) var(--ease-ios), opacity var(--dur-1), margin var(--dur-2) var(--ease-ios); }
+  .suchfeld.auf { max-height: 160px; opacity: 1; margin: -10px 0 18px; }
+  .suchfeld-zeile { display: flex; align-items: center; gap: 12px; }
+  .suchfeld-innen { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; height: 38px; padding: 0 10px;
+                    border-radius: 12px; background: var(--flaeche-2); color: var(--muted); }
+  .suchfeld-innen svg { width: 17px; height: 17px; flex: 0 0 auto; }
+  .suchfeld-innen input { flex: 1; min-width: 0; border: none; background: transparent; color: var(--text); outline: none; -webkit-appearance: none; appearance: none; }
+  .suchfeld-innen input::-webkit-search-cancel-button { -webkit-appearance: none; }
+  .suchfeld-ab { border: none; background: none; color: var(--accent); font: inherit; font-size: var(--fs-body); padding: 8px 0; cursor: pointer; }
+  .suchfeld-leer { padding: 28px 16px 8px; text-align: center; color: var(--muted); font-size: var(--fs-subhead); }
+  .suche-aktiv .suche-aus, .suche-weg { display: none !important; }
+  /* Finanzen: eingeklappte Abschnitte zeigen waehrend der Suche ihre Treffer,
+     Abschnitte ohne Treffer verschwinden samt Ueberschrift. */
+  .suche-aktiv .section-body.collapsed { display: block; }
+  .suche-aktiv .sub-header:has(+ .section-body.suche-weg) { display: none; }
+  .suche-aktiv .section-chevron { visibility: hidden; }
+
+  /* Eintrag-Ansicht in Reisen: Karten, Route und Kalender als Zeilen ganz oben */
+  .dv-aktionen { margin-bottom: 22px; }
+  /* Foto-Ort: Karten-Knopf neben dem Loeschen */
+  .foto-karte { color: var(--accent); }
+  .foto-karte svg { width: 16px; height: 16px; display: block; }
+  /* Astro-Termine lassen sich antippen (in den Kalender) */
+  #fg-calendar .rt-row { cursor: pointer; }
+  #fg-calendar .rt-row:active { background-color: var(--flaeche-3); }
+
+  /* Teilen-Knopf in der Kopfzeile: gleiches Feld wie Plus und Zurueck */
+  .icon-btn.teilen::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v11.5M7.5 7.5 12 3l4.5 4.5'/%3E%3Cpath d='M8 10.5H6.5A1.5 1.5 0 0 0 5 12v7.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V12a1.5 1.5 0 0 0-1.5-1.5H16'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v11.5M7.5 7.5 12 3l4.5 4.5'/%3E%3Cpath d='M8 10.5H6.5A1.5 1.5 0 0 0 5 12v7.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V12a1.5 1.5 0 0 0-1.5-1.5H16'/%3E%3C/svg%3E");
+    -webkit-mask-size: 16px 16px; mask-size: 16px 16px; width: 16px; height: 16px; margin-top: -2px;
+  }
   /* Versionsstand am Ende der Einstellungen. */
   .stand { margin: 28px 16px 0; text-align: center; font-size: var(--fs-caption1); color: var(--muted-2); }
 
@@ -1006,20 +1072,24 @@
     display: flex; align-items: center; gap: 10px;
     padding: calc(var(--pad-top) + 5px) var(--pad-x) 5px;
     visibility: hidden; pointer-events: none;
-    /* Beim Ausblenden bleibt die Leiste sichtbar, bis ihr Grund verblasst ist. */
-    transition: visibility 0s linear var(--dur-1);
+    /* Unsichtbar liegt die Leiste oberhalb des Bildschirms: Safari auf dem iPhone
+       wendet einen Weichzeichner sonst auch auf eine unsichtbare Leiste an - der
+       Kopf darunter (Titel, Zahnrad, Zurueck, Plus) wirkte dadurch verwaschen.
+       Beim Ausblenden bleibt sie stehen, bis ihr Grund verblasst ist. */
+    transform: translateY(-100%);
+    transition: visibility 0s linear var(--dur-1), transform 0s linear var(--dur-1);
   }
-  .navbar.an { visibility: visible; pointer-events: auto; transition: none; }
+  .navbar.an { visibility: visible; pointer-events: auto; transform: none; transition: none; }
   /* Nur der Grund blendet weich ein - die Knoepfe sind sofort da und loesen
      die der Kopfzeile an derselben Stelle ab, ohne dass etwas springt. */
   .navbar::before {
     content: ""; position: absolute; inset: 0; z-index: -1;
     background: rgba(18, 18, 21, 0.62);
-    -webkit-backdrop-filter: blur(28px) saturate(190%); backdrop-filter: blur(28px) saturate(190%);
     box-shadow: 0 0.5px 0 var(--stroke-hi);
     opacity: 0; transition: opacity var(--dur-1) var(--ease-ios);
   }
-  .navbar.an::before { opacity: 1; }
+  /* Weichzeichner nur, solange die Leiste wirklich zu sehen ist. */
+  .navbar.an::before { opacity: 1; -webkit-backdrop-filter: blur(28px) saturate(190%); backdrop-filter: blur(28px) saturate(190%); }
   /* Kopfzeilen-Knoepfe unter der Leiste: ausgeblendet, sonst schimmern sie
      beim Scrollen als zweiter Satz durch den Grund. */
   .unter-leiste > .screen-back, .unter-leiste > .settings-back, .unter-leiste > .icon-btn { visibility: hidden; }
@@ -1090,13 +1160,17 @@
     display: flex; flex-direction: column; align-items: center; gap: 12px;
     min-width: 168px; padding: 26px 22px 20px;
     background: rgba(44, 44, 50, 0.72);
-    -webkit-backdrop-filter: blur(48px) saturate(200%); backdrop-filter: blur(48px) saturate(200%);
     border: 1px solid var(--stroke-hi); border-radius: var(--r-tile);
     box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-    transition: opacity var(--dur-1), transform var(--dur-2) var(--spring);
+    /* Unsichtbar ohne Weichzeichner und ganz ausgeblendet - wie bei der Titelleiste
+       wuerde Safari die Bildmitte sonst dauerhaft leicht verwaschen. */
+    visibility: hidden;
+    transition: opacity var(--dur-1), transform var(--dur-2) var(--spring), visibility 0s linear var(--dur-2);
     pointer-events: none;
   }
-  .haken-pop.an { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  .haken-pop.an { opacity: 1; transform: translate(-50%, -50%) scale(1); visibility: visible;
+    transition: opacity var(--dur-1), transform var(--dur-2) var(--spring);
+    -webkit-backdrop-filter: blur(48px) saturate(200%); backdrop-filter: blur(48px) saturate(200%); }
   .haken-pop svg { width: 46px; height: 46px; color: var(--green); }
   .haken-pop svg path { stroke-dasharray: 34; stroke-dashoffset: 34; }
   .haken-pop.an svg path { animation: hakenZug var(--dur-3) var(--ease-ios) 0.06s forwards; }
@@ -1144,7 +1218,25 @@
      umgeschalteter Schalter loest ab iOS 17.4 aber den kurzen Tap aus. */
   .haptik-quelle { position: fixed; top: -100px; left: -100px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
-  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  /* Bewegung reduzieren (iOS-Bedienungshilfe): keine Schiebe- und Federbewegungen.
+     Seiten blenden ueber wie bei iOS; alles andere springt sofort in den Endzustand -
+     Animationen laufen deshalb auf null statt aus, sonst bliebe der Haken ungezeichnet. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0s !important; transition-duration: 0.01ms !important; transition-delay: 0s !important; scroll-behavior: auto !important; }
+    .screen:not(.open), #mod-finanzen .detail-sheet:not(.open) { transform: none; opacity: 0; }
+    .screen, #mod-finanzen .detail-sheet { transition: opacity var(--dur-1) ease, visibility 0s linear var(--dur-1) !important; }
+    .screen.open, #mod-finanzen .detail-sheet.open { opacity: 1; transition: opacity var(--dur-1) ease, visibility 0s !important; }
+    .mod-container.rein, .mod-container.raus.fort { transform: none; opacity: 0; }
+    .mod-container.rein.auf { opacity: 1; transition: opacity var(--dur-1) ease !important; }
+    .mod-container.raus { transform: none; transition: opacity var(--dur-1) ease !important; }
+  }
+  /* Kontrast erhoehen (iOS-Bedienungshilfe): kraeftigere Nebentexte, Linien und Glas. */
+  @media (prefers-contrast: more) {
+    :root { --muted: rgba(235, 235, 245, 0.8); --muted-2: rgba(235, 235, 245, 0.64); --trenner: rgba(150, 150, 158, 0.9);
+            --stroke: rgba(255, 255, 255, 0.24); --stroke-hi: rgba(255, 255, 255, 0.36); }
+    .dock, .navbar.an::before, .undo-toast, .haken-pop, .kontext-karte { background-color: rgba(44, 44, 50, 0.94); }
+    .zeile-pfeil, .segment-btn { opacity: 1; }
+  }
 
 
   /* ---- Startseite & Bereichsumschaltung ---- */
@@ -1288,7 +1380,7 @@
 /* Dashboard-Karten kraeftiger absetzen: tiefere Schatten, deutlichere Glaskante.
    Bewusst OHNE backdrop-filter (solider Hintergrund) - das haelt das Wischen fluessig,
    da Safari keinen Live-Blur der bewegten Karte berechnen muss. */
-#mod-finanzen .dash-grid{ display: flex; gap: 16px; align-items: center; }
+#mod-finanzen .dash-grid{ display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
 #mod-finanzen .dash-donut{ position: relative; width: 100px; height: 100px; flex-shrink: 0; }
 #mod-finanzen .donut-center{ position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; padding: 0 4px; }
 #mod-finanzen .donut-center-label{ font-size: var(--label-fs); text-transform: uppercase; letter-spacing: var(--label-ls); color: var(--label-color); font-weight: var(--label-fw); }
@@ -1303,7 +1395,7 @@
 #mod-finanzen .info-i{ flex-shrink: 0; width: 16px; height: 16px; border-radius: 50%; border: none; background: var(--stroke-hi); color: var(--text); font-size: var(--fs-caption2); font-weight: 700; font-style: italic; font-family: Georgia, "Times New Roman", serif; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: transform var(--dur-1), background var(--dur-1); }
 #mod-finanzen .info-i:active{ transform: scale(0.88); background: var(--accent); }
 #mod-finanzen .saverate-eur{ font-size: var(--fs-caption2); color: var(--muted); display: block; margin-top: 2px; font-weight: 600; }
-#mod-finanzen .dash-legend{ flex: 1; display: flex; flex-direction: column; gap: 5px; justify-content: center; }
+#mod-finanzen .dash-legend{ flex: 1; min-width: 12em; display: flex; flex-direction: column; gap: 5px; justify-content: center; }
 #mod-finanzen .legend-row{ display: flex; align-items: center; gap: 6px; font-size: var(--fs-caption2); line-height: 1.3; }
 /* Zusatzzeile "Ueber Budget" – Abstand und Einfaerbung lagen dreifach inline im Modul. */
 #mod-finanzen .legend-row.over{ margin-top: 2px; }
@@ -1425,7 +1517,7 @@
 #mod-finanzen .due-prov{ color: var(--muted-2); }
 #mod-finanzen .due-amount{ color: var(--muted); font-weight: 600; font-variant-numeric: tabular-nums; flex-shrink: 0; }
 /* Ueberschriftzeile mit Bedienelementen rechts - ebenfalls ohne Linie darunter. */
-#mod-finanzen .hist-head{ display: flex; align-items: center; justify-content: space-between; gap: 8px;
+#mod-finanzen .hist-head{ display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
             margin-bottom: var(--gap-head); }
 #mod-finanzen .hist-head .dash-sub-label{ margin-bottom: 0; }
 /* Zeitraum (6M · 1J · Alle) und Nominal/Inflation sind Segment-Steuerungen aus dem Kern. */
@@ -1537,6 +1629,7 @@
     <span>Jörg</span>
     <button class="gear-btn" onclick="openCoreSettings()" aria-label="Einstellungen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </div>
+  <div id="heute"></div>
   <div class="bento" id="module-tiles"></div>
 </div>
 
@@ -1585,6 +1678,16 @@
     </div>
   </div>
   <p class="fussnote" id="applock-status"></p>
+
+  <div class="section-label">Kalender</div>
+  <div class="liste">
+    <button class="zeile mit-symbol" onclick="kalenderAlle()">
+      <span class="sr-icon rot" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.6"/><path d="M3.5 9.6h17M8 3v4M16 3v4"/></svg></span>
+      <span class="zeile-text"><span class="zeile-titel">Alle Termine in den Kalender</span></span>
+      <span class="zeile-pfeil"></span>
+    </button>
+  </div>
+  <p class="fussnote">Reisen, Flüge, Impf-Auffrischungen, Kündigungsfristen, Finsternisse und Meteorschauer – mit Erinnerung. Spätere Änderungen in der App ziehen im Kalender nicht nach.</p>
 
   <div class="section-label">Fotografie</div>
   <div class="liste">
@@ -1647,6 +1750,12 @@
       <button class="zeile aktion" onclick="saveCloudCfg(); cloudRestore()">Aus Cloud laden</button>
     </div>
     <p class="gruppe-fuss" id="cloud-status"></p>
+    <div class="gruppe">
+      <button class="zeile aktion" onclick="saveCloudCfg(); sicherungTeilen()">Sicherung teilen</button>
+      <button class="zeile aktion" onclick="document.getElementById('sicherung-datei').click()">Aus Datei laden</button>
+    </div>
+    <p class="gruppe-fuss">Die Datei ist mit dem Passwort oben verschlüsselt. Ohne Passwort ist sie lesbar – dann nur an eigene Geräte weitergeben.</p>
+    <input type="file" id="sicherung-datei" accept=".json,application/json" hidden onchange="sicherungAusDatei(this)">
   </div>
 </div>
 
@@ -1690,7 +1799,7 @@
   <div class="kontext-karte" id="kontext-karte"></div>
 </div>
 
-<div class="haken-pop" id="haken-pop">
+<div class="haken-pop" id="haken-pop" role="status" aria-live="polite">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>
   <span class="haken-text" id="haken-text"></span>
 </div>
@@ -1745,7 +1854,10 @@ const SYMBOL = (() => {
     pin:       s('<path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/>'),
     import:    s('<path d="M12 3.5v11M7.5 10l4.5 4.5 4.5-4.5"/><path d="M4.5 15v3.5A1.5 1.5 0 0 0 6 20h12a1.5 1.5 0 0 0 1.5-1.5V15"/>'),
     stift:     s('<path d="M12 20h8.5"/><path d="M16.4 3.6a2.1 2.1 0 0 1 3 3L7.3 18.7l-4 1 1-4Z"/>'),
-    einzahlung:s('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M8 12.5l4 4 4-4"/>')
+    einzahlung:s('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M8 12.5l4 4 4-4"/>'),
+    teilen:    s('<path d="M12 3.5v11M8 7.5l4-4 4 4"/><path d="M8 10.5H6.5A1.5 1.5 0 0 0 5 12v7a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-7a1.5 1.5 0 0 0-1.5-1.5H16"/>'),
+    lupe:      s('<circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/>'),
+    wegweiser: s('<path d="M12 3.5 20.5 12 12 20.5 3.5 12Z"/><path d="M9.5 13.5v-2a1.5 1.5 0 0 1 1.5-1.5h3.5M13 8l2 2-2 2"/>')
   };
 })();
 
@@ -2444,6 +2556,7 @@ function kachelMotiv(id){
 }
 
 function renderLauncher(){
+  renderHeute();
   const el = $('module-tiles');
   if(!el) return;
   el.innerHTML = [...MODULES].sort((a,b)=>(a.order??99)-(b.order??99)).map(m => {
@@ -2820,6 +2933,7 @@ function showUndoToast(label, restoreFn, endgueltig){
     t = document.createElement('div');
     t.id = 'undo-toast';
     t.className = 'undo-toast';
+    t.setAttribute('role', 'status'); t.setAttribute('aria-live', 'polite');
     document.body.appendChild(t);
   }
   clearTimeout(_undoTimer);
@@ -3068,7 +3182,7 @@ function topOpenScreen(){
   }
   /* Stellen, an denen die Geste stören würde */
   function gesperrt(t){
-    return !!(t.closest && t.closest('input, textarea, select, .tab-bar, .picker-list, .img-viewer'));
+    return !!(t.closest && t.closest('input, textarea, select, .tab-bar, .picker-list, .img-viewer, .abfahrbar'));
   }
 
   /* Das Verschieben wird direkt im touchmove geschrieben. Mit preventDefault liefert iOS
@@ -3238,14 +3352,345 @@ function topOpenScreen(){
   document.addEventListener('touchcancel', () => { beenden(); window._backAktiv = false; }, OPT_P);
 })();
 
+/* ==================================================================
+   APPLE-ANBINDUNG
+   Heute-Uebersicht, Kalender, Teilen, Karten, Diagramme zum Abfahren,
+   Suche durch Herunterziehen und Bedienungshilfen - eine Stelle fuer alle
+   Bereiche. Die Bereiche liefern nur ihre Daten.
+   ================================================================== */
+
+/* ---------------- Bewegung reduzieren ---------------- */
+const _bewegungsAbfrage = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+function _bewegungReduziert(){ return !!(_bewegungsAbfrage && _bewegungsAbfrage.matches); }
+
+/* ---------------- Heute ----------------
+   Jeder Bereich liefert ueber heute() seine anstehenden Termine:
+   { tage, titel, unter, symbol, farbe, wann?, rot?, aktion }. tage = Tage bis
+   zum Termin (negativ = ueberfaellig). Sortiert wird nach Dringlichkeit. */
+let _heuteAktionen = [];
+function heuteWann(e){
+  if (e.wann) return e.wann;
+  const t = e.tage;
+  if (t == null) return '';
+  if (t < 0) return 'überfällig';
+  if (t === 0) return 'heute';
+  if (t === 1) return 'morgen';
+  return 'in ' + t + ' Tagen';
+}
+function renderHeute(){
+  const el = $('heute'); if(!el) return;
+  const liste = [];
+  for (const m of MODULES){
+    if (typeof m.heute !== 'function') continue;
+    try { (m.heute() || []).forEach(e => { if (e && e.titel) liste.push(e); }); }
+    catch(err){ console.error('Heute: ' + m.id, err); }
+  }
+  liste.sort((a, b) => (a.tage ?? 1e6) - (b.tage ?? 1e6) || String(a.titel).localeCompare(String(b.titel), 'de'));
+  _heuteAktionen = liste.map(e => e.aktion);
+  const zeilen = liste.map((e, i) => {
+    const symbol = SYMBOL[e.symbol] || e.symbol || '';
+    const rot = e.rot || (e.tage != null && e.tage < 0);
+    return `<button class="zeile mit-symbol" type="button" onclick="heuteTipp(${i})">`
+      + `<span class="sr-icon ${esc(e.farbe || 'grau')}" aria-hidden="true">${symbol}</span>`
+      + `<span class="zeile-text"><span class="zeile-titel">${esc(e.titel)}</span>${e.unter ? `<span class="zeile-unter">${esc(e.unter)}</span>` : ''}</span>`
+      + `<span class="zeile-wert${rot ? ' rot' : ''}">${esc(heuteWann(e))}</span><span class="zeile-pfeil"></span></button>`;
+  }).join('');
+  el.innerHTML = '<div class="section-label">Heute &amp; demnächst</div>'
+    + `<div class="liste">${zeilen || '<div class="zeile aus"><span class="zeile-text"><span class="zeile-unter">In den nächsten Wochen steht nichts an.</span></span></div>'}</div>`
+    + '<div class="section-label">Bereiche</div>';
+}
+function heuteTipp(i){ const f = _heuteAktionen[i]; if (typeof f === 'function') f(); }
+/* In einen Bereich wechseln und dort etwas oeffnen oder zeigen. */
+function zuBereich(id, danach){
+  if (activeModule !== id) openModule(id);
+  if (danach) setTimeout(() => { try { danach(); } catch(e){ console.error(e); } }, 140);
+}
+/* Kurz aufleuchten lassen, nachdem dorthin gesprungen wurde. */
+function hervorheben(el){
+  if (!el) return;
+  el.scrollIntoView({ block: 'center', behavior: _bewegungReduziert() ? 'auto' : 'smooth' });
+  el.classList.remove('markiert'); void el.offsetWidth; el.classList.add('markiert');
+  setTimeout(() => el.classList.remove('markiert'), 1800);
+}
+
+/* ---------------- Teilen (Teilen-Blatt von iOS) ----------------
+   Text oder Datei. iOS verlangt dafuer einen frischen Tipp - lag dazwischen zu viel
+   Arbeit (Verschluesseln), wird einmal nachgefragt. Ohne Teilen-Blatt wird die Datei
+   geladen bzw. der Text kopiert. */
+async function teilen({ titel, text, datei }){
+  const versuch = async () => {
+    if (datei){
+      if (navigator.canShare && navigator.canShare({ files: [datei] })){ await navigator.share({ files: [datei], title: titel || datei.name }); return true; }
+      return false;
+    }
+    if (navigator.share){ await navigator.share({ title: titel, text }); return true; }
+    return false;
+  };
+  try { if (await versuch()) return true; }
+  catch(e){
+    if (e && e.name === 'AbortError') return false;
+    if (e && e.name === 'NotAllowedError'){
+      const ok = await showDialog('', { title: titel ? `„${titel}“ ist bereit` : 'Bereit zum Teilen', okText: 'Teilen' });
+      if (!ok) return false;
+      try { if (await versuch()) return true; } catch(e2){ if (e2 && e2.name === 'AbortError') return false; }
+    }
+  }
+  if (datei){
+    const url = URL.createObjectURL(datei);
+    const a = document.createElement('a'); a.href = url; a.download = datei.name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    return true;
+  }
+  try { await navigator.clipboard.writeText(text || ''); showToast('Kopiert'); return true; }
+  catch(e){ notify('Teilen ist auf diesem Gerät nicht möglich.'); return false; }
+}
+
+/* Gesamte Sicherung als Datei teilen - mit dem Passwort der Cloud-Sicherung
+   verschluesselt, sonst lesbar. */
+async function sicherungTeilen(){
+  try {
+    const text = JSON.stringify(await buildCombinedPayload());
+    const pass = (typeof cloudCfg !== 'undefined' && cloudCfg && cloudCfg.pass) ? cloudCfg.pass : '';
+    const inhalt = pass ? JSON.stringify(await encryptBackup(text, pass), null, 2) : text;
+    const tag = isoVon(heuteBerlin());
+    await teilen({ titel: 'Sicherung ' + isoToDE(tag), datei: new File([inhalt], 'Sicherung-' + tag + '.json', { type: 'application/json' }) });
+  } catch(e){ notify('Sicherung konnte nicht erstellt werden: ' + (e && e.message ? e.message : e)); }
+}
+/* Gegenstueck: eine geteilte Sicherungsdatei wieder einlesen. Rueckfrage und
+   Meldungen kommen aus applyCombined wie beim Laden aus der Cloud. */
+async function sicherungAusDatei(inp){
+  const f = inp.files && inp.files[0]; inp.value = '';
+  if (!f) return;
+  try {
+    const env = JSON.parse(await f.text());
+    let text;
+    if (env && env.enc){
+      let pass = (typeof cloudCfg !== 'undefined' && cloudCfg && cloudCfg.pass) ? cloudCfg.pass : '';
+      try { text = await decryptEnvelope(env, { pass: pass || undefined }); }
+      catch(e){
+        pass = await askPassphrase(); if (!pass) return;
+        text = await decryptEnvelope(env, { pass });
+      }
+    } else text = JSON.stringify(env);
+    if (await applyCombined(text)) notify('Wiederhergestellt.');
+  } catch(e){ notify('Datei konnte nicht gelesen werden: ' + (e && e.message ? e.message : e)); }
+}
+
+/* ---------------- Kalender (.ics) ----------------
+   termin: { id, titel, datum 'JJJJ-MM-TT', bis?, zeit? 'HH:MM', dauerMin?, ort?, notiz?,
+   erinnerungMin? (bei Uhrzeit), erinnerungTage? (ganztaegig: Tage vorher um 9 Uhr) } */
+const ICS_ZONE = ['BEGIN:VTIMEZONE', 'TZID:Europe/Berlin',
+  'BEGIN:DAYLIGHT', 'TZOFFSETFROM:+0100', 'TZOFFSETTO:+0200', 'TZNAME:MESZ', 'DTSTART:19700329T020000', 'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU', 'END:DAYLIGHT',
+  'BEGIN:STANDARD', 'TZOFFSETFROM:+0200', 'TZOFFSETTO:+0100', 'TZNAME:MEZ', 'DTSTART:19701025T030000', 'RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU', 'END:STANDARD',
+  'END:VTIMEZONE'];
+function icsText(t){ return String(t || '').replace(/\\/g, '\\\\').replace(/;/g, '\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
+/* Zeilen hoechstens 75 Byte (RFC 5545), Fortsetzung mit fuehrendem Leerzeichen. */
+function icsFalten(z){
+  const teile = []; let akt = '', bytes = 0;
+  for (const ch of z){
+    const b = ch.codePointAt(0) < 0x80 ? 1 : ch.codePointAt(0) < 0x800 ? 2 : ch.codePointAt(0) < 0x10000 ? 3 : 4;
+    if (bytes + b > 73){ teile.push(akt); akt = ' '; bytes = 1; }
+    akt += ch; bytes += b;
+  }
+  teile.push(akt);
+  return teile.join('\r\n');
+}
+function icsLokal(iso, zeit, plusMin){
+  const [y, m, d] = iso.split('-').map(Number), [h, mi] = String(zeit).split(':').map(Number);
+  const t = new Date(y, m - 1, d, h || 0, (mi || 0) + (plusMin || 0));
+  const p = n => String(n).padStart(2, '0');
+  return `${t.getFullYear()}${p(t.getMonth() + 1)}${p(t.getDate())}T${p(t.getHours())}${p(t.getMinutes())}00`;
+}
+function icsKalender(termine){
+  const stempel = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+  const z = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Joerg//App//DE', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', ...ICS_ZONE];
+  for (const t of termine){
+    z.push('BEGIN:VEVENT', icsFalten('UID:' + String(t.id || neueId()).replace(/[^\w.-]/g, '') + '@joerg-app'), 'DTSTAMP:' + stempel, icsFalten('SUMMARY:' + icsText(t.titel)));
+    if (t.zeit){
+      z.push('DTSTART;TZID=Europe/Berlin:' + icsLokal(t.datum, t.zeit), 'DTEND;TZID=Europe/Berlin:' + icsLokal(t.datum, t.zeit, t.dauerMin || 60));
+    } else {
+      const bis = new Date((t.bis || t.datum) + 'T12:00:00'); bis.setDate(bis.getDate() + 1);
+      z.push('DTSTART;VALUE=DATE:' + t.datum.replace(/-/g, ''), 'DTEND;VALUE=DATE:' + isoVon(bis).replace(/-/g, ''));
+    }
+    if (t.ort) z.push(icsFalten('LOCATION:' + icsText(t.ort)));
+    if (t.notiz) z.push(icsFalten('DESCRIPTION:' + icsText(t.notiz)));
+    let trigger = null;
+    if (t.zeit && t.erinnerungMin != null) trigger = '-PT' + t.erinnerungMin + 'M';
+    else if (!t.zeit && t.erinnerungTage != null) trigger = t.erinnerungTage <= 0 ? 'PT9H' : (t.erinnerungTage === 1 ? '-PT15H' : '-P' + (t.erinnerungTage - 1) + 'DT15H');
+    if (trigger) z.push('BEGIN:VALARM', 'ACTION:DISPLAY', icsFalten('DESCRIPTION:' + icsText(t.titel)), 'TRIGGER:' + trigger, 'END:VALARM');
+    z.push('END:VEVENT');
+  }
+  z.push('END:VCALENDAR');
+  return z.join('\r\n') + '\r\n';
+}
+async function kalenderExport(termine, name){
+  const gueltig = (termine || []).filter(t => t && t.titel && /^\d{4}-\d{2}-\d{2}$/.test(t.datum || ''));
+  if (!gueltig.length){ notify('Keine kommenden Termine.'); return; }
+  const datei = new File([icsKalender(gueltig)], String(name || 'Termine').replace(/[\\/:*?"<>|]/g, '') + '.ics', { type: 'text/calendar' });
+  await teilen({ titel: name || 'Termine', datei });
+}
+/* Einstellungen: alle kommenden Termine aller Bereiche auf einmal. */
+function kalenderAlle(){
+  const termine = [];
+  for (const m of MODULES){
+    if (typeof m.kalender !== 'function') continue;
+    try { (m.kalender() || []).forEach(t => termine.push(t)); } catch(e){ console.error('Kalender: ' + m.id, e); }
+  }
+  termine.sort((a, b) => (a.datum + (a.zeit || '')).localeCompare(b.datum + (b.zeit || '')));
+  kalenderExport(termine, 'Alle Termine');
+}
+
+/* ---------------- Apple Karten ----------------
+   GPS-Angaben wie "S 22° 33′, E 17° 05′", "22°33'S 17°05'E" oder "-22.55, 17.08". */
+function gpsLesen(roh){
+  if (!roh) return null;
+  const t = String(roh).trim();
+  let m = t.match(/^(-?\d{1,2}(?:\.\d+)?)\s*[,;\s]\s*(-?\d{1,3}(?:\.\d+)?)$/);
+  if (m){ const lat = +m[1], lon = +m[2]; return (Math.abs(lat) <= 90 && Math.abs(lon) <= 180) ? { lat, lon } : null; }
+  const re = /([NSEWO])?\s*(\d{1,3}(?:[.,]\d+)?)\s*°\s*(?:(\d{1,2}(?:[.,]\d+)?)\s*['′’])?\s*(?:(\d{1,2}(?:[.,]\d+)?)\s*["″”])?\s*([NSEWO](?![a-zäöü]))?/gi;
+  const werte = [];
+  let x;
+  while ((x = re.exec(t)) && werte.length < 2){
+    const zahl = v => v ? parseFloat(String(v).replace(',', '.')) : 0;
+    const w = zahl(x[2]) + zahl(x[3]) / 60 + zahl(x[4]) / 3600;
+    const r = (x[1] || x[5] || '').toUpperCase();
+    werte.push({ w: (r === 'S' || r === 'W') ? -w : w, achse: (r === 'N' || r === 'S') ? 'lat' : (r ? 'lon' : '') });
+  }
+  if (werte.length !== 2) return null;
+  let lat, lon;
+  werte.forEach((v, i) => { if (v.achse === 'lat') lat = v.w; else if (v.achse === 'lon') lon = v.w; else if (i === 0) lat = v.w; else lon = v.w; });
+  return (lat != null && lon != null && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) ? { lat: +lat.toFixed(5), lon: +lon.toFixed(5) } : null;
+}
+function kartenUrl({ name, ort, land, gps, route, von }){
+  const p = gpsLesen(gps);
+  // Teile nur einmal - steht das Land schon im Ort ("Windhoek, Namibia"), nicht doppelt.
+  const teile = [];
+  [name, ort, land].forEach(t => { t = String(t || '').trim(); if (t && !teile.some(x => x.toLowerCase().includes(t.toLowerCase()))) teile.push(t); });
+  const ziel = p ? `${p.lat},${p.lon}` : teile.join(', ');
+  if (!ziel) return '';
+  if (route) return 'https://maps.apple.com/?' + (von ? 'saddr=' + encodeURIComponent(von) + '&' : '') + 'daddr=' + encodeURIComponent(ziel) + '&dirflg=d';
+  return p ? `https://maps.apple.com/?ll=${p.lat},${p.lon}&q=${encodeURIComponent(name || ziel)}` : 'https://maps.apple.com/?q=' + encodeURIComponent(ziel);
+}
+function kartenOeffnen(o){ const url = kartenUrl(o || {}); if (url) window.open(url, '_blank'); }
+
+/* ---------------- Diagramme zum Abfahren ----------------
+   Finger auf den Verlauf: senkrechte Linie, Punkt und darueber Datum und Wert -
+   wie in Aktien und Health. d: { W, H, n, xAt, yAt, werte, labels, farbe, format } */
+function diagrammAbfahren(plot, d){
+  if (!plot || !d || d.n < 2) return;
+  const svg = plot.querySelector('svg'); if (!svg) return;
+  plot.classList.add('abfahrbar');
+  let ebene = null;
+  const zeigen = (clientX) => {
+    const r = svg.getBoundingClientRect(), pr = plot.getBoundingClientRect();
+    if (!r.width) return;
+    const vb = Math.min(1, Math.max(0, (clientX - r.left) / r.width)) * d.W;
+    let i = 0, best = Infinity;
+    for (let k = 0; k < d.n; k++){ const ab = Math.abs(d.xAt(k) - vb); if (ab < best){ best = ab; i = k; } }
+    const x = r.left - pr.left + d.xAt(i) / d.W * r.width;
+    const y = r.top - pr.top + d.yAt(d.werte[i]) / d.H * r.height;
+    if (!ebene){
+      ebene = document.createElement('div'); ebene.className = 'abfahr'; ebene.setAttribute('aria-hidden', 'true');
+      ebene.innerHTML = '<div class="abfahr-linie"></div><div class="abfahr-punkt"></div><div class="abfahr-wert"><span></span><b></b></div>';
+      plot.appendChild(ebene);
+    }
+    ebene.style.setProperty('--farbe', d.farbe || 'var(--accent)');
+    const [linie, punkt, wert] = ebene.children;
+    linie.style.left = x + 'px'; linie.style.top = (r.top - pr.top) + 'px'; linie.style.height = r.height + 'px';
+    punkt.style.left = x + 'px'; punkt.style.top = y + 'px';
+    wert.children[0].textContent = d.labels[i] || '';
+    wert.children[1].textContent = (d.format || fmt)(d.werte[i]);
+    const bw = wert.offsetWidth;
+    wert.style.left = Math.max(0, Math.min(pr.width - bw, x - bw / 2)) + 'px';
+  };
+  /* Nach dem Abfahren darf das Loslassen keinen Tipp ausloesen (die Startflaeche in
+     Finanzen oeffnet sonst das Detail); ein kurzer Tipp ohne Bewegung bleibt ein Tipp. */
+  let startX = 0, bewegt = false, sperreBis = 0;
+  const weg = () => { if (ebene){ ebene.remove(); ebene = null; } if (bewegt) sperreBis = Date.now() + 450; };
+  plot.addEventListener('touchstart', e => { if (e.touches.length !== 1) return; startX = e.touches[0].clientX; bewegt = false; zeigen(startX); }, { passive: true });
+  plot.addEventListener('touchmove', e => { if (e.touches.length !== 1) return; if (Math.abs(e.touches[0].clientX - startX) > 6) bewegt = true; zeigen(e.touches[0].clientX); }, { passive: true });
+  plot.addEventListener('touchend', weg, { passive: true });
+  plot.addEventListener('touchcancel', weg, { passive: true });
+  plot.addEventListener('click', e => { if (Date.now() < sperreBis){ e.stopPropagation(); e.preventDefault(); } }, true);
+  plot.addEventListener('pointermove', e => { if (e.pointerType === 'mouse') zeigen(e.clientX); });
+  plot.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') weg(); });
+}
+
+/* ---------------- Suche durch Herunterziehen ----------------
+   cfg: { zeilen: Selektor der Trefferzeilen, gruppen?: Selektor der Gruppen, die ohne
+   Treffer verschwinden }. Was waehrend der Suche nicht gebraucht wird, traegt im Markup
+   die Klasse .suche-aus. Ziehen am oberen Rand blendet das Feld unter dem Titel ein. */
+function sucheNormal(t){ return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ß/g, 'ss'); }
+function sucheEinrichten(c, cfg){
+  if (!c || c._suche) return;
+  const kopf = c.querySelector('.app-header'); if (!kopf) return;
+  c._suche = cfg;
+  const feld = document.createElement('div');
+  feld.className = 'suchfeld';
+  feld.innerHTML = `<div class="suchfeld-zeile"><label class="suchfeld-innen">${SYMBOL.lupe}<input type="search" placeholder="Suchen" aria-label="Suchen" autocomplete="off" enterkeyhint="search"></label><button type="button" class="suchfeld-ab">Abbrechen</button></div><div class="suchfeld-leer" hidden></div>`;
+  kopf.after(feld);
+  const inp = feld.querySelector('input'), leer = feld.querySelector('.suchfeld-leer');
+  const anwenden = () => {
+    const q = sucheNormal(inp.value.trim());
+    c.classList.toggle('suche-aktiv', !!q);
+    let treffer = 0;
+    c.querySelectorAll(cfg.zeilen).forEach(z => {
+      const quelle = z.querySelector('.tile-slider') || z;
+      const ok = !q || sucheNormal(quelle.textContent).includes(q);
+      z.classList.toggle('suche-weg', !ok);
+      if (ok) treffer++;
+    });
+    // Jeder Teil der Liste bekommt :not(.suche-weg) - nicht nur der letzte nach dem Komma.
+    const sichtbar = cfg.zeilen.split(',').map(t => t.trim() + ':not(.suche-weg)').join(', ');
+    if (cfg.gruppen) c.querySelectorAll(cfg.gruppen).forEach(g => g.classList.toggle('suche-weg', !!q && !g.querySelector(sichtbar)));
+    leer.hidden = !q || treffer > 0;
+    const hinweis = `Keine Treffer für „${inp.value.trim()}“`;
+    if (q && !treffer && leer.textContent !== hinweis) leer.textContent = hinweis;
+  };
+  const oeffnen = () => { if (!feld.classList.contains('auf')){ feld.classList.add('auf'); haptik(); } };
+  const schliessen = () => { inp.value = ''; anwenden(); inp.blur(); feld.classList.remove('auf'); };
+  c._sucheOeffnen = () => { oeffnen(); setTimeout(() => inp.focus(), 50); };
+  c._sucheSchliessen = schliessen;
+  inp.addEventListener('input', anwenden);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') inp.blur(); });
+  feld.querySelector('.suchfeld-ab').addEventListener('click', schliessen);
+  let startY = null;
+  c.addEventListener('touchstart', e => { startY = (c.scrollTop <= 0 && e.touches.length === 1) ? e.touches[0].clientY : null; }, { passive: true });
+  c.addEventListener('touchmove', e => { if (startY != null && e.touches[0].clientY - startY > 64){ startY = null; oeffnen(); } }, { passive: true });
+  c.addEventListener('scroll', () => {
+    if (feld.classList.contains('auf') && !inp.value && document.activeElement !== inp && c.scrollTop > 160) feld.classList.remove('auf');
+  }, { passive: true });
+  // Neu gezeichnete Listen bekommen den aktuellen Filter gleich wieder.
+  // Aenderungen im Suchfeld selbst (Hinweistext) zaehlen nicht - sonst liefe das im Kreis.
+  new MutationObserver(ms => {
+    if (inp.value.trim() && ms.some(m => !feld.contains(m.target))) anwenden();
+  }).observe(c, { childList: true, subtree: true });
+}
+
+/* ---------------- VoiceOver und Tastatur ----------------
+   Antippbare Flaechen, die keine echten Knoepfe sind, werden als Knopf angesagt und
+   sind per Tastatur erreichbar. */
+function barrierefrei(wurzel){
+  (wurzel || document).querySelectorAll('[onclick]:not(button):not(a):not(input):not(label):not(select):not(textarea):not([role]):not(.overlay):not(.kontext-grund)')
+    .forEach(el => { el.setAttribute('role', 'button'); if (!el.hasAttribute('tabindex')) el.tabIndex = 0; });
+}
+document.addEventListener('keydown', e => {
+  const t = e.target;
+  if ((e.key === 'Enter' || e.key === ' ') && t && t.getAttribute && t.getAttribute('role') === 'button' && t.tagName !== 'BUTTON'){ e.preventDefault(); t.click(); }
+});
+let _barriereTimer = null;
+new MutationObserver(() => { clearTimeout(_barriereTimer); _barriereTimer = setTimeout(() => barrierefrei(), 120); })
+  .observe(document.documentElement, { childList: true, subtree: true });
+
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2610041940"></script>
-<script src="mod-reisen.js?v=2610041940"></script>
-<script src="mod-finanzen.js?v=2610041940"></script>
-<script src="mod-impfpass.js?v=2610041940"></script>
-<script src="mod-fotografie.js?v=2610041940"></script>
+<script src="data-laender.js?v=2610061908"></script>
+<script src="mod-reisen.js?v=2610061908"></script>
+<script src="mod-finanzen.js?v=2610061908"></script>
+<script src="mod-impfpass.js?v=2610061908"></script>
+<script src="mod-fotografie.js?v=2610061908"></script>
 
 <!-- ===== Start ===== -->
 <script>
@@ -3430,7 +3875,8 @@ function dockSichtbar(){
    Knoepfe bleiben stehen, der grosse Titel wird beim Wegscrollen klein. */
 function navbarZurueck(){ haptik(); ebeneZurueck(); }
 const kopfTitel = (el) => el.querySelector('.app-header > span, .screen-topbar > .screen-title > h2, .settings-topbar > h2');
-const kopfAktion = (el) => el.querySelector('.app-header > .icon-btn, .screen-topbar > .icon-btn');
+/* Mehrere Knoepfe (z.B. Teilen und Plus): die Leiste spiegelt den rechten. */
+const kopfAktion = (el) => { const k = el.querySelectorAll('.app-header > .icon-btn, .screen-topbar > .icon-btn'); return k[k.length - 1] || null; };
 /* Die Aktion der Kopfzeile, ausgeloest von der Leiste - mit deren Knopf als
    Anker, damit ein Menue unter dem sichtbaren Knopf aufgeht. */
 function navbarAktion(btn, ev){
@@ -3454,12 +3900,29 @@ function aktualisiereNavbar(){
     bar.classList.remove('an', 'mit-titel'); kopfUnterLeiste(null); return;
   }
   const oben = art === 'start' ? (window.scrollY || document.documentElement.scrollTop || 0) : el.scrollTop;
-  const titelDarunter = titelEl.getBoundingClientRect().bottom <= bar.offsetHeight;
+  const tr = titelEl.getBoundingClientRect(), barH = bar.offsetHeight;
+  const titelDarunter = tr.bottom <= barH;
   // Startseite: keine Knoepfe, die stehen bleiben muessten, und der Titel steht
   // dort schon in Hoehe der Leiste - sie erscheint erst, wenn er weggescrollt ist.
   const zeigen = art === 'start' ? oben > titelEl.offsetHeight : oben > 1;
   bar.classList.toggle('an', zeigen);
   bar.classList.toggle('mit-titel', zeigen && (art === 'start' || titelDarunter));
+  /* Wie in iOS: der grosse Titel gleitet beim Scrollen unter die Leiste, wird dabei
+     kleiner und blasser, waehrend der kleine Titel im selben Mass erscheint. Zieht
+     man ueber den oberen Rand hinaus, dehnt er sich leicht. */
+  const kleinTitel = $('navbar-title');
+  if (art !== 'start'){
+    const anteil = zeigen ? Math.min(1, Math.max(0, (barH - tr.top) / Math.max(1, tr.height))) : 0;
+    const dehnen = oben < 0 ? Math.min(0.1, -oben / 600) : 0;
+    const ruhig = _bewegungReduziert();
+    titelEl.style.transformOrigin = 'left center';
+    titelEl.style.transform = ruhig ? '' : (dehnen ? `scale(${(1 + dehnen).toFixed(3)})` : (anteil ? `scale(${(1 - 0.12 * anteil).toFixed(3)})` : ''));
+    titelEl.style.opacity = anteil ? (1 - anteil).toFixed(2) : '';
+    kleinTitel.style.transition = 'none';
+    kleinTitel.style.opacity = zeigen ? anteil.toFixed(2) : '';
+  } else {
+    kleinTitel.style.transition = ''; kleinTitel.style.opacity = '';
+  }
   kopfUnterLeiste(zeigen && art !== 'start' ? titelEl.closest('.app-header, .screen-topbar, .settings-topbar') : null);
   if(zeigen){
     $('navbar-title').textContent = titelEl.textContent.trim();
@@ -3490,7 +3953,7 @@ function kontextAnhaengen(wrap, onDelete, onEdit){
     geoeffnet = false;
     if(e.touches.length !== 1) return abbrechen();
     sx = e.touches[0].clientX; sy = e.touches[0].clientY;
-    timer = setTimeout(() => { timer = null; if(window._backAktiv) return; geoeffnet = true; oeffneKontext(ziel, onEdit, onDelete); }, 480);
+    timer = setTimeout(() => { timer = null; if(window._backAktiv) return; geoeffnet = true; oeffneKontext(ziel, onEdit, onDelete, kontextExtras(wrap)); }, 480);
   }, { passive: true });
   wrap.addEventListener('touchmove', e => {
     if(!timer) return;
@@ -3500,9 +3963,15 @@ function kontextAnhaengen(wrap, onDelete, onEdit){
   // Nach dem langen Druck darf das Loslassen keinen Tipp mehr ausloesen.
   wrap.addEventListener('touchend', e => { abbrechen(); if(geoeffnet){ geoeffnet = false; if(e.cancelable) e.preventDefault(); } }, { passive: false });
   wrap.addEventListener('touchcancel', abbrechen, { passive: true });
-  wrap.addEventListener('contextmenu', e => { e.preventDefault(); oeffneKontext(ziel, onEdit, onDelete); });
+  wrap.addEventListener('contextmenu', e => { e.preventDefault(); oeffneKontext(ziel, onEdit, onDelete, kontextExtras(wrap)); });
 }
-function oeffneKontext(ziel, onEdit, onDelete){
+/* Ein Bereich kann einer Zeile weitere Eintraege mitgeben (wrap._kontextExtras =
+   () => [{ text, symbol, tun }]), etwa "Zum Kalender hinzufuegen". Sie stehen wie
+   bei iOS ueber Bearbeiten und Loeschen. */
+function kontextExtras(wrap){
+  try { return typeof wrap._kontextExtras === 'function' ? (wrap._kontextExtras() || []) : []; } catch(e){ return []; }
+}
+function oeffneKontext(ziel, onEdit, onDelete, extras){
   const wurzel = $('kontext'); if(!wurzel || wurzel.classList.contains('an')) return;
   closeOpenSwipe();
   haptik(true);
@@ -3523,19 +3992,23 @@ function oeffneKontext(ziel, onEdit, onDelete){
   klon.appendChild(kopie);
 
   const karte = $('kontext-karte');
+  const zusatz = (extras || []).filter(x => x && x.text);
   karte.innerHTML =
+    zusatz.map((x, i) => `<button class="kontext-zeile" type="button" data-tun="x${i}">${esc(x.text)}${SYMBOL[x.symbol] || x.symbol || ''}</button>`).join('') +
+    (zusatz.length && (onEdit || onDelete) ? '<div class="kontext-trenner"></div>' : '') +
     (onEdit ? `<button class="kontext-zeile" type="button" data-tun="edit">Bearbeiten${ICON_EDIT}</button>` : '') +
     (onDelete ? `<button class="kontext-zeile rot" type="button" data-tun="del">L\u00f6schen${ICON_DEL}</button>` : '');
   karte.onclick = (e) => {
     const b = e.target.closest('.kontext-zeile'); if(!b) return;
     e.stopPropagation();
-    const tun = b.dataset.tun === 'edit' ? onEdit : onDelete;
+    const t = b.dataset.tun;
+    const tun = t === 'edit' ? onEdit : t === 'del' ? onDelete : (zusatz[+t.slice(1)] || {}).tun;
     schliesseKontext();
     if(tun) setTimeout(tun, 220);
   };
   /* Unter dem Element, wenn dort Platz ist - sonst darueber. Es bleibt dabei
      immer sichtbar. */
-  const hoehe = (onEdit && onDelete) ? 104 : 56;
+  const hoehe = karte.offsetHeight || ((onEdit && onDelete) ? 104 : 56);
   const unten = r.bottom + 14 + hoehe < window.innerHeight - 20;
   karte.style.top = unten ? (r.bottom + 14) + 'px' : Math.max(14, r.top - 14 - hoehe) + 'px';
   let links = r.left + r.width / 2 - 116;

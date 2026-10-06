@@ -14,7 +14,7 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
     <span>Finanzen</span>
   </div>
 
-  <div class="income-bar karte">
+  <div class="income-bar karte suche-aus">
     <div class="income-top">
       <div class="income-left">
         <span class="income-label">Netto / Monat</span>
@@ -57,7 +57,7 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
   </div>
 
   <!-- Hero: Gesamtvermögen -->
-  <div class="hero" id="hero" onclick="openDetail('uebersicht')">
+  <div class="hero suche-aus" id="hero" onclick="openDetail('uebersicht')">
     <div class="hero-label">Gesamtvermögen</div>
     <div class="hero-val" id="hero-val">–</div>
     <div id="hero-spark"></div>
@@ -65,8 +65,8 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
   </div>
 
   <!-- Bento: Kennzahlen auf einen Blick -->
-  <div class="tag" id="bento-tag" style="display:none">Auf einen Blick</div>
-  <div class="bento" id="bento" style="display:none"></div>
+  <div class="tag suche-aus" id="bento-tag" style="display:none">Auf einen Blick</div>
+  <div class="bento suche-aus" id="bento" style="display:none"></div>
 
   <!-- Detail-Ansichten: werden über die Bento-Kacheln geöffnet (alle Render-Ziele unverändert) -->
   <div class="detail-sheet" id="detail-sheet">
@@ -130,7 +130,7 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
     </div>
   </div>
 
-  <div class="income-divider"></div>
+  <div class="income-divider suche-aus"></div>
 
   <header class="sub-header" onclick="toggleSection('b')">
     <div class="sub-header-text">
@@ -141,21 +141,21 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
   </header>
 
   <div class="section-body" id="body-b">
-  <div class="filter-row">
+  <div class="filter-row suche-aus">
     <select class="account-filter" id="filter-b" onchange="renderSection('b')"></select>
   </div>
-  <div class="summary karte">
+  <div class="summary karte suche-aus">
     <div class="stat"><div class="stat-label">Monatlich</div><div class="stat-value month" id="sum-month-b">0,00 €</div></div>
     <div class="stat"><div class="stat-label">Jährlich</div><div class="stat-value year" id="sum-year-b">0,00 €</div></div>
     <div class="stat"><div class="stat-label">Einträge</div><div class="stat-value count" id="sum-count-b">0</div></div>
   </div>
-  <div class="balance-box karte" id="balance-box-b" style="display:none"></div>
+  <div class="balance-box karte suche-aus" id="balance-box-b" style="display:none"></div>
 
   <div class="list" id="list-b"></div>
-  <div id="empty-b"></div>
+  <div id="empty-b" class="suche-aus"></div>
   </div>
 
-  <div class="group-divider"></div>
+  <div class="group-divider suche-aus"></div>
 
   <header class="sub-header" onclick="toggleSection('a')">
     <div class="sub-header-text">
@@ -166,20 +166,20 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
   </header>
 
   <div class="section-body" id="body-a">
-  <div class="filter-row">
+  <div class="filter-row suche-aus">
     <select class="account-filter" id="filter-a" onchange="renderSection('a')"></select>
   </div>
-  <div class="summary karte">
+  <div class="summary karte suche-aus">
     <div class="stat"><div class="stat-label">Monatlich</div><div class="stat-value month" id="sum-month-a">0,00 €</div></div>
     <div class="stat"><div class="stat-label">Jährlich</div><div class="stat-value year" id="sum-year-a">0,00 €</div></div>
     <div class="stat"><div class="stat-label">Einträge</div><div class="stat-value count" id="sum-count-a">0</div></div>
   </div>
 
   <div class="list" id="list-a"></div>
-  <div id="empty-a"></div>
+  <div id="empty-a" class="suche-aus"></div>
   </div>
 
-  <div class="group-divider"></div>
+  <div class="group-divider suche-aus"></div>
 
   <header class="sub-header" onclick="toggleSection('v')">
     <div class="sub-header-text">
@@ -190,20 +190,20 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
   </header>
 
   <div class="section-body" id="body-v">
-  <div class="filter-row">
+  <div class="filter-row suche-aus">
     <select class="account-filter" id="filter-v" onchange="renderSection('v')"></select>
   </div>
-  <div class="summary karte">
+  <div class="summary karte suche-aus">
     <div class="stat"><div class="stat-label">Monatlich</div><div class="stat-value month" id="sum-month">0,00 €</div></div>
     <div class="stat"><div class="stat-label">Jährlich</div><div class="stat-value year" id="sum-year">0,00 €</div></div>
     <div class="stat"><div class="stat-label">Einträge</div><div class="stat-value count" id="sum-count">0</div></div>
   </div>
 
   <div class="list" id="list-v"></div>
-  <div id="empty-v"></div>
+  <div id="empty-v" class="suche-aus"></div>
   </div>
 
-  <div class="group-divider"></div>
+  <div class="group-divider suche-aus"></div>
 
   <header class="sub-header" onclick="toggleSection('urlaub')">
     <div class="sub-header-text">
@@ -214,7 +214,7 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
   </header>
 
   <div class="section-body" id="body-urlaub">
-  <div class="urlaub-combined karte">
+  <div class="urlaub-combined karte suche-aus">
     <div class="uc-budget-row">
       <span class="ub-label">Urlaubsbudget</span>
       <span class="ub-auto-val" id="urlaub-budget-auto">0,00 €</span>
@@ -235,10 +235,10 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
     <div id="manual-day-list"></div>
   </div>
   <div id="urlaub-years"></div>
-  <div id="empty-urlaub"></div>
+  <div id="empty-urlaub" class="suche-aus"></div>
   </div>
 
-  <div class="group-divider"></div>
+  <div class="group-divider suche-aus"></div>
 
   <header class="sub-header" onclick="toggleSection('bonus')">
     <div class="sub-header-text">
@@ -250,7 +250,7 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
 
   <div class="section-body" id="body-bonus">
   <div class="list" id="list-bonus"></div>
-  <div id="empty-bonus"></div>
+  <div id="empty-bonus" class="suche-aus"></div>
   </div>
 
 
@@ -751,6 +751,7 @@ function renderHistoryChart(containerId, labels, series, opts) {
   const s0 = series[0];
   const last = s0.points[n-1];
   el.innerHTML = `<div class="hist-plot">${axis}${svg}</div>` + (showRange ? `<div class="hist-range">${labels[0]} – ${labels[n-1]} · ${fmtShort(last)}</div>` : '');
+  diagrammAbfahren(el.querySelector('.hist-plot'), { W, H, n, xAt, yAt, werte: s0.points, labels: (opts && opts.daten) || labels, farbe: s0.color });
 }
 
 // Adjust a nominal future value to its inflation-adjusted value (purchasing power today).
@@ -884,6 +885,10 @@ function renderSection(sec) {
    und Loeschen. */
 function attachSwipe(wrap, sec, id) {
   attachSwipeGeneric(wrap, () => deleteEntry(sec, id), () => finOpenModal(sec, id), () => finOpenModal(sec, id));
+  if (sec === 'v') wrap._kontextExtras = () => {
+    const f = finFristen().find(x => x.e.id === id && x.tage >= 0);
+    return f ? [{ text: 'Frist in den Kalender', symbol: 'kalender', tun: () => kalenderExport([finFristTermin(f)], 'Kündigungsfrist ' + f.e.name) }] : [];
+  };
 }
 
 /* Plus oben rechts: was in welchem Abschnitt neu angelegt wird. */
@@ -1016,6 +1021,7 @@ function renderHeroBento() {
     // stehen bereits darueber im Hero. (Eigene Umsetzung, nicht die .hist-range
     // der Detail-Graphen; deshalb war sie von deren Entfernung nicht betroffen.)
     hSpark.innerHTML = `<div class="hero-plot">${achse}${svg}</div>`;
+    diagrammAbfahren(hSpark.querySelector('.hero-plot'), { W, H, n, xAt, yAt, werte: vals, labels: hist.map(h => isoToDE(histDate(h))), farbe: col });
   } else {
     hSpark.innerHTML = '';
   }
@@ -1309,7 +1315,7 @@ function renderDashboard() {
     const wh = histSlice(vermoegenVerlauf);
     renderHistoryChart('wealth-hist-chart', wh.map(histLabel), [
       { points: wh.map(h => h.wealth), color: COLORS.a, label: 'Gesamtvermögen' }
-    ], { hideRange: true });
+    ], { hideRange: true, daten: wh.map(h => isoToDE(histDate(h))) });
   } else {
     whWrap.style.display = 'none';
   }
@@ -1536,6 +1542,68 @@ function dueThisMonthHTML() {
   return html;
 }
 
+/* Kuendigungsfristen aller Versicherungen und Vertraege mit Stichtag und Frist.
+   Rechnet in Kalendertagen (setDate) - die fruehere Rechnung in Millisekunden lag
+   ueber eine Zeitumstellung hinweg einen Tag daneben. */
+function finFristen() {
+  const heute = heuteBerlin();
+  return data.v.filter(e => ['Versicherung', 'Vertrag'].includes(e.cat)).map(e => {
+    const stichtag = parseDeDate(e.startDate);
+    const days = parseNoticeDays(e.noticePeriod);
+    if (!stichtag || days == null) return null;
+    const deadline = new Date(stichtag.getFullYear(), stichtag.getMonth(), stichtag.getDate() - days);
+    return { e, stichtag, deadline, tage: Math.round((deadline - heute) / 86400000) };
+  }).filter(Boolean);
+}
+function finFristTermin(f) {
+  return { id: 'frist-' + f.e.id, titel: 'Kündigungsfrist: ' + f.e.name, datum: isoVon(f.deadline),
+    notiz: [f.e.provider, 'Stichtag ' + isoToDE(isoVon(f.stichtag)), f.e.noticePeriod ? 'Frist ' + f.e.noticePeriod : ''].filter(Boolean).join('\n'),
+    erinnerungTage: 14 };
+}
+/* Naechste Abbuchung eines vierteljaehrlichen oder jaehrlichen Vertrags ab "ab" -
+   monatliche sind Routine und erscheinen nicht unter "Heute". */
+function finNaechsteAbbuchung(e, ab) {
+  const per = e.period || 'monatlich';
+  if (per !== 'vierteljährlich' && per !== 'jährlich') return null;
+  const m = String(e.debitDate || '').trim().match(/^(\d{1,2})(?:\.(\d{1,2}))?/);
+  if (!m) return null;
+  const anker = vertragAnkerMonat(e, m[2] ? parseInt(m[2], 10) : null);
+  if (anker == null) return null;
+  for (let k = 0; k < 13; k++) {
+    const erster = new Date(ab.getFullYear(), ab.getMonth() + k, 1);
+    const mon = erster.getMonth() + 1;
+    const passt = per === 'jährlich' ? mon === anker : (((mon - anker) % 3) + 3) % 3 === 0;
+    if (!passt) continue;
+    const letzter = new Date(erster.getFullYear(), erster.getMonth() + 1, 0).getDate();
+    const d = new Date(erster.getFullYear(), erster.getMonth(), Math.min(parseInt(m[1], 10), letzter));
+    if (d >= ab) return d;
+  }
+  return null;
+}
+function finHeute() {
+  const out = [], heute = heuteBerlin();
+  finFristen().filter(f => f.tage >= 0 && f.tage <= 60).forEach(f => out.push({
+    tage: f.tage, titel: f.e.name, unter: 'Kündigungsfrist endet am ' + isoToDE(isoVon(f.deadline)),
+    symbol: 'dokument', farbe: 'orange', aktion: () => zuBereich('finanzen', () => openDetail('v')) }));
+  data.v.forEach(e => {
+    const d = finNaechsteAbbuchung(e, heute); if (!d) return;
+    const tage = Math.round((d - heute) / 86400000);
+    if (tage <= 14) out.push({ tage, titel: e.name, unter: 'Abbuchung ' + fmt(e.amount) + ' · ' + e.period,
+      symbol: 'euro', farbe: 'blau', aktion: () => zuBereich('finanzen', () => openDetail('v')) });
+  });
+  (typeof bonus !== 'undefined' ? bonus : []).forEach(b => {
+    if (!b.expiry) return;
+    const tage = daysUntil(b.expiry);
+    if (tage === null || tage < 0 || tage > 60) return;
+    out.push({ tage, titel: b.name, unter: (b.points ? b.points + ' verfallen am ' : 'Verfall am ') + displayDate(b.expiry),
+      symbol: 'stern', farbe: 'violett', aktion: () => zuBereich('finanzen', () => {
+        if (collapsedSections.includes('bonus')) toggleSection('bonus');
+        hervorheben(document.querySelector(`#list-bonus .entry-wrap[data-id="${b.id}"]`));
+      }) });
+  });
+  return out;
+}
+
 function renderVertragDash() {
   const body = $('vertrag-dash-body');
   if (!body) return;
@@ -1543,17 +1611,7 @@ function renderVertragDash() {
   const all = data.v.filter(e => cats.includes(e.cat));
 
   // Nur Einträge mit Stichtag UND Kündigungsfrist, beide parsebar
-  const today = heuteBerlin();
-  const MS = 86400000;
-  const radar = [];
-  all.forEach(e => {
-    const stichtag = parseDeDate(e.startDate);
-    const days = parseNoticeDays(e.noticePeriod);
-    if (!stichtag || days == null) return;
-    const deadline = new Date(stichtag.getTime() - days * MS);
-    const daysLeft = Math.round((deadline - today) / MS);
-    radar.push({ e, stichtag, deadline, daysLeft });
-  });
+  const radar = finFristen().map(f => ({ ...f, daysLeft: f.tage }));
   radar.sort((a,b) => a.deadline - b.deadline);
 
   const nTotal = all.length;
@@ -1742,7 +1800,7 @@ function renderPensionHistory() {
     const ph = histSlice(vermoegenVerlauf);
     renderHistoryChart('pension-hist-chart', ph.map(histLabel), [
       { points: ph.map(h => h.pension), color: 'var(--green)', label: 'Vorsorge gesamt' }
-    ]);
+    ], { daten: ph.map(h => isoToDE(histDate(h))) });
   } else {
     phWrap.style.display = 'none';
   }
@@ -3555,6 +3613,8 @@ registerModule({
   init: () => { try { finInit(); } catch(e){} },
   onOpen: () => { try { renderAll(); } catch(e){} },
   einstellungen: () => kontenZeilenWert(),
+  heute: () => finHeute(),
+  kalender: () => finFristen().filter(f => f.tage >= 0).map(finFristTermin),
   summary: () => {
     try {
       const art = finTileArt();
@@ -3574,6 +3634,13 @@ registerModule({
   }
 });
 
+
+/* Suche durch Herunterziehen: alle Eintraege ueber alle Abschnitte. Leere Abschnitte
+   verschwinden samt Ueberschrift; eingeklappte werden waehrend der Suche gezeigt. */
+sucheEinrichten(document.getElementById('mod-finanzen'), {
+  zeilen: '#list-v .entry-wrap, #list-b .entry-wrap, #list-a .entry-wrap, #urlaub-years .entry-wrap, #list-bonus .entry-wrap',
+  gruppen: '#mod-finanzen > .wrap > .section-body'
+});
 
 /* ================= EINSTELLUNGEN: PERSOENLICH & KONTEN =================
    Die Zeilen dazu stehen im Kern (index.html), die Daten gehoeren aber hierher -

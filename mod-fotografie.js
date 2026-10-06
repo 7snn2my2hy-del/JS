@@ -873,10 +873,11 @@ function fgRenderCalendar(){
     return;
   }
   const events = fgBaueKalender(heute, fgAnzeigeEnde(heute));
+  _fgTermine = events;
   if (!events.length){ el.innerHTML = leerHTML({ symbol: 'mond', titel: 'Keine Termine', text: 'In den nächsten zwölf Monaten steht nichts an.', klein: true }); return; }
   el.innerHTML = events.map((e, i) => {
     const farbe = FG_FARBEN[e.typ] || 'var(--accent)';
-    return `<div class="rt-row${i === events.length - 1 ? ' last' : ''}">
+    return `<div class="rt-row${i === events.length - 1 ? ' last' : ''}" data-datum="${isoVon(e.datum)}" data-typ="${e.typ}" onclick="fgTerminTipp(${i})">
       <div class="rt-date"><span class="rt-day">${e.datum.getDate()}</span><span class="rt-mon">${FG_MONATE_KURZ[e.datum.getMonth()]}</span></div>
       <div class="rt-line">${fgMarkerHTML(e.typ, farbe)}</div>
       <div class="rt-body">
@@ -889,6 +890,40 @@ function fgRenderCalendar(){
 }
 
 function fgRender(){ fgRenderList(); fgRenderCalendar(); }
+
+/* ---------------- Kalender und Heute ---------------- */
+let _fgTermine = [];
+const FG_BESONDERS = ['finsternis', 'meteor', 'supermond'];
+function fgTermin(e){
+  return { id: 'astro-' + e.typ + '-' + isoVon(e.datum), titel: e.titel, datum: isoVon(e.datum), notiz: e.notiz || '', erinnerungTage: 1 };
+}
+/* Antippen eines Termins: in den Kalender uebernehmen. */
+async function fgTerminTipp(i){
+  const e = _fgTermine[i]; if (!e) return;
+  const datum = `${FG_WOCHENTAGE[e.datum.getDay()]}, ${e.datum.getDate()}. ${FG_MONATE_LANG[e.datum.getMonth()]} ${e.datum.getFullYear()}`;
+  const wahl = await aktionsblatt({ titel: e.titel, text: datum, aktionen: [{ text: 'Zum Kalender hinzufügen' }] });
+  if (wahl === 0) kalenderExport([fgTermin(e)], e.titel);
+}
+/* Fuer "Alle Termine": Finsternisse und Meteorschauer der naechsten zwoelf Monate. */
+function fgKalenderTermine(){
+  const heute = heuteBerlin();
+  if (heute.getTime() > FG_KALENDER_ENDE.getTime()) return [];
+  return fgBaueKalender(heute, fgAnzeigeEnde(heute)).filter(e => e.typ === 'finsternis' || e.typ === 'meteor').map(fgTermin);
+}
+/* Startseite: nur Besonderes der naechsten 30 Tage, keine normalen Neu- und Vollmonde. */
+function fgHeute(){
+  const heute = heuteBerlin();
+  if (heute.getTime() > FG_KALENDER_ENDE.getTime()) return [];
+  const bis = new Date(heute.getFullYear(), heute.getMonth(), heute.getDate() + 30);
+  return fgBaueKalender(heute, bis).filter(e => FG_BESONDERS.includes(e.typ)).map(e => ({
+    // Meteorschauer: der Name als Titel, die Art darunter - sonst bricht die Zeile um.
+    tage: Math.round((e.datum - heute) / 86400000),
+    titel: e.typ === 'meteor' ? e.titel.replace(/^Meteorschauer:\s*/, '') : e.titel,
+    unter: e.typ === 'meteor' ? 'Meteorschauer · Aktivitätsmaximum' : String(e.notiz || '').split(' · ')[0],
+    symbol: e.typ === 'meteor' ? 'stern' : 'mond', farbe: 'violett',
+    aktion: () => zuBereich('fotografie', () => hervorheben(document.querySelector(`#fg-calendar .rt-row[data-datum="${isoVon(e.datum)}"][data-typ="${e.typ}"]`)))
+  }));
+}
 
 /* ---------------- Sicherung ----------------
    Nur die Guides (inkl. der individuellen Notizen) – der Kalender ist reine
@@ -910,6 +945,8 @@ registerModule({
   restoreInfo: p => ((p && p.szenarien || []).length) + ' Guide(s)',
   detect: p => !!(p && Array.isArray(p.szenarien)),
   init: () => { try { fgRender(); } catch(e){} },
+  heute: () => fgHeute(),
+  kalender: () => fgKalenderTermine(),
   onOpen: () => { try { fgRender(); } catch(e){} },
   summary: () => {
     try {

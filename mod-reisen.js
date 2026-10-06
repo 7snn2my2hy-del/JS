@@ -43,6 +43,7 @@ document.getElementById('mod-reisen').insertAdjacentHTML('beforeend', `
       <h2 id="ts-name">Reise</h2>
       <p id="ts-dest"></p>
     </div>
+    <button class="icon-btn teilen" onclick="rpTeilenMenu(this)" aria-label="Teilen"></button>
     <button class="icon-btn" onclick="rpPlusMenu(this)" aria-label="Hinzufügen">＋</button>
   </div>
   <div class="tab-bar" id="tab-bar"></div>
@@ -1039,6 +1040,16 @@ function arrivalDayOffset(f){
   return Math.round((b-a)/86400000);
 }
 function renderRouteTab(t){
+  const seq = routeSequenz(t);
+  if(!seq.length) return leerHTML({ symbol: 'route', titel: 'Noch keine Route',
+    text: 'Stopps, Flüge, Transfers, Hotels, Mietwagen und Aktivitäten. Hotels und Aktivitäten ordnen sich dem passenden Stopp zu.',
+    knopf: 'Hinzufügen', aktion: 'rpPlusMenu(this)' });
+  const body = seq.map((item,i)=> renderRouteRow(item, i===seq.length-1)).join('');
+  return `<div class="rt-list">${body}</div>`;
+}
+/* Alle Eintraege einer Reise in der Reihenfolge des Zeitstrahls: Stopps mit ihren
+   Hotels und Aktivitaeten, dazwischen Fluege, Transfers und Mietwagen. */
+function routeSequenz(t){
   const inRange = (d, s) => d && s.arrival && s.departure && s.arrival <= d && d <= s.departure;
   // Reihenfolge beachten: findStop() liest tripStops, deshalb steht die Liste zuerst.
   // Vorher stand sie darunter und es ging nur deshalb gut, weil der erste Aufruf zufaellig
@@ -1071,10 +1082,6 @@ function renderRouteTab(t){
   ungrouped.forEach(n=> top.push({...n, prio: n.art==='hotel'?4:5}));
   top.sort((a,b)=> ((a.datum||'9999-99-99')+a.prio+(a.zeit||'~~')).localeCompare((b.datum||'9999-99-99')+b.prio+(b.zeit||'~~')));
 
-  if(!top.length) return leerHTML({ symbol: 'route', titel: 'Noch keine Route',
-    text: 'Stopps, Flüge, Transfers, Hotels, Mietwagen und Aktivitäten. Hotels und Aktivitäten ordnen sich dem passenden Stopp zu.',
-    knopf: 'Hinzufügen', aktion: 'rpPlusMenu(this)' });
-
   // Flache Render-Sequenz: Kinder direkt hinter ihren Stopp
   const seq = [];
   top.forEach(node=>{
@@ -1085,9 +1092,7 @@ function renderRouteTab(t){
         .forEach(k=> seq.push({...k, child:true}));
     }
   });
-
-  const body = seq.map((item,i)=> renderRouteRow(item, i===seq.length-1)).join('');
-  return `<div class="rt-list">${body}</div>`;
+  return seq;
 }
 /* Dauer (Naechte/Tage) steht jetzt unter Tag und Monat statt als Pille in der Meta-Zeile -
    ruhiger als eine zusaetzliche farbige Flaeche neben dem Text, und an derselben Stelle
@@ -1238,6 +1243,7 @@ function fotoCardHTML(p){
       <input class="foto-ort" value="${esc(p.name||'')}" placeholder="Ort, z.B. Sossusvlei – Dünen"
              onchange="renameFotoPlace('${p.id}', this.value)"
              onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">
+      <button class="foto-del foto-karte" onclick="rpFotoKarte('${p.id}')" aria-label="In Karten öffnen">${SYMBOL.pin}</button>
       <button class="foto-del" onclick="deleteFotoPlace('${p.id}')" aria-label="Foto-Ort löschen">✕</button>
     </div>
     <div class="foto-field">
@@ -1570,8 +1576,125 @@ function rpOpenDetail(type, id){
   const o = arr(type).find(x=>x.id===id); if(!o) return;
   $('dv-title').textContent = dvKopf(type, o);
   $('dv-sub').textContent = TITLES[type] || '\u00A0';
-  $('dv-body').innerHTML = dvBody(type, o);
+  $('dv-body').innerHTML = rpAktionenHTML(type, o) + dvBody(type, o);
   screenOeffnen('detail-screen');
+}
+/* Was sich mit einem Eintrag ausserhalb der App anfangen laesst: in Apple Karten
+   zeigen, die Route dorthin, als Termin in den Kalender. */
+function rpAktionenHTML(type, o){
+  const z = [];
+  if (type === 'hotel' || type === 'stop' || type === 'activity'){
+    z.push(['In Karten öffnen', `rpKarte('${type}','${o.id}')`], ['Route hierhin', `rpKarte('${type}','${o.id}',true)`]);
+  }
+  if (type === 'transfer' && o.from && o.to) z.push(['Route in Karten', `rpKarte('transfer','${o.id}',true)`]);
+  if (type === 'car' && o.pickupPlace) z.push(['Abholung in Karten', `rpKarte('car','${o.id}')`]);
+  if (rpEintragTermin(type, o)) z.push(['Zum Kalender hinzufügen', `rpEintragKalender('${type}','${o.id}')`]);
+  return z.length ? `<div class="liste dv-aktionen">${z.map(([t, f]) => `<button class="zeile aktion" type="button" onclick="${f}">${t}</button>`).join('')}</div>` : '';
+}
+function rpKarte(type, id, route){
+  const o = arr(type).find(x => x.id === id); if (!o) return;
+  const r = trips.find(t => t.id === o.tripId);
+  const land = (r && r.country) || '';
+  if (type === 'transfer') return kartenOeffnen({ route: true, von: [o.from, land].filter(Boolean).join(', '), name: o.to, land });
+  if (type === 'car') return kartenOeffnen({ name: o.pickupPlace, land });
+  kartenOeffnen({ name: o.name, ort: o.city, land, gps: o.gps, route });
+}
+function rpFotoKarte(id){
+  const p = activities.find(x => x.id === id); if (!p) return;
+  if (!(p.name || '').trim()){ notify('Bitte zuerst den Ort eintragen.'); return; }
+  const r = trips.find(t => t.id === p.tripId);
+  kartenOeffnen({ name: p.name, land: (r && r.country) || '' });
+}
+
+/* ===== Kalender ===== */
+function rpDauerMin(txt){ const m = String(txt || '').match(/(\d+)\s*(?:h|std|:)\s*(\d+)?/i); return m ? (+m[1]) * 60 + (+(m[2] || 0)) : 0; }
+const rpZeitOk = z => /^\d{1,2}:\d{2}$/.test(String(z || '').trim());
+function rpFlugTermin(f){
+  const zeit = rpZeitOk(f.time) ? f.time.trim() : '';
+  return { id: 'flug-' + f.id, titel: 'Flug ' + [f.from, f.to].filter(Boolean).join(' → ') + (f.flightNo ? ' (' + f.flightNo + ')' : ''),
+    datum: f.date, zeit, dauerMin: rpDauerMin(f.duration) || 60, ort: f.from || '',
+    notiz: [f.airline, f.flightNo && 'Flug ' + f.flightNo, f.seat && 'Sitz ' + f.seat, f.bookingRef && 'Buchung ' + f.bookingRef].filter(Boolean).join('\n'),
+    erinnerungMin: zeit ? 180 : undefined, erinnerungTage: zeit ? undefined : 1 };
+}
+function rpReiseTermin(r){
+  return { id: 'reise-' + r.id, titel: r.name, datum: r.start, bis: r.end || r.start, ort: r.country || '', erinnerungTage: 1 };
+}
+/* Termin zu einem einzelnen Eintrag - null, wenn ihm das Datum fehlt. */
+function rpEintragTermin(type, o){
+  const zeitVon = z => rpZeitOk(z) ? String(z).trim() : '';
+  if (type === 'flight') return o.date ? rpFlugTermin(o) : null;
+  if (type === 'hotel') return o.checkin ? { id: 'hotel-' + o.id, titel: o.name, datum: o.checkin, bis: o.checkout || o.checkin, ort: [o.city].filter(Boolean).join(', '), notiz: [o.room, o.board].filter(Boolean).join(' · ') } : null;
+  if (type === 'activity') return o.date ? { id: 'akt-' + o.id, titel: o.name, datum: o.date, zeit: zeitVon(o.time), notiz: o.notes || '' } : null;
+  if (type === 'transfer') return o.date ? { id: 'trf-' + o.id, titel: 'Transfer ' + [o.from, o.to].filter(Boolean).join(' → '), datum: o.date, zeit: zeitVon(o.time), dauerMin: rpDauerMin(o.duration) || 60, notiz: o.notes || '' } : null;
+  if (type === 'car') return o.pickupDate ? { id: 'car-' + o.id, titel: 'Mietwagen ' + [o.company, o.vehicle].filter(Boolean).join(' · '), datum: o.pickupDate, zeit: zeitVon(o.pickupTime), ort: o.pickupPlace || '' } : null;
+  return null;
+}
+function rpEintragKalender(type, id){
+  const o = arr(type).find(x => x.id === id); const t = o && rpEintragTermin(type, o);
+  if (t) kalenderExport([t], t.titel);
+}
+/* Fuer "Alle Termine": kommende Reisen und ihre Fluege. */
+function rpKalenderTermine(){
+  const heute = todayISO(), out = [];
+  trips.filter(r => r.start && (r.end || r.start) >= heute).forEach(r => {
+    out.push(rpReiseTermin(r));
+    flights.filter(f => f.tripId === r.id && f.date && f.date >= heute).forEach(f => out.push(rpFlugTermin(f)));
+  });
+  return out;
+}
+
+/* ===== Teilen ===== */
+function rpZeileText(n){
+  const o = n.o, ein = n.child ? '    ' : '', d = v => (v ? displayDate(v) : '');
+  const uhr = z => rpZeitOk(z) ? ' ' + String(z).trim() : '';
+  switch (n.art){
+    case 'stop':     return '\n' + [d(o.arrival), o.departure && o.departure !== o.arrival ? d(o.departure) : ''].filter(Boolean).join(' – ') + '  ' + (o.name || 'Stopp');
+    case 'flight':   return ein + d(o.date) + uhr(o.time) + '  Flug ' + [o.from, o.to].filter(Boolean).join(' → ') + (o.flightNo ? ' (' + o.flightNo + ')' : '');
+    case 'hotel':    return ein + [d(o.checkin), d(o.checkout)].filter(Boolean).join(' – ') + '  ' + (o.name || 'Hotel') + (o.city ? ', ' + o.city : '');
+    case 'car':      return ein + d(o.pickupDate) + uhr(o.pickupTime) + '  Mietwagen ' + [o.company, o.vehicle].filter(Boolean).join(' · ') + (o.pickupPlace ? ', ' + o.pickupPlace : '');
+    case 'transfer': return ein + d(o.date) + uhr(o.time) + '  Transfer ' + [o.from, o.to].filter(Boolean).join(' → ');
+    case 'activity': return ein + d(o.date) + uhr(o.time) + '  ' + (o.name || 'Aktivität');
+  }
+  return '';
+}
+function rpReiseplanText(t){
+  const z = [t.name + (t.country && t.country !== t.name ? ' – ' + t.country : '')];
+  const zr = [t.start || t.end ? dvZeitraum(t.start, t.end) : '', tripDuration(t)].filter(Boolean).join(' · ');
+  if (zr) z.push(zr);
+  routeSequenz(t).forEach(n => z.push(rpZeileText(n)));
+  if (t.operator) z.push('\nVeranstalter: ' + t.operator + (t.opPhone ? ' · ' + t.opPhone : '') + (t.opEmergency ? ' · Notruf ' + t.opEmergency : ''));
+  return z.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+function rpListeText(typ, t){
+  const titel = typ === 'pack' ? 'Packliste' : 'Checkliste';
+  const liste = arr(typ).filter(x => x.tripId === t.id);
+  const zeilen = [...liste.filter(i => !i.checked), ...liste.filter(i => i.checked)].map(i => (i.checked ? '☑ ' : '☐ ') + i.name);
+  return titel + ' – ' + t.name + '\n\n' + (zeilen.join('\n') || '(leer)');
+}
+function rpTeilenMenu(anker){
+  const t = currentTrip(); if (!t) return;
+  menuOeffnen(anker, [
+    { text: 'Reiseplan teilen',  symbol: 'teilen', tun: () => teilen({ titel: t.name, text: rpReiseplanText(t) }) },
+    { text: 'Packliste teilen',  symbol: 'liste',  tun: () => teilen({ titel: 'Packliste ' + t.name, text: rpListeText('pack', t) }) },
+    { text: 'Checkliste teilen', symbol: 'liste',  tun: () => teilen({ titel: 'Checkliste ' + t.name, text: rpListeText('todo', t) }) },
+    '-',
+    { text: 'Zum Kalender hinzufügen', symbol: 'kalender', tun: () => {
+        if (!t.start){ notify('Die Reise hat noch kein Datum.'); return; }
+        kalenderExport([rpReiseTermin(t), ...flights.filter(f => f.tripId === t.id && f.date).map(rpFlugTermin)], t.name);
+      } }
+  ]);
+}
+
+/* ===== Heute (Startseite) ===== */
+function rpHeute(){
+  const heute = todayISO();
+  const r = trips.filter(t => t.start && (t.end || t.start) >= heute).sort((a, b) => a.start.localeCompare(b.start))[0];
+  if (!r) return [];
+  const du = daysUntil(r.start);
+  const laeuft = du !== null && du < 0;
+  return [{ tage: laeuft ? 0 : du, titel: r.name, wann: laeuft ? 'läuft' : undefined,
+    unter: [r.country && r.country !== r.name ? r.country : '', dvZeitraum(r.start, r.end)].filter(Boolean).join(' · '),
+    symbol: 'koffer', farbe: 'blau', aktion: () => zuBereich('reisen', () => openTripScreen(r.id)) }];
 }
 function rpCloseDetail(){ screenSchliessen('detail-screen'); }
 
@@ -1795,6 +1918,8 @@ async function rpInit(){
 
 registerModule({
   id: 'reisen', name: 'Reisen', tagline: 'Planung & Fotografie', order: 2,
+  heute: () => rpHeute(),
+  kalender: () => rpKalenderTermine(),
   keys: KEYS,
   buildPayload: () => rpBuildBackupPayloadFull(),
   applyBackup: (t) => rpApplyBackup(t),
