@@ -25,7 +25,7 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
       </div>
       <div class="income-right">
         <span class="income-label">Verfügbar</span>
-        <span class="income-avail" id="income-avail">0,00 €</span>
+        <span class="income-avail betrag" id="income-avail">0,00 €</span>
       </div>
     </div>
     <div class="income-meta" id="income-meta" onclick="openIncomeMeta()"></div>
@@ -538,7 +538,6 @@ function kontenNamen(){
 function kontenMit(feld){ return konten.filter(k => k[feld]).map(k => k.name); }
 const isGiro = e => /giro/i.test(e.account || '');   // Girokonto = Kontoname enthält "Giro" (aus Vermögen & Sparquote ausgenommen)
 // Kontoname -> CSS-sicherer Slug für Pill-Farbe
-const acctSlug = name => (name || '').replace(/[^a-zA-Z0-9]/g, '');
 const INCOME_KEY = 'fin_income_v1';
 const BONUS_KEY = 'fin_bonus_v1';
 const URLAUB_KEY = 'fin_urlaube_v1';
@@ -801,7 +800,7 @@ function renderSection(sec) {
       if (rows.length) {
         const items = rows.sort((a,b)=>b.balance-a.balance).map(e =>
           `<div class="bb-row"><span class="bb-name">${esc(e.name)}</span><span class="bb-val">${fmt(e.balance)}</span></div>`).join('');
-        box.innerHTML = `<div class="bb-head"><span>Kontostand ${esc(acctFilter)}</span><span class="bb-total">${fmt(total)}</span></div>${items}`;
+        box.innerHTML = `<div class="bb-head"><span>Kontostand ${esc(acctFilter)}</span><span class="bb-total ${betragKlasse(total)}">${fmt(total)}</span></div>${items}`;
         box.style.display = '';
       } else {
         box.style.display = 'none';
@@ -842,12 +841,12 @@ function renderSection(sec) {
       }).join('') + `</div>`;
     }
     const balanceLine = (sec === 'b' && e.balance != null)
-      ? `<div class="entry-balance" onclick="event.stopPropagation(); startInlineBalance('b', '${e.id}', this)"><span>Stand:</span> <span>${fmt(e.balance)}</span></div>`
+      ? `<div class="entry-balance" onclick="event.stopPropagation(); startInlineBalance('b', '${e.id}', this)"><span>Stand:</span> <span class="${betragKlasse(e.balance)}">${fmt(e.balance)}</span></div>`
       : (sec === 'a' && e.cat === 'Privat' && e.current != null)
-      ? `<div class="entry-balance" onclick="event.stopPropagation(); startInlineBalance('a', '${e.id}', this)"><span>Stand:</span> <span>${fmt(e.current)}</span></div>`
+      ? `<div class="entry-balance" onclick="event.stopPropagation(); startInlineBalance('a', '${e.id}', this)"><span>Stand:</span> <span class="${betragKlasse(e.current)}">${fmt(e.current)}</span></div>`
       : '';
     const acctPill = e.account
-      ? `<span class="acct-pill acct-${acctSlug(e.account)}">${esc(e.account)}</span>`
+      ? `<span class="acct-pill">${esc(e.account)}</span>`
       : '';
     const subLinesHtml = subLines.length
       ? `<div class="entry-sub">${subLines.map(l => `<div>${l}</div>`).join('')}</div>`
@@ -858,7 +857,7 @@ function renderSection(sec) {
     const div = swipeWrapEl(sec, e.id, entryCardHTML(
       `<div class="entry-name">${nameHtml}</div>
             <div class="entry-pills">
-              <span class="cat-pill cat-${esc(e.cat)}">${esc(e.cat)}</span>
+              <span class="cat-pill">${esc(e.cat)}</span>
               ${acctPill}
             </div>
             ${subLinesHtml}
@@ -953,7 +952,7 @@ function updateIncome() {
   const avail = income - totalExpenses;
   const el = $('income-avail');
   el.textContent = fmt(avail);
-  el.classList.toggle('negative', avail < 0);
+  el.className = 'income-avail ' + betragKlasse(avail, 'rest');
   renderDashboard();
 }
 
@@ -1043,7 +1042,7 @@ function renderHeroBento() {
       const uebSumme = uebNamen.reduce((s,a) => s + uebTotals[a], 0);
       const rows = uebNamen.map(a => `<div class="bento-list-row"><span class="bl">${esc(a)}</span><span class="bv">${fmt(uebTotals[a])}</span></div>`).join('');
       tiles.push(`<div class="bento-tile" onclick="openDetail('uebersicht')">
-        ${kachelKopf('Überweisungen', 'pfeile', 'blau')}
+        ${kachelKopf('Überweisungen', 'pfeile')}
         <div class="bento-primary">${uebNamen.length}<span class="bento-unit">${uebNamen.length === 1 ? 'Überweisung' : 'Überweisungen'}</span></div>
         <div class="bento-foot"><div class="bento-list">${rows}</div></div>
       </div>`);
@@ -1067,17 +1066,17 @@ function renderHeroBento() {
       else { negCats[e.cat] = (negCats[e.cat] || 0) + b; }
     });
     if (posTotal > 0 || Object.keys(negCats).length) {
-      const CAT_COL = { Urlaub: 'var(--violet)', Sparen: 'var(--green)', Konsum: 'var(--accent)' };
+      const CAT_COL = { Konsum: 'var(--dia-1)', Sparen: 'var(--dia-2)', Urlaub: 'var(--dia-3)' };
       const order = Object.entries(cats).sort((a,b) => b[1] - a[1]);
       const bar = posTotal > 0
-        ? order.map(([cat,v]) => `<span class="bento-seg" style="flex:${(v/posTotal).toFixed(4)};background:${CAT_COL[cat]||'var(--muted)'}"></span>`).join('')
+        ? order.map(([cat,v]) => `<span class="bento-seg" style="flex:${(v/posTotal).toFixed(4)};background:${CAT_COL[cat]||'var(--dia-4)'}"></span>`).join('')
         : `<span class="bento-seg bento-seg-leer"></span>`;
-      const zeile = (cat, v, farbe) => `<div class="bento-break-row"><span class="bl"><span class="bento-leg-dot" style="background:${farbe}"></span>${esc(cat)}</span><span class="bv">${fmt(v)}</span></div>`;
-      const legend = order.map(([cat,v]) => zeile(cat, v, CAT_COL[cat] || 'var(--muted)')).join('')
+      const zeile = (cat, v, farbe) => `<div class="bento-break-row"><span class="bl"><span class="bento-leg-dot" style="background:${farbe}"></span>${esc(cat)}</span><span class="bv ${betragKlasse(v)}">${fmt(v)}</span></div>`;
+      const legend = order.map(([cat,v]) => zeile(cat, v, CAT_COL[cat] || 'var(--dia-4)')).join('')
         + Object.entries(negCats).sort((a,b) => a[1] - b[1]).map(([cat,v]) => zeile(cat, v, 'var(--danger)')).join('');
       tiles.push(`<div class="bento-tile" onclick="openDetail('uebersicht')">
-        ${kachelKopf(acct, 'bank', 'gruen')}
-        <div class="bento-primary ${total < 0 ? 'neg' : ''}">${fmt(total)}</div>
+        ${kachelKopf(acct, 'bank')}
+        <div class="bento-primary ${betragKlasse(total)}">${fmt(total)}</div>
         <div class="bento-foot bento-foot-col"><div class="bento-segbar">${bar}</div><div class="bento-break">${legend}</div></div>
       </div>`);
     }
@@ -1087,7 +1086,6 @@ function renderHeroBento() {
   {
     const urlaubRest = currentYearUrlaubBalance();
     if (urlaubRest !== null) {
-      const pos = urlaubRest >= 0;
       const jahr = jetztBerlin().getFullYear();
       // Weltkarte: dieselbe Basis wie in Reisen (jedes Land einzeln, korrekter
       // Kartenausschnitt 0 11.8 1000 406.5 statt eines nur groben Kontinent-Umrisses) -
@@ -1102,7 +1100,7 @@ function renderHeroBento() {
         const farbe = {};
         const punkte = [];
         mapTrips.forEach(t => {
-          const col = t.y === yearNow ? 'var(--violet)' : 'var(--petrol)';
+          const col = t.y === yearNow ? 'var(--dia-1)' : 'var(--dia-2)';
           if (laenderPfade()[t.u.country]) farbe[t.u.country] = col;
           else punkte.push({ col, xy: ortPunkte()[t.u.country] });
         });
@@ -1114,8 +1112,8 @@ function renderHeroBento() {
         </svg><div class="bento-map-legend"><span><i class="jahr-1"></i>${String(yearNow).slice(2)}</span><span><i class="jahr-2"></i>${String(yearNext).slice(2)}</span></div></div>`;
       }
       tiles.push(`<div class="bento-tile" onclick="openDetail('urlaub')">
-        ${kachelKopf('Urlaubsbudget ' + jahr, 'flugzeug', 'violett')}
-        <div class="bento-primary ${pos?'pos':'neg'}">${fmt(urlaubRest)}</div>
+        ${kachelKopf('Urlaubsbudget ' + jahr, 'flugzeug')}
+        <div class="bento-primary ${betragKlasse(urlaubRest, 'rest')}">${fmt(urlaubRest)}</div>
         <div class="bento-foot bento-foot-col">${map}</div>
       </div>`);
     }
@@ -1136,7 +1134,7 @@ function renderHeroBento() {
       </div>`;
     };
     tiles.push(`<div class="bento-tile" onclick="openDetail('urlaub')">
-      ${kachelKopf('Resturlaub ' + j0, 'sonne', 'orange')}
+      ${kachelKopf('Resturlaub ' + j0, 'sonne')}
       <div class="bento-primary" style="color:${ruTextFarbe(a0.rest)}">${ruZahl(a0.rest)}<span class="bento-unit">Tage</span></div>
       <div class="bento-foot bento-foot-col">${zeile(a0)}${zeile(a1)}</div>
     </div>`);
@@ -1168,7 +1166,7 @@ function renderHeroBento() {
         timeline = `<div class="bento-mini">Keine Kündigungsfristen</div>`;
       }
       tiles.push(`<div class="bento-tile" onclick="openDetail('v')">
-        ${kachelKopf('Verträge', 'dokument', 'cyan')}
+        ${kachelKopf('Verträge', 'dokument')}
         <div class="bento-primary">${fmt(monatlich)}<span class="bento-unit">mtl.</span></div>
         <div class="bento-foot">${timeline}</div>
       </div>`);
@@ -1196,7 +1194,7 @@ function renderHeroBento() {
       }
       const avRate = data.a.reduce((s,x) => s + toMonthly(Number(x.amount)||0, x.period), 0);
       tiles.push(`<div class="bento-tile" onclick="openDetail('a')">
-        ${kachelKopf('Altersvorsorge', 'kurve', 'petrol')}
+        ${kachelKopf('Altersvorsorge', 'kurve')}
         <div class="bento-primary">${fmt(avRate)}<span class="bento-unit">mtl.</span></div>
         <div class="bento-foot bento-foot-col">
           ${fortschritt}
@@ -1227,7 +1225,7 @@ function renderDashboard() {
   const avail = Math.max(income - totalExpenses, 0);
 
   // Donut segments
-  const COLORS = { v: 'var(--accent)', b: 'var(--violet)', a: 'var(--green)', avail: 'rgba(235,235,245,0.35)' };
+  const COLORS = { v: 'var(--dia-1)', b: 'var(--dia-2)', a: 'var(--dia-3)', avail: 'var(--dia-4)' };
   const segs = [
     { key:'v', name:'Versicherungen & Verträge', val:tV, color:COLORS.v },
     { key:'b', name:'Konsum, Urlaub & Sparen',    val:tB, color:COLORS.b },
@@ -1291,9 +1289,9 @@ function renderDashboard() {
     const sparMonthly = data.b.reduce((s,e) => s + (isGiro(e) || e.cat !== 'Sparen' ? 0 : toMonthly(e.amount, e.period)), 0);
     const urlaubMonthly = data.b.reduce((s,e) => s + (isGiro(e) || e.cat !== 'Urlaub' ? 0 : toMonthly(e.amount, e.period)), 0);
     const rows = [
-      { name: 'Altersvorsorge', val: avMonthly, color: COLORS.a },
-      { name: 'Sparen',         val: sparMonthly, color: COLORS.b },
-      { name: 'Urlaub',         val: urlaubMonthly, color: 'var(--gold)' }
+      { name: 'Altersvorsorge', val: avMonthly, color: 'var(--dia-1)' },
+      { name: 'Sparen',         val: sparMonthly, color: 'var(--dia-2)' },
+      { name: 'Urlaub',         val: urlaubMonthly, color: 'var(--dia-3)' }
     ].filter(r => r.val > 0);
     if (rows.length) {
       srWrap.style.display = '';
@@ -1314,7 +1312,7 @@ function renderDashboard() {
     whWrap.style.display = '';
     const wh = histSlice(vermoegenVerlauf);
     renderHistoryChart('wealth-hist-chart', wh.map(histLabel), [
-      { points: wh.map(h => h.wealth), color: COLORS.a, label: 'Gesamtvermögen' }
+      { points: wh.map(h => h.wealth), color: 'var(--dia-1)', label: 'Gesamtvermögen' }
     ], { hideRange: true, daten: wh.map(h => isoToDE(histDate(h))) });
   } else {
     whWrap.style.display = 'none';
@@ -1584,19 +1582,19 @@ function finHeute() {
   const out = [], heute = heuteBerlin();
   finFristen().filter(f => f.tage >= 0 && f.tage <= 60).forEach(f => out.push({
     tage: f.tage, titel: f.e.name, unter: 'Kündigungsfrist endet am ' + isoToDE(isoVon(f.deadline)),
-    symbol: 'dokument', farbe: 'orange', aktion: () => zuBereich('finanzen', () => openDetail('v')) }));
+    symbol: 'dokument', aktion: () => zuBereich('finanzen', () => openDetail('v')) }));
   data.v.forEach(e => {
     const d = finNaechsteAbbuchung(e, heute); if (!d) return;
     const tage = Math.round((d - heute) / 86400000);
     if (tage <= 14) out.push({ tage, titel: e.name, unter: 'Abbuchung ' + fmt(e.amount) + ' · ' + e.period,
-      symbol: 'euro', farbe: 'blau', aktion: () => zuBereich('finanzen', () => openDetail('v')) });
+      symbol: 'euro', aktion: () => zuBereich('finanzen', () => openDetail('v')) });
   });
   (typeof bonus !== 'undefined' ? bonus : []).forEach(b => {
     if (!b.expiry) return;
     const tage = daysUntil(b.expiry);
     if (tage === null || tage < 0 || tage > 60) return;
     out.push({ tage, titel: b.name, unter: (b.points ? b.points + ' verfallen am ' : 'Verfall am ') + displayDate(b.expiry),
-      symbol: 'stern', farbe: 'violett', aktion: () => zuBereich('finanzen', () => {
+      symbol: 'stern', aktion: () => zuBereich('finanzen', () => {
         if (collapsedSections.includes('bonus')) toggleSection('bonus');
         hervorheben(document.querySelector(`#list-bonus .entry-wrap[data-id="${b.id}"]`));
       }) });
@@ -1799,7 +1797,7 @@ function renderPensionHistory() {
     phWrap.style.display = '';
     const ph = histSlice(vermoegenVerlauf);
     renderHistoryChart('pension-hist-chart', ph.map(histLabel), [
-      { points: ph.map(h => h.pension), color: 'var(--green)', label: 'Vorsorge gesamt' }
+      { points: ph.map(h => h.pension), color: 'var(--dia-1)', label: 'Vorsorge gesamt' }
     ], { daten: ph.map(h => isoToDE(histDate(h))) });
   } else {
     phWrap.style.display = 'none';
@@ -2364,7 +2362,7 @@ function renderUrlaubeDash() {
   const sparE = urlaubSparEintrag();
   const konto = sparE ? (sparE.balance || 0) : 0;
   const rate = urlaubMonthlyRate();
-  let html = `<div class="uy-konto-head"><span>Kontostand</span><b class="kv-editable" onclick="startInlineKontoStart(this)">${fmt(konto)}</b><span class="saverate-eur">${rate > 0 ? fmt(rate) + ' mtl. Sparrate' : 'Keine Sparrate hinterlegt'}</span></div>`;
+  let html = `<div class="uy-konto-head"><span>Kontostand</span><b class="kv-editable ${betragKlasse(konto)}" onclick="startInlineKontoStart(this)">${fmt(konto)}</b><span class="saverate-eur">${rate > 0 ? fmt(rate) + ' mtl. Sparrate' : 'Keine Sparrate hinterlegt'}</span></div>`;
 
   // --- BUDGET (Soll/Planung) ---
   // Bewusst reine Jahresplanung: Budget = 12 x Sparrate. Einmaleinzahlungen zaehlen NICHT
@@ -2400,7 +2398,7 @@ function renderUrlaubeDash() {
         </div>`;
 
       html += `<div class="urlaub-year-head${numYears.indexOf(y) === 0 ? ' first-year' : ''}">
-          <div class="uy-top"><span class="uy-year">${y}</span><span class="uy-remaining ${balance < 0 ? 'negative' : ''}">${remTxt}</span></div>
+          <div class="uy-top"><span class="uy-year">${y}</span><span class="uy-remaining ${betragKlasse(balance, 'rest')}">${remTxt}</span></div>
           <div class="uy-bar"><div class="uy-bar-fill" style="width:${fillPct}%"></div></div>
           ${metaGrid}
           ${tripList(items)}</div>`;
@@ -2432,10 +2430,10 @@ function renderUrlaubeDash() {
       const jahrLabel = z.jahr !== letztesJahr ? `<div class="kv-year">${z.jahr}</div>` : '';
       letztesJahr = z.jahr;
       const bewegungen =
-        z.zu.map(x => `<div class="kv-move"><span class="kv-lbl">${esc(x.label)}</span><span class="kv-in">+${fmt(x.amount)}</span></div>`).join('') +
-        z.ab.map(x => `<div class="kv-move"><span class="kv-lbl">${esc(x.label)}</span><span class="kv-out">−${fmt(x.amount)}</span></div>`).join('');
+        z.zu.map(x => `<div class="kv-move"><span class="kv-lbl">${esc(x.label)}</span><span class="kv-in ${betragKlasse(x.amount, 'zu')}">+${fmt(x.amount)}</span></div>`).join('') +
+        z.ab.map(x => `<div class="kv-move"><span class="kv-lbl">${esc(x.label)}</span><span class="kv-out ${betragKlasse(x.amount, 'ab')}">−${fmt(x.amount)}</span></div>`).join('');
       html += `${jahrLabel}<div class="kv-month">
-          <div class="kv-head"><span class="kv-mon">${MONTH_FULL[z.monat-1]}${z.manuell ? '<span class="kv-manual" title="manuell gesetzt">•</span>' : ''}</span><span class="kv-saldo kv-editable${z.saldo < 0 ? ' negative' : ''}${z.manuell ? ' manuell' : ''}" onclick="startInlineKontoSaldo(${z.ym}, this)">${fmt(z.saldo)}</span></div>
+          <div class="kv-head"><span class="kv-mon">${MONTH_FULL[z.monat-1]}${z.manuell ? '<span class="kv-manual" title="manuell gesetzt">•</span>' : ''}</span><span class="kv-saldo kv-editable ${betragKlasse(z.saldo)}${z.manuell ? ' manuell' : ''}" onclick="startInlineKontoSaldo(${z.ym}, this)">${fmt(z.saldo)}</span></div>
           ${bewegungen}
         </div>`;
 
@@ -2454,11 +2452,11 @@ function renderUrlaubeDash() {
         html += `<div class="kv-yearend">
             <div class="kv-ye-row">
               <span class="kv-ye-lbl">Geplanter Kontostand 31.12.${z.jahr}</span>
-              <span class="kv-ye-val${soll < 0 ? ' negative' : ''}">${fmt(soll)}</span>
+              <span class="kv-ye-val ${betragKlasse(soll)}">${fmt(soll)}</span>
             </div>
             <div class="kv-ye-row">
               <span class="kv-ye-lbl sub">${fehlt ? 'Fehlbetrag' : 'Überschuss'}</span>
-              <span class="kv-ye-val ${fehlt ? 'negative' : 'positiv'}">${fmt(Math.abs(diff))}</span>
+              <span class="kv-ye-val ${betragKlasse(diff, 'rest')}">${fmt(Math.abs(diff))}</span>
             </div>
           </div>`;
       }

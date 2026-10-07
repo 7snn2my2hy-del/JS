@@ -58,16 +58,10 @@ const FG_AUSRUESTUNG = {
    Glyphe je Guide, viewBox 0 0 24 24, einfarbig Violett, feste Größe/Position
    unabhängig von Titel- oder Wertlänge. */
 const FG_GUIDE_ICON = {
-  'ms-shot': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 16 Q12 4 22 16"/></svg>',
-  'ms-timelapse': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 13 Q12 3 22 13"/><path d="M4 18 Q12 10 20 18" stroke-dasharray="1 4" opacity="0.6"/></svg>',
-  'ms-stacking': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 9 Q12 1 22 9"/><path d="M2 14 Q12 6 22 14" opacity="0.6"/><path d="M2 19 Q12 11 22 19" opacity="0.35"/></svg>',
-  'ms-panorama': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 15 Q12 5 22 15"/><rect x="3" y="8" width="18" height="11" rx="1" opacity="0.45"/><path d="M9 8 L9 19 M15 8 L15 19" opacity="0.45"/></svg>',
-  'star-trails': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>',
-  'meteoriten': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="5" r="1.5" fill="currentColor" stroke="none"/><path d="M5 5 L13 13"/><circle cx="18" cy="7" r="1.2" fill="currentColor" stroke="none"/><path d="M18 7 L22 11"/></svg>',
-  'mond-detail': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="9" r="1.2" fill="currentColor" stroke="none"/><circle cx="14.5" cy="14" r="1.8" fill="currentColor" stroke="none"/><circle cx="15" cy="8" r="0.9" fill="currentColor" stroke="none"/></svg>',
-  'sonne-detail': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/><circle cx="10.5" cy="12.5" r="0.8" fill="currentColor" stroke="none"/></svg>',
-  'ms-vollbogen': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 15 Q12 2 23 15"/><path d="M6 10.6 L6 8.6M12 6.3 L12 4.3M18 10.6 L18 8.6" stroke-width="1.4" opacity="0.6"/></svg>',
-  'wildtiere-slowmo': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><ellipse cx="12" cy="16.5" rx="5.2" ry="4"/><circle cx="6.2" cy="8.2" r="1.6"/><circle cx="11.5" cy="5.5" r="1.6"/><circle cx="16.8" cy="6.6" r="1.6"/><circle cx="19.8" cy="10.6" r="1.4"/></svg>'
+  'ms-shot': SYMBOL.bogen, 'ms-timelapse': SYMBOL.zeitraffer, 'ms-stacking': SYMBOL.stapel,
+  'ms-panorama': SYMBOL.panorama, 'star-trails': SYMBOL.sternspuren, 'meteoriten': SYMBOL.meteoriten,
+  'mond-detail': SYMBOL.monddetail, 'sonne-detail': SYMBOL.sonnedetail, 'ms-vollbogen': SYMBOL.vollbogen,
+  'wildtiere-slowmo': SYMBOL.pfote
 };
 
 /* ---------------- Daten ---------------- */
@@ -559,7 +553,7 @@ function fgKachelZeile(label, wert){
 function fgTileHTML(s){
   const icon = FG_GUIDE_ICON[s.art] || '';
   return `<div class="bento-tile fg-tile" onclick="fgOpenDetail('${s.id}')">
-    ${kachelKopf('Guide', icon, 'violett')}
+    ${kachelKopf('Guide', icon)}
     <div class="bento-primary">${esc(s.name)}</div>
     <div class="bento-foot">
       <div class="bento-list">
@@ -743,18 +737,14 @@ const FG_MILCHSTRASSE_FENSTER = [
    fgMarkerHTML() farbig eingefärbt in einen Kreis-Rahmen gesetzt (gleiches Muster wie
    .rt-plane/.rt-bed/.rt-pin im Kern). */
 const FG_ICONS = {
-  neumond: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 3a9 9 0 1 0 0 18 7 7 0 0 1 0-18Z"/></svg>',
-  vollmond: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>',
-  supermond: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="10" cy="13" r="7"/><path d="M19 3l1.1 2.9L23 7l-2.9 1.1L19 11l-1.1-2.9L15 7l2.9-1.1L19 3Z"/></svg>',
-  meteor: '<svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.2" fill="currentColor"/><path d="M8 8 L20 20" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>',
-  finsternis: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/><circle cx="16" cy="9" r="6" fill="var(--bg)"/></svg>',
-  milchstrasse: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="18" r="1.8"/><circle cx="12" cy="11" r="2.4"/><circle cx="19" cy="5" r="1.8"/></svg>'
+  neumond: SYMBOL.neumond, vollmond: SYMBOL.vollmond, supermond: SYMBOL.supermond,
+  meteor: SYMBOL.meteor, finsternis: SYMBOL.finsternis, milchstrasse: SYMBOL.milchstrasse
 };
 
-function fgMarkerHTML(typ, farbe){
+function fgMarkerHTML(typ){
   const icon = FG_ICONS[typ] || FG_ICONS.vollmond;
   return `<span class="fg-marker">
-    <span class="fg-marker-icon" style="color:${farbe}">${icon}</span>
+    <span class="fg-marker-icon">${icon}</span>
   </span>`;
 }
 
@@ -854,10 +844,6 @@ function fgBaueKalender(startD, endD){
   return events;
 }
 
-const FG_FARBEN = {
-  neumond: 'var(--violet)', vollmond: 'var(--accent)', supermond: 'var(--orange)',
-  meteor: 'var(--green)', finsternis: 'var(--danger)', milchstrasse: 'var(--petrol)'
-};
 
 /* Ende des angezeigten Zeitraums: zwoelf Monate ab heute, hoechstens bis zum Ende
    der recherchierten Daten. */
@@ -876,12 +862,11 @@ function fgRenderCalendar(){
   _fgTermine = events;
   if (!events.length){ el.innerHTML = leerHTML({ symbol: 'mond', titel: 'Keine Termine', text: 'In den nächsten zwölf Monaten steht nichts an.', klein: true }); return; }
   el.innerHTML = events.map((e, i) => {
-    const farbe = FG_FARBEN[e.typ] || 'var(--accent)';
     return `<div class="rt-row${i === events.length - 1 ? ' last' : ''}" data-datum="${isoVon(e.datum)}" data-typ="${e.typ}" onclick="fgTerminTipp(${i})">
       <div class="rt-date"><span class="rt-day">${e.datum.getDate()}</span><span class="rt-mon">${FG_MONATE_KURZ[e.datum.getMonth()]}</span></div>
-      <div class="rt-line">${fgMarkerHTML(e.typ, farbe)}</div>
+      <div class="rt-line">${fgMarkerHTML(e.typ)}</div>
       <div class="rt-body">
-        <div class="rt-name" style="color:${farbe}">${esc(e.titel)}</div>
+        <div class="rt-name">${esc(e.titel)}</div>
         <div class="rt-meta">${esc(FG_WOCHENTAGE[e.datum.getDay()])}, ${e.datum.getDate()}. ${esc(FG_MONATE_LANG[e.datum.getMonth()])}${e.datum.getFullYear() !== heute.getFullYear() ? ' ' + e.datum.getFullYear() : ''}</div>
         ${e.notiz ? `<div class="rt-notes">${esc(e.notiz)}</div>` : ''}
       </div>
@@ -920,7 +905,7 @@ function fgHeute(){
     tage: Math.round((e.datum - heute) / 86400000),
     titel: e.typ === 'meteor' ? e.titel.replace(/^Meteorschauer:\s*/, '') : e.titel,
     unter: e.typ === 'meteor' ? 'Meteorschauer · Aktivitätsmaximum' : String(e.notiz || '').split(' · ')[0],
-    symbol: e.typ === 'meteor' ? 'stern' : 'mond', farbe: 'violett',
+    symbol: e.typ === 'meteor' ? 'stern' : 'mond',
     aktion: () => zuBereich('fotografie', () => hervorheben(document.querySelector(`#fg-calendar .rt-row[data-datum="${isoVon(e.datum)}"][data-typ="${e.typ}"]`)))
   }));
 }

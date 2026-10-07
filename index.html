@@ -9,7 +9,7 @@
 <!-- Name unter dem Symbol auf dem Home-Bildschirm. iOS wertet dieses Tag aus,
      nicht short_name aus dem Manifest. -->
 <meta name="apple-mobile-web-app-title" content="Jörg">
-<link rel="manifest" href="manifest.json?v=2610061908">
+<link rel="manifest" href="manifest.json?v=2610070852">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>Jörg</title>
@@ -21,8 +21,6 @@
     --bg:        #000000;
     /* Landflaeche der Weltkarten (Reisen und Finanzen) */
     --land:      rgba(255, 255, 255, 0.12);
-    /* Urlaub in Aufstellungen der Sparquoten */
-    --gold:      #f0c060;
     --glass:     rgba(28, 28, 32, 0.5);
     --glass-hi:  rgba(44, 44, 50, 0.58);
     --stroke:    rgba(255, 255, 255, 0.08);
@@ -41,8 +39,14 @@
     --green:     #30d158;
     --petrol:    #00b3b8;
     --orange:    #ff9f0a;
-    --cyan:      #64d2ff;   /* Transfers/Fahrten im Zeitstrahl */
     --been:      #ff9f0a;   /* besuchte Länder – bewusst anders als das Blau der Reisen */
+    /* Diagramme: ein Blau plus drei Grautoene. Mehr Reihen gibt es in keinem Diagramm;
+       Rot bleibt fuer Ueberzogenes, Gruen/Rot fuer die Trendlinie. Vorher brachte
+       jedes Diagramm eigene Farben mit (Violett, Gruen, Gold, Petrol). */
+    --dia-1:     var(--accent);
+    --dia-2:     #aeaeb2;
+    --dia-3:     #6e6e73;
+    --dia-4:     #48484a;
     --spring:    cubic-bezier(0.34, 1.35, 0.64, 1);
     --ease-ios:  cubic-bezier(0.32, 0.72, 0, 1);
     /* Radienskala. Vorher standen neben vier Variablen noch 30 feste Zahlen im
@@ -356,9 +360,8 @@
   .tt-map:has(svg.tt-country-shape) { -webkit-mask-image: none; mask-image: none; }
   .tt-cd { margin-top: auto; display: flex; align-items: baseline; gap: 5px; white-space: nowrap; position: relative; z-index: 1; }
   .tt-cd-val { font-size: var(--fs-title1); font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1; }
-  /* "accent" war identisch mit der Kartenfarbe dahinter (beide var(--accent)) und ist
-     auf farbigen Ländern kaum noch lesbar. Petrol kommt in der Kachel sonst nicht vor. */
-  .tt-cd-val.accent { color: var(--petrol); }
+  /* Zahlen sind weiss wie in Health; Gruen nur, wenn die Reise laeuft. */
+  .tt-cd-val.accent { color: var(--text); }
   .tt-cd-val.green { color: var(--green); }
   .tt-cd-val.muted { color: var(--muted); }
   .tt-cd-unit { font-size: var(--fs-caption1); color: var(--muted); font-weight: 600; }
@@ -366,21 +369,21 @@
   .tt-cd-val, .bento-primary, .wm-val, .ov-cd-val, .stat-value, #mod-finanzen .hero-val, #mod-finanzen .uy-konto-head b { font-family: var(--zahl-font); }
 
   /* ===== Kachelkopf wie in Health =====
-     Symbol und Bezeichnung in der Farbe des Bereichs, darunter die grosse Zahl
-     in Weiss. Die Farbe kommt ueber --k: .k-<farbe> oder .bereich-<id>. */
+     Symbol und Bezeichnung grau, darunter die grosse Zahl in Weiss. Farbe gibt es
+     nur noch fuer den Bereich selbst (.bereich-<id> auf der Startseite) und als
+     Signal (.k-rot). Innerhalb der Bereiche bleiben die Koepfe neutral. */
   .kachel-kopf { position: relative; z-index: 1; display: flex; align-items: center; gap: 6px; min-width: 0; color: var(--k, var(--muted)); font-size: var(--fs-subhead); font-weight: 700; letter-spacing: -0.01em; line-height: 1.2; }
   .kachel-kopf svg { width: 17px; height: 17px; flex: 0 0 auto; }
   .kachel-kopf > span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .kachel-kopf + .tt-country { margin-top: 3px; }
-  .k-gruen { --k: var(--green); }   .k-blau { --k: var(--accent); }   .k-violett { --k: var(--violet); }
-  .k-orange { --k: var(--orange); } .k-petrol { --k: var(--petrol); } .k-cyan { --k: var(--cyan); }
-  .k-rot { --k: var(--danger); }    .k-grau { --k: var(--muted); }
+  .k-rot { --k: var(--danger); }
   .bereich-finanzen { --k: var(--green); }   .bereich-reisen { --k: var(--accent); }
   .bereich-impfpass { --k: var(--petrol); }  .bereich-fotografie { --k: var(--violet); }
   .trip-tile.done .kachel-kopf { --k: var(--muted); }
 
-  .cat-pill { display: inline-block; font-size: var(--fs-caption2); font-weight: 600; padding: 2px 8px; border-radius: var(--r-pill); letter-spacing: 0.02em; white-space: nowrap; flex: 0 0 auto; }
-  .pill-violet { background: rgba(191,90,242,0.16);  color: #d19bf5; }
+  /* Kategorie, Konto, Ausruestung: eine neutrale Pille. Farbe nur fuer Status
+     (rot abgelaufen, orange bald faellig, gruen gueltig). */
+  .cat-pill { display: inline-block; font-size: var(--fs-caption2); font-weight: 600; padding: 2px 8px; border-radius: var(--r-pill); letter-spacing: 0.02em; white-space: nowrap; flex: 0 0 auto; background: var(--fill-3); color: var(--muted); }
   .pill-green  { background: rgba(48,209,88,0.16);   color: #6be08a; }
   .pill-orange { background: rgba(255,159,10,0.16);  color: #ffbb52; }
   .pill-muted  { background: var(--fill-3); color: var(--muted); }
@@ -475,34 +478,27 @@
   .rt-line::before { content: ""; position: absolute; top: 0; bottom: 0; width: 2px; background: var(--stroke-hi); }
   .rt-row.last .rt-line::before { bottom: auto; height: 9px; }
   .rt-dot { position: relative; width: 11px; height: 11px; border-radius: 50%; background: var(--accent); margin-top: 4px; box-shadow: 0 0 0 4px var(--bg); }
-  /* Flüge in der Zeitleiste: Flieger statt Punkt, Violett zur Abgrenzung von den Stopps */
+  /* Zeitstrahl: Flug, Hotel, Aktivitaet, Mietwagen, Transfer unterscheiden sich am
+     Symbol, nicht an der Farbe. Symbole grau, Namen weiss - nur der Stopp-Punkt ist blau. */
   .rt-plane { position: relative; display: flex; align-items: center; justify-content: center; width: 19px; height: 19px; border-radius: 50%; background: var(--bg); margin-top: 1px; box-shadow: 0 0 0 3px var(--bg); }
-  .rt-plane svg { width: 15px; height: 15px; color: var(--violet); transform: rotate(90deg); }
-  .rt-row.flight .rt-name { font-size: var(--fs-subhead); font-weight: 600; color: var(--violet); }
+  .rt-plane svg { width: 15px; height: 15px; color: var(--muted); transform: rotate(90deg); }
+  .rt-row.flight .rt-name { font-size: var(--fs-subhead); font-weight: 600; }
   .rt-row.flight .rt-body { padding-bottom: 20px; }
-  /* Hotel im Zeitstrahl: Bett-Marker in Amber/Gold */
   .rt-bed { position: relative; display: flex; align-items: center; justify-content: center; width: 19px; height: 19px; border-radius: 50%; background: var(--bg); margin-top: 1px; box-shadow: 0 0 0 3px var(--bg); }
-  .rt-bed svg { width: 14px; height: 14px; color: var(--orange); }
-  .rt-row.hotel .rt-name { color: var(--orange); }
-  /* Aktivität im Zeitstrahl: Karten-Pin in Teal */
+  .rt-bed svg { width: 15px; height: 15px; color: var(--muted); }
   .rt-pin { position: relative; display: flex; align-items: center; justify-content: center; width: 19px; height: 19px; border-radius: 50%; background: var(--bg); margin-top: 1px; box-shadow: 0 0 0 3px var(--bg); }
-  .rt-pin svg { width: 15px; height: 15px; color: var(--petrol); }
-  .rt-row.activity .rt-name { color: var(--petrol); }
-  /* Mietwagen im Zeitstrahl: Auto-Marker in Grün */
+  .rt-pin svg { width: 15px; height: 15px; color: var(--muted); }
   .rt-car { position: relative; display: flex; align-items: center; justify-content: center; width: 19px; height: 19px; border-radius: 50%; background: var(--bg); margin-top: 1px; box-shadow: 0 0 0 3px var(--bg); }
-  .rt-car svg { width: 15px; height: 15px; color: var(--green); }
-  .rt-row.car .rt-name { font-size: var(--fs-subhead); font-weight: 600; color: var(--green); }
-  /* Transfer (Fahrt zwischen zwei Orten) im Zeitstrahl: Routen-Marker in Cyan */
+  .rt-car svg { width: 15px; height: 15px; color: var(--muted); }
+  .rt-row.car .rt-name { font-size: var(--fs-subhead); font-weight: 600; }
   .rt-transfer { position: relative; display: flex; align-items: center; justify-content: center; width: 19px; height: 19px; border-radius: 50%; background: var(--bg); margin-top: 1px; box-shadow: 0 0 0 3px var(--bg); }
-  .rt-transfer svg { width: 15px; height: 15px; color: var(--cyan); }
-  .rt-row.transfer .rt-name { font-size: var(--fs-subhead); font-weight: 600; color: var(--cyan); }
+  .rt-transfer svg { width: 15px; height: 15px; color: var(--muted); }
+  .rt-row.transfer .rt-name { font-size: var(--fs-subhead); font-weight: 600; }
   /* Unter-Einträge (Hotels/Aktivitäten) eingerückt unter ihrem Stopp */
   .rt-row.rt-child .rt-body { padding-left: 12px; }
   .rt-row.rt-child .rt-name { font-size: var(--fs-subhead); }
   .rt-cmark { position: relative; display: flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; background: var(--bg); margin-top: 3px; box-shadow: 0 0 0 3px var(--bg); }
-  .rt-cmark svg { width: 12px; height: 12px; }
-  .rt-cmark.bed svg { color: var(--orange); }
-  .rt-cmark.pin svg { color: var(--petrol); }
+  .rt-cmark svg { width: 12px; height: 12px; color: var(--muted); }
   .rt-cdate .rt-day { font-size: var(--fs-subhead); font-weight: 700; color: var(--muted); }
   /* ===== FOTOGRAFIE: Foto-Ort-Karten ===== */
   .foto-list { display: flex; flex-direction: column; gap: 16px; margin-top: 4px; }
@@ -560,7 +556,7 @@
   .rt-tel { color: var(--muted); text-decoration: none; font-variant-numeric: tabular-nums; }
   .rt-tel:active { color: var(--accent); }
   .dv-v .rt-tel { color: var(--accent); font-size: var(--fs-subhead); }
-  .rt-nights { padding: 2px 7px; border-radius: var(--r-pill); background: rgba(0,179,184,0.15); color: var(--petrol); font-weight: 600; font-size: var(--fs-caption2); white-space: normal; overflow-wrap: anywhere; }
+  .rt-nights { padding: 2px 7px; border-radius: var(--r-pill); background: var(--fill-3); color: var(--muted); font-weight: 600; font-size: var(--fs-caption2); white-space: normal; overflow-wrap: anywhere; }
 
   /* Finanzen: Feinheiten, die vorher inline standen. Uebrig bleiben dort nur noch
      Styles, deren Wert aus den Daten kommt (Balkenbreiten, Kategoriefarben). */
@@ -570,8 +566,8 @@
      ein einzelner Wert landete sonst links (Urlaubstage ab dem zweiten Jahr). */
   .fin-row-right > :first-child { margin-left: auto; }
   .bento-seg-leer { flex: 1; background: var(--stroke); }
-  .bento-map-legend i.jahr-1 { background: var(--violet); }
-  .bento-map-legend i.jahr-2 { background: var(--petrol); }
+  .bento-map-legend i.jahr-1 { background: var(--dia-1); }
+  .bento-map-legend i.jahr-2 { background: var(--dia-2); }
   .legend-dot-ueber { background: var(--danger); }
 
   /* ===== FOTOGRAFIE: Guide-Kachel und Leseansicht =====
@@ -606,7 +602,7 @@
   .fg-notiz { width: 100%; background: transparent; border: none; outline: none; resize: vertical; font: inherit; color: var(--text); line-height: 1.55; padding: 0; }
   /* Marker im Astro-Kalender - baugleich zu .rt-transfer im Reisen-Zeitstrahl */
   .fg-marker { position: relative; display: flex; align-items: center; justify-content: center; width: 19px; height: 19px; border-radius: 50%; background: var(--bg); margin-top: 1px; box-shadow: 0 0 0 3px var(--bg); }
-  .fg-marker-icon { width: 14px; height: 14px; display: flex; }
+  .fg-marker-icon { width: 15px; height: 15px; display: flex; color: var(--muted); }
 
   /* ===== EINTRAG-ANSICHT (nur lesen) ===== */
   .dv-card { padding: 0 16px; margin-bottom: 4px; }
@@ -674,6 +670,9 @@
     font-size: var(--fs-footnote); font-weight: 600; padding: 7px 14px; border-radius: var(--r-pill);
     cursor: pointer; transition: transform var(--dur-2) var(--spring); }
   .undo-btn:active { transform: scale(0.94); }
+  /* Neue Version: gleiche Form wie die Rueckgaengig-Meldung, liegt eine Stufe darunter */
+  .update-toast { z-index: 619; }
+  .undo-btn { white-space: nowrap; flex: 0 0 auto; }
   .back-scrim { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 398; }
   .back-under { will-change: transform; }
   .back-under.gliding { transition: transform var(--back-dur, var(--dur-2)) var(--ease-ios); }
@@ -757,11 +756,7 @@
   .stat-label { font-size: var(--label-fs); text-transform: uppercase; letter-spacing: var(--label-ls); color: var(--label-color); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: var(--label-fw); }
   .stat-ic { display: flex; align-items: center; justify-content: center; height: 22px; margin-bottom: 5px; }
   .stat-ic svg { width: 18px; height: 18px; }
-  .ic-flight svg { color: var(--violet); }
-  .ic-car svg { color: var(--green); }
-  .ic-hotel svg { color: var(--orange); }
-  .ic-activity svg { color: var(--petrol); }
-  .ic-foto svg { color: var(--accent); }
+  .stat-ic svg { color: var(--muted); }
   .stat-value { font-size: var(--fs-subhead); font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
   .sl-count { color: var(--muted-2); font-weight: 600; }
 
@@ -770,8 +765,8 @@
      wie in Erinnerungen erst beim Text, nicht beim Kreis. */
   .todo-row { --einzug: 50px; display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 8px 0 16px; }
   .todo-check { width: 22px; height: 22px; flex: 0 0 22px; border-radius: 50%; border: 1.5px solid var(--stroke-hi); background: transparent; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background var(--dur-1) var(--spring), border-color var(--dur-1); }
-  .todo-check svg { width: 12px; height: 12px; color: #06280f; opacity: 0; transform: scale(0.5); transition: all var(--dur-1) var(--spring); }
-  .todo-check.checked { background: var(--green); border-color: var(--green); }
+  .todo-check svg { width: 12px; height: 12px; color: #fff; opacity: 0; transform: scale(0.5); transition: all var(--dur-1) var(--spring); }
+  .todo-check.checked { background: var(--accent); border-color: var(--accent); }
   .todo-check.checked svg { opacity: 1; transform: scale(1); }
   .todo-check.ghost { border-style: dashed; border-color: var(--stroke); cursor: default; }
   .todo-text { flex: 1; min-width: 0; background: transparent; border: none; outline: none; color: var(--text); font: inherit; font-size: var(--fs-body); padding: 12px 0; }
@@ -862,8 +857,8 @@
 
   /* Inline-Eingabe fuer Geldbetraege (Kontostaende).
      Gehoert in den Kern, damit alle Module dieselbe Optik und Bedienung nutzen. */
-  .balance-inline { font-family: inherit; font-size: var(--fs-callout); font-weight: 600; line-height: 1.2; color: var(--petrol); background: rgba(0,179,184,0.10); border: 1px solid rgba(0,179,184,0.35); border-radius: 7px; padding: 2px 6px; width: 108px; max-width: 55%; outline: none; font-variant-numeric: tabular-nums; -webkit-appearance: none; box-sizing: border-box; }
-  .balance-inline:focus { border-color: var(--petrol); }
+  .balance-inline { font-family: inherit; font-size: var(--fs-callout); font-weight: 600; line-height: 1.2; color: var(--accent); background: rgba(10,132,255,0.12); border: 1px solid rgba(10,132,255,0.35); border-radius: 7px; padding: 2px 6px; width: 108px; max-width: 55%; outline: none; font-variant-numeric: tabular-nums; -webkit-appearance: none; box-sizing: border-box; }
+  .balance-inline:focus { border-color: var(--accent); }
   /* Impfstatus-Kachel im Kopfbereich - eine Bento-Kachel wie in Finanzen, statt der
      frueheren roten Hinweiskarte. Voll ausgebreitet statt im Kachelraster, deshalb
      nicht antippbar und ohne :active-Skalierung. */
@@ -1321,8 +1316,7 @@
 #mod-finanzen #income-input:focus{ border-bottom-color: var(--accent); }
 #mod-finanzen #income-input::placeholder{ color: var(--muted-2); }
 #mod-finanzen .income-eur{ font-size: var(--fs-body); font-weight: 600; color: var(--muted); }
-#mod-finanzen .income-avail{ font-size: var(--fs-title3); font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--green); }
-#mod-finanzen .income-avail.negative{ color: var(--danger); }
+#mod-finanzen .income-avail{ font-size: var(--fs-title3); font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 /* Abstand statt Trennlinie: Apple trennt Abschnitte durch Luft. */
 #mod-finanzen .income-divider{ height: 0; margin: 20px 0 0; }
 /* Hero: Gesamtvermögen */
@@ -1344,7 +1338,16 @@
    damit alle Module dieselbe Kachel erben. */
 .bento-title{ font-size: var(--label-fs); text-transform: uppercase; letter-spacing: var(--label-ls); font-weight: var(--label-fw); color: var(--label-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 .bento-primary{ font-size: var(--fs-title2); font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1.15; margin-top: 5px; white-space: nowrap; }
-.bento-primary.pos{ color: var(--text); }
+/* ===== Betraege: eine Regel fuer alle Bereiche =====
+   Bestand (Kontostand, Vermoegen, Stand): weiss, rot wenn negativ.
+   Rest/Abweichung (Verfuegbar, Budget-Rest, Ueberschuss): gruen wenn positiv, rot wenn negativ.
+   Bewegung: Zufluss gruen mit +, Abfluss grau mit -.
+   Die Klasse vergibt betragKlasse(wert, art); .betrag selbst setzt keine Farbe, damit
+   ein antippbarer Betrag (blau) im Normalfall blau bleibt. */
+.betrag.plus{ color: var(--green); }
+.betrag.neg{ color: var(--danger); }
+.betrag.ab{ color: var(--muted); }
+/* Zaehler (Impfstatus): rot bei Faelligem, gruen wenn alles gueltig */
 .bento-primary.neg{ color: var(--danger); }
 .bento-primary.ok{ color: var(--green); }
 .bento-unit{ font-size: var(--fs-caption1); color: var(--muted); font-weight: 600; margin-left: 3px; letter-spacing: 0; }
@@ -1375,7 +1378,7 @@
 #mod-finanzen .bento-map-legend i{ display: inline-block; width: 6px; height: 6px; border-radius: var(--r-pill); margin-right: 4px; }
 /* Fortschrittsbalken bis 67 */
   #mod-finanzen .bento-progress{ height: 6px; border-radius: var(--r-pill); background: var(--fill-3); overflow: hidden; }
-#mod-finanzen .bento-progress-fill{ display: block; height: 100%; border-radius: var(--r-pill); background: var(--green); }
+#mod-finanzen .bento-progress-fill{ display: block; height: 100%; border-radius: var(--r-pill); background: var(--accent); }
 #mod-finanzen .dashboard{ padding: var(--pad-card); }
 /* Dashboard-Karten kraeftiger absetzen: tiefere Schatten, deutlichere Glaskante.
    Bewusst OHNE backdrop-filter (solider Hintergrund) - das haelt das Wischen fluessig,
@@ -1423,7 +1426,7 @@
 #mod-finanzen .balance-box{ padding: var(--pad-inner); margin: -8px 0 20px; }
 #mod-finanzen .bb-head{ display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--stroke); }
 #mod-finanzen .bb-head span:first-child{ font-size: var(--label-fs); text-transform: uppercase; letter-spacing: var(--label-ls); color: var(--label-color); font-weight: var(--label-fw); }
-#mod-finanzen .bb-total{ font-size: var(--fs-body); font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; }
+#mod-finanzen .bb-total{ font-size: var(--fs-body); font-weight: 700; font-variant-numeric: tabular-nums; }
 #mod-finanzen .bb-row{ display: flex; justify-content: space-between; font-size: var(--fs-footnote); padding: 3px 0; }
 #mod-finanzen .bb-name{ color: var(--muted); }
 #mod-finanzen .bb-val{ color: var(--text); font-variant-numeric: tabular-nums; font-weight: 500; }
@@ -1434,30 +1437,12 @@
 /* Pfeil und Klapp-Verhalten stehen im Kern bei .section-chevron. */
 #mod-finanzen .entry-name-prov{ font-weight: 500; font-size: var(--fs-footnote); color: var(--muted); letter-spacing: 0; }
 #mod-finanzen .entry-paysched{ font-size: var(--fs-caption1); color: var(--muted-2); margin-top: 2px; font-variant-numeric: tabular-nums; }
-#mod-finanzen .cat-Abonnement{ background: rgba(176,110,235,0.16); color: #c39bf0; }
-#mod-finanzen .cat-Versicherung{ background: rgba(55,195,230,0.16);  color: #3fc8e6; }
-#mod-finanzen .cat-Verein{ background: rgba(255,150,50,0.16);  color: #ff9f43; }
-#mod-finanzen .cat-Vertrag{ background: rgba(235,95,195,0.16);  color: #f06fce; }
-#mod-finanzen .cat-Sparen{ background: rgba(150,175,210,0.16); color: #97b0d4; }
-#mod-finanzen .cat-Urlaub{ background: rgba(235,190,75,0.16);  color: #ecc24f; }
-#mod-finanzen .cat-Konsum{ background: rgba(125,130,250,0.16); color: #8f95ff; }
-#mod-finanzen .cat-Gesetzlich{ background: rgba(200,160,100,0.16); color: #c9a46a; }
-#mod-finanzen .cat-Betrieblich{ background: rgba(45,195,175,0.16);  color: #34c8b4; }
-#mod-finanzen .cat-Privat{ background: rgba(255,125,160,0.16); color: #ff8fae; }
 #mod-finanzen .entry-pills{ flex-wrap: nowrap; }
-#mod-finanzen .acct-pill{ display: inline-block; font-size: var(--fs-caption2); font-weight: 600; padding: 2px 7px; border-radius: var(--r-pill); letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; }
-#mod-finanzen .acct-DBGiro{ background: rgba(90,200,250,0.16);  color: #5ac8fa; }
-#mod-finanzen .acct-DBSpar{ background: rgba(120,140,255,0.16); color: #8a9cff; }
-#mod-finanzen .acct-DBROBIN{ background: rgba(125,210,140,0.18); color: #7dd28c; }
-#mod-finanzen .acct-DKBGiro{ background: rgba(48,209,170,0.16);  color: #30d1aa; }
-#mod-finanzen .acct-ScalableBroker{ background: rgba(255,180,90,0.16);  color: #ffb45a; }
-#mod-finanzen .acct-ScalableTagesgeld{ background: rgba(215,200,120,0.16); color: #d7c878; }
-#mod-finanzen .acct-ScalableWealthWeltreise{ background: rgba(255,140,160,0.16); color: #ff8ca0; }
-#mod-finanzen .acct-EquatePlus{ background: rgba(190,150,255,0.16); color: #be96ff; }
+#mod-finanzen .acct-pill{ display: inline-block; background: var(--fill-3); color: var(--muted); font-size: var(--fs-caption2); font-weight: 600; padding: 2px 7px; border-radius: var(--r-pill); letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; }
 #mod-finanzen .entry-amount{ font-weight: 600; font-size: var(--fs-callout); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 #mod-finanzen .entry-period{ font-size: var(--fs-caption2); color: var(--muted-2); text-align: right; margin-top: 2px; }
 #mod-finanzen .entry-yearly{ font-size: var(--fs-caption2); color: var(--muted); text-align: right; margin-top: 3px; font-variant-numeric: tabular-nums; }
-#mod-finanzen .entry-balance{ font-size: var(--fs-caption1); font-weight: 600; color: var(--petrol); text-align: left; margin-top: 7px; font-variant-numeric: tabular-nums; cursor: pointer; display: flex; align-items: center; gap: 6px; min-height: 18px; }
+#mod-finanzen .entry-balance{ font-size: var(--fs-caption1); font-weight: 600; color: var(--accent); text-align: left; margin-top: 7px; font-variant-numeric: tabular-nums; cursor: pointer; display: flex; align-items: center; gap: 6px; min-height: 18px; }
 #mod-finanzen .entry-pension{ display: flex; flex-wrap: wrap; gap: 1px 12px; margin-top: 7px; font-size: var(--fs-caption1); line-height: 1.35; font-variant-numeric: tabular-nums; }
 #mod-finanzen .entry-sub + .entry-pension{ margin-top: 1px; }
 #mod-finanzen .entry-pension .pv-date{ color: var(--muted); }
@@ -1538,7 +1523,7 @@
    Abstand dazwischen. Die vom Kopfblock trennt in diesem Fall nichts mehr, sie faellt weg. */
 #mod-finanzen .uy-konto-head:has(+ .uy-section-label){ border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
 #mod-finanzen .uy-konto-head span{ font-size: var(--label-fs); text-transform: uppercase; letter-spacing: var(--label-ls); color: var(--label-color); font-weight: var(--label-fw); display: block; margin-bottom: 4px; }
-#mod-finanzen .uy-konto-head b{ font-size: var(--fs-title3); font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; display: block; }
+#mod-finanzen .uy-konto-head b{ font-size: var(--fs-title3); font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; display: block; }
 /* Grosse Abschnittsueberschrift ("Budget", "Kontostand"). Die Linie darueber trennt sie
    vom vorigen Block; darunter kommt keine. */
 #mod-finanzen .uy-section-label{ font-size: var(--fs-body); letter-spacing: -0.01em; color: var(--text); font-weight: 700;
@@ -1563,20 +1548,16 @@
 #mod-finanzen .kv-month + .kv-month{ margin-top: 5px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
 #mod-finanzen .kv-head{ display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
 #mod-finanzen .kv-mon{ font-size: var(--fs-footnote); color: var(--text); font-weight: 600; }
-#mod-finanzen .kv-saldo{ font-size: var(--fs-footnote); font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
-#mod-finanzen .kv-saldo.negative{ color: var(--danger); }
+#mod-finanzen .kv-saldo{ font-size: var(--fs-footnote); font-weight: 700; font-variant-numeric: tabular-nums; }
 #mod-finanzen .kv-yearend{ padding: 11px 13px; margin: 14px 0 20px; border-radius: var(--r-entry); background: var(--fill-2); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); font-size: var(--fs-caption1); }
 #mod-finanzen .kv-ye-row{ display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
 #mod-finanzen .kv-ye-row + .kv-ye-row{ margin-top: 4px; }
 #mod-finanzen .kv-ye-lbl.sub{ color: var(--muted); font-weight: 500; }
-#mod-finanzen .kv-ye-val.positiv{ color: var(--green); }
 #mod-finanzen .kv-ye-lbl{ color: var(--text); font-weight: 600; min-width: 0; }
-#mod-finanzen .kv-ye-val{ color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; flex-shrink: 0; }
-#mod-finanzen .kv-ye-val.negative{ color: var(--danger); }
+#mod-finanzen .kv-ye-val{ font-weight: 700; font-variant-numeric: tabular-nums; flex-shrink: 0; }
 #mod-finanzen .kv-move{ display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: var(--fs-caption1); margin-top: 3px; }
 #mod-finanzen .kv-lbl{ color: var(--muted-2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#mod-finanzen .kv-in{ color: var(--green); font-variant-numeric: tabular-nums; flex-shrink: 0; }
-#mod-finanzen .kv-out{ color: var(--muted); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+#mod-finanzen .kv-in, #mod-finanzen .kv-out{ font-variant-numeric: tabular-nums; flex-shrink: 0; }
 #mod-finanzen .urlaub-combined{ padding: var(--pad-card); margin-bottom: 4px; }
 #mod-finanzen .uc-budget-row{ display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 /* Abstand zwischen mehreren gestapelten Kontingent-Zeilen (2026, 2027, ...) - die Zeile
@@ -1598,10 +1579,9 @@
 #mod-finanzen .depo-actions{ display: flex; gap: 2px; flex: 0 0 auto; }
 #mod-finanzen .uy-top{ display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 9px; }
 #mod-finanzen .uy-year{ font-size: var(--label-fs); font-weight: var(--label-fw); text-transform: uppercase; letter-spacing: var(--label-ls); color: var(--label-color); }
-#mod-finanzen .uy-remaining{ font-size: var(--fs-subhead); font-weight: 600; color: var(--green); font-variant-numeric: tabular-nums; }
-#mod-finanzen .uy-remaining.negative{ color: var(--danger); }
+#mod-finanzen .uy-remaining{ font-size: var(--fs-subhead); font-weight: 600; font-variant-numeric: tabular-nums; }
 #mod-finanzen .uy-bar{ height: 4px; background: var(--fill-2); border-radius: var(--r-pill); overflow: hidden; margin-bottom: 6px; }
-#mod-finanzen .uy-bar-fill{ height: 100%; border-radius: var(--r-pill); background: var(--green); transition: width var(--dur-3) var(--ease-ios); }
+#mod-finanzen .uy-bar-fill{ height: 100%; border-radius: var(--r-pill); background: var(--accent); transition: width var(--dur-3) var(--ease-ios); }
 #mod-finanzen .uy-meta{ display: flex; justify-content: space-between; font-size: var(--fs-caption1); color: var(--muted-2); font-variant-numeric: tabular-nums; }
 #mod-finanzen .uy-ml{ color: var(--muted-2); }
 #mod-finanzen .uy-mv{ color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -1834,7 +1814,7 @@ if (!('switch' in HTMLInputElement.prototype)) document.documentElement.classLis
 const SYMBOL = (() => {
   const s = (inner, w) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w || 1.7}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
   return {
-    plus:      s('<path d="M12 5v14M5 12h14"/>', 2),
+    plus:      s('<path d="M12 5v14M5 12h14"/>'),
     liste:     s('<path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="4.6" cy="6.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.6" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.6" cy="17.5" r="1.1" fill="currentColor" stroke="none"/>'),
     koffer:    s('<rect x="3" y="7" width="18" height="13" rx="2.6"/><path d="M8.6 7V5.3a1.8 1.8 0 0 1 1.8-1.8h3.2a1.8 1.8 0 0 1 1.8 1.8V7M3 12.6h18"/>'),
     route:     s('<path d="M9 4.6 3.6 6.6v12.8L9 17.4l6 2 5.4-2V4.6L15 6.6Z"/><path d="M9 4.6v12.8M15 6.6v12.8"/>'),
@@ -1857,7 +1837,32 @@ const SYMBOL = (() => {
     einzahlung:s('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M8 12.5l4 4 4-4"/>'),
     teilen:    s('<path d="M12 3.5v11M8 7.5l4-4 4 4"/><path d="M8 10.5H6.5A1.5 1.5 0 0 0 5 12v7a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-7a1.5 1.5 0 0 0-1.5-1.5H16"/>'),
     lupe:      s('<circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/>'),
-    wegweiser: s('<path d="M12 3.5 20.5 12 12 20.5 3.5 12Z"/><path d="M9.5 13.5v-2a1.5 1.5 0 0 1 1.5-1.5h3.5M13 8l2 2-2 2"/>')
+    wegweiser: s('<path d="M12 3.5 20.5 12 12 20.5 3.5 12Z"/><path d="M9.5 13.5v-2a1.5 1.5 0 0 1 1.5-1.5h3.5M13 8l2 2-2 2"/>'),
+    /* Reisen: Zeitstrahl und Plus-Menue */
+    bett:      s('<path d="M3 5.5v14M3 15.5h18v4M21 15.5v-3.7a2.8 2.8 0 0 0-2.8-2.8H11v6.5"/><circle cx="7" cy="11.5" r="2"/>'),
+    auto:      s('<path d="m5 11.5 1.6-4.3A2 2 0 0 1 8.5 6h7a2 2 0 0 1 1.9 1.2l1.6 4.3"/><rect x="3" y="11.5" width="18" height="6" rx="1.6"/><path d="M6 17.5v1.8M18 17.5v1.8M6.5 14.5h1.5M16 14.5h1.5"/>'),
+    transfer:  s('<circle cx="6" cy="5.8" r="2.3"/><path d="M6 8.1V15a2 2 0 0 0 2 2h11.5M16 13.5l3.5 3.5-3.5 3.5"/>'),
+    punkt:     s('<circle cx="12" cy="12" r="4.5"/>'),
+    /* Fotografie: Guides */
+    bogen:       s('<path d="M2.5 16Q12 4 21.5 16"/>'),
+    zeitraffer:  s('<path d="M2.5 13Q12 3 21.5 13"/><path d="M4.5 18Q12 10 19.5 18" stroke-dasharray="1 4" opacity="0.6"/>'),
+    stapel:      s('<path d="M2.5 9Q12 1 21.5 9"/><path d="M2.5 14Q12 6 21.5 14" opacity="0.6"/><path d="M2.5 19Q12 11 21.5 19" opacity="0.35"/>'),
+    panorama:    s('<path d="M2.5 15Q12 5 21.5 15"/><rect x="3" y="8" width="18" height="11" rx="1.5" opacity="0.45"/><path d="M9 8v11M15 8v11" opacity="0.45"/>'),
+    sternspuren: s('<circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/>'),
+    meteoriten:  s('<circle cx="5" cy="5" r="1.5" fill="currentColor" stroke="none"/><path d="m5 5 8 8"/><circle cx="18" cy="7" r="1.2" fill="currentColor" stroke="none"/><path d="m18 7 3.5 3.5"/>'),
+    monddetail:  s('<circle cx="12" cy="12" r="8.5"/><circle cx="9" cy="9" r="1.2" fill="currentColor" stroke="none"/><circle cx="14.5" cy="14" r="1.8" fill="currentColor" stroke="none"/><circle cx="15" cy="8" r="0.9" fill="currentColor" stroke="none"/>'),
+    sonnedetail: s('<circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/><circle cx="10.5" cy="12.5" r="0.8" fill="currentColor" stroke="none"/>'),
+    vollbogen:   s('<path d="M1.5 15Q12 2 22.5 15"/><path d="M6 10.6v-2M12 6.3v-2M18 10.6v-2" opacity="0.6"/>'),
+    pfote:       s('<ellipse cx="12" cy="16.5" rx="5.2" ry="4"/><circle cx="6.2" cy="8.2" r="1.6"/><circle cx="11.5" cy="5.5" r="1.6"/><circle cx="16.8" cy="6.6" r="1.6"/><circle cx="19.8" cy="10.6" r="1.4"/>'),
+    /* Fotografie: Astro-Kalender */
+    neumond:      s('<path d="M15 3.5a8.5 8.5 0 1 0 0 17 6.8 6.8 0 0 1 0-17Z"/>'),
+    vollmond:     s('<circle cx="12" cy="12" r="8"/>'),
+    supermond:    s('<circle cx="10" cy="13.5" r="6.8"/><path d="m18.5 2.8 1 2.6 2.6 1-2.6 1-1 2.6-1-2.6-2.6-1 2.6-1Z"/>'),
+    meteor:       s('<circle cx="6.5" cy="6.5" r="2.3"/><path d="m8.3 8.3 11.2 11.2"/>'),
+    finsternis:   s('<circle cx="12" cy="12" r="8"/><path d="M10 4.3a6.3 6.3 0 0 0 9.7 6.2"/>'),
+    milchstrasse: s('<circle cx="5.5" cy="18" r="1.7"/><circle cx="12" cy="11.5" r="2.3"/><circle cx="18.5" cy="5.5" r="1.7"/><path d="M3 21.5 21 3" opacity="0.35"/>'),
+    /* Haken in Auswahlkreisen: Teil des Bedienelements, deshalb kraeftiger wie in iOS */
+    haken:        s('<path d="M20 6 9 17l-5-5"/>', 3)
   };
 })();
 
@@ -1892,7 +1897,17 @@ const DOCK_ICONS = (() => {
 })();
 
 /* Kachelkopf wie in Health: Symbol und Bezeichnung in der Farbe des Bereichs.
-   farbe: gruen, blau, violett, orange, petrol, cyan, rot, grau. */
+   farbe: nur noch 'rot' als Signal - sonst bleibt der Kopf grau. */
+/* Farbklasse fuer einen Geldbetrag - Regel siehe .betrag im Stilblatt.
+   art: 'bestand' (Standard), 'rest', 'zu', 'ab'. Betraege unter einem halben Cent
+   zaehlen als 0 und bleiben neutral. */
+function betragKlasse(wert, art){
+  if (art === 'zu') return 'betrag plus';
+  if (art === 'ab') return 'betrag ab';
+  const w = Math.abs(Number(wert) || 0) < 0.005 ? 0 : Number(wert);
+  if (w < 0) return 'betrag neg';
+  return art === 'rest' && w > 0 ? 'betrag plus' : 'betrag';
+}
 function kachelKopf(titel, symbol, farbe){
   return `<div class="kachel-kopf${farbe ? ' k-' + farbe : ''}">${SYMBOL[symbol] || symbol || ''}<span>${esc(titel)}</span></div>`;
 }
@@ -3365,7 +3380,8 @@ function _bewegungReduziert(){ return !!(_bewegungsAbfrage && _bewegungsAbfrage.
 
 /* ---------------- Heute ----------------
    Jeder Bereich liefert ueber heute() seine anstehenden Termine:
-   { tage, titel, unter, symbol, farbe, wann?, rot?, aktion }. tage = Tage bis
+   { tage, titel, unter, symbol, wann?, rot?, aktion }. Die Farbe setzt der Kern
+   je Bereich (BEREICH_FARBE). tage = Tage bis
    zum Termin (negativ = ueberfaellig). Sortiert wird nach Dringlichkeit. */
 let _heuteAktionen = [];
 function heuteWann(e){
@@ -3377,12 +3393,15 @@ function heuteWann(e){
   if (t === 1) return 'morgen';
   return 'in ' + t + ' Tagen';
 }
+/* Bereichsfarben - die einzige Stelle, an der ein Bereich eine eigene Farbe hat:
+   Leiste, Startseiten-Kachel (.bereich-<id>) und Heute-Liste. */
+const BEREICH_FARBE = { finanzen: 'gruen', reisen: 'blau', impfpass: 'petrol', fotografie: 'violett' };
 function renderHeute(){
   const el = $('heute'); if(!el) return;
   const liste = [];
   for (const m of MODULES){
     if (typeof m.heute !== 'function') continue;
-    try { (m.heute() || []).forEach(e => { if (e && e.titel) liste.push(e); }); }
+    try { (m.heute() || []).forEach(e => { if (e && e.titel) liste.push(Object.assign({}, e, { farbe: BEREICH_FARBE[m.id] || 'grau' })); }); }
     catch(err){ console.error('Heute: ' + m.id, err); }
   }
   liste.sort((a, b) => (a.tage ?? 1e6) - (b.tage ?? 1e6) || String(a.titel).localeCompare(String(b.titel), 'de'));
@@ -3686,11 +3705,11 @@ new MutationObserver(() => { clearTimeout(_barriereTimer); _barriereTimer = setT
 </script>
 
 <!-- ===== Bereiche ===== -->
-<script src="data-laender.js?v=2610061908"></script>
-<script src="mod-reisen.js?v=2610061908"></script>
-<script src="mod-finanzen.js?v=2610061908"></script>
-<script src="mod-impfpass.js?v=2610061908"></script>
-<script src="mod-fotografie.js?v=2610061908"></script>
+<script src="data-laender.js?v=2610070852"></script>
+<script src="mod-reisen.js?v=2610070852"></script>
+<script src="mod-finanzen.js?v=2610070852"></script>
+<script src="mod-impfpass.js?v=2610070852"></script>
+<script src="mod-fotografie.js?v=2610070852"></script>
 
 <!-- ===== Start ===== -->
 <script>
@@ -3714,6 +3733,44 @@ MODULES.forEach(m => { if (m.init) { try { m.init(); } catch(e){} } });
 // Startseite erst danach: vorher zeigten die Kacheln beim allerersten Start den
 // Stand vor der Migration (z.B. 0 Impfungen).
 sicher('Startseite', renderLauncher);
+/* ---------------- Neue Version ----------------
+   Eine vom Home-Bildschirm gestartete App laedt index.html beim Zurueckholen aus dem
+   Hintergrund nicht neu - iOS setzt die alte Seite einfach fort, bis sie ganz
+   geschlossen wird. Deshalb beim Start und bei jeder Rueckkehr (hoechstens einmal pro
+   Minute) index.html ohne Cache holen und den ?v=-Stand vergleichen. Offline liefert
+   der Service Worker die eigene Fassung zurueck - dann gibt es keinen Hinweis. */
+function eigenerStand(){
+  const l = document.querySelector('link[rel="manifest"]');
+  const m = l && /[?&]v=(\d+)/.exec(l.getAttribute('href') || '');
+  return m ? m[1] : '';
+}
+let _updateGeprueft = 0;
+async function updatePruefen(){
+  if (!/^https?:$/.test(location.protocol)) return;
+  if (Date.now() - _updateGeprueft < 60000) return;
+  _updateGeprueft = Date.now();
+  const jetzt = eigenerStand(); if (!jetzt) return;
+  try {
+    const r = await fetch('index.html?pruefen=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return;
+    const m = /manifest\.json\?v=(\d+)/.exec(await r.text());
+    if (m && m[1] > jetzt) updateHinweis();
+  } catch(e){ /* offline */ }
+}
+function updateHinweis(){
+  if ($('update-toast')) return;
+  const t = document.createElement('div');
+  t.id = 'update-toast';
+  t.className = 'undo-toast update-toast';
+  t.setAttribute('role', 'status'); t.setAttribute('aria-live', 'polite');
+  t.innerHTML = '<span class="undo-label">Neue Version verfügbar</span><button class="undo-btn" type="button">Neu laden</button>';
+  t.querySelector('.undo-btn').onclick = () => { zustandSichernSicher(); location.reload(); };
+  document.body.appendChild(t);
+  requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('show')));
+}
+function zustandSichernSicher(){ try { if (typeof zustandSichern === 'function') zustandSichern(); } catch(e){} }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') updatePruefen(); });
+sicher('Update-Pruefung', () => setTimeout(updatePruefen, 3000));
 sicher('Versionsstand', () => {
   // Zeigt in den Einstellungen, welcher Stand tatsaechlich laeuft.
   const m = /manifest\.json\?v=(\d+)/.exec(document.documentElement.innerHTML);

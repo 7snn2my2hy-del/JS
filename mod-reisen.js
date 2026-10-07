@@ -494,7 +494,7 @@ function renderPickerList(){
     return `
     <button class="pick-row${sub?' sub':''}${last?' last':''}${seen.has(c)?' on':''}${via?' via':''}" onclick="toggleVisited('${c.replace(/'/g,"\\'")}')">
       <span class="pick-text"><span class="pick-name">${esc(c)}</span>${woher.length?`<span class="pick-via">zählt über ${esc(woher.join(', '))}</span>`:''}</span>
-      <span class="pick-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+      <span class="pick-mark">${SYMBOL.haken}</span>
     </button>`;
   };
 
@@ -636,7 +636,7 @@ function renderImportStep2(){
     for(const i of idx){
       const it=importItems[i];
       html+=`<button class="imp-row${it.on?' on':''}${it.doppelt?' dup':''}" onclick="toggleImport(${i})">
-        <span class="imp-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+        <span class="imp-mark">${SYMBOL.haken}</span>
         <span class="imp-text"><span class="imp-name">${esc(it.label)}</span><span class="imp-sub">${esc(it.sub)}${it.doppelt?' · <b class="imp-dup">schon vorhanden</b>':''}</span></span>
       </button>`;
     }
@@ -693,13 +693,13 @@ function countdownParts(t){
   return { big:'—', unit:'', label:'Kein Datum festgelegt', cls:'muted' };
 }
 
-/* Icons wie in der Finanzen-App */
-const ICON_PLANE = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5Z"/></svg>';
-const ICON_BED = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 7a1 1 0 0 0-2 0v11a1 1 0 0 0 2 0v-2h16v2a1 1 0 0 0 2 0v-7a4 4 0 0 0-4-4H4V7Zm0 4h5a2 2 0 0 1 2 2v1H4v-3Zm9 3v-1a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v1h-7Z"/></svg>';
-const ICON_PIN = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 4.7 6.2 12.3 6.4 12.6a.8.8 0 0 0 1.2 0C12.8 21.3 19 13.7 19 9a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>';
-const ICON_CAR = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 11l1.5-4.3A2 2 0 0 1 8.4 5.3h7.2a2 2 0 0 1 1.9 1.4L19 11h.5a1.5 1.5 0 0 1 1.5 1.5V17a1 1 0 0 1-1 1h-1v.5a1.5 1.5 0 0 1-3 0V18H8v.5a1.5 1.5 0 0 1-3 0V18H4a1 1 0 0 1-1-1v-4.5A1.5 1.5 0 0 1 4.5 11H5Zm2.1-.5h9.8l-1-2.9a.5.5 0 0 0-.5-.35H8.6a.5.5 0 0 0-.5.35L7.1 10.5ZM6.5 13.2a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2Zm11 0a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2Z"/></svg>';
-const ICON_TRANSFER = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 2.5a3.2 3.2 0 0 0-.9 6.27V15a2 2 0 0 0 2 2h6.19l-1.35 1.35a1 1 0 0 0 1.42 1.42l3.05-3.06a1 1 0 0 0 0-1.42l-3.05-3.05a1 1 0 1 0-1.42 1.42L13.79 15H7.6V8.77A3.2 3.2 0 0 0 6.5 2.5Zm0 2a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4Z"/></svg>';
-const ICON_CAMERA = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 3l-1.4 2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.6L15 3H9Zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6Z"/></svg>';
+/* Symbole kommen aus dem Kern - eine Linienstaerke, keine eigenen Glyphen im Bereich. */
+const ICON_PLANE = SYMBOL.flugzeug;
+const ICON_BED = SYMBOL.bett;
+const ICON_PIN = SYMBOL.pin;
+const ICON_CAR = SYMBOL.auto;
+const ICON_TRANSFER = SYMBOL.transfer;
+const ICON_CAMERA = SYMBOL.kamera;
 
 /* Baut eine Reise-Kachel. Bei abgeschlossenen Reisen steht statt des Countdowns Jahr + Dauer. */
 function tripTileHTML(t, done){
@@ -716,7 +716,7 @@ function tripTileHTML(t, done){
      von Hand nachgebaut - mit <div> statt <button> und damit leicht abweichend von allen
      anderen Listen. Eine Aenderung im Kern waere hier stillschweigend nicht angekommen. */
   const inner = `<div class="bento-tile trip-tile${done?' done':''}">
-        ${kachelKopf(t.name, 'flugzeug', 'blau')}
+        ${kachelKopf(t.name, 'flugzeug')}
         <div class="tt-country">${t.country ? esc(t.country) : (t.destination ? esc(t.destination) : '\u00A0')}</div>
         ${map ? `<div class="tt-map">${map}</div>` : ''}
         <div class="tt-cd"><span class="tt-cd-val ${cls}">${typeof big==='number'?big:esc(big)}</span>${unit?`<span class="tt-cd-unit">${unit}</span>`:''}</div>
@@ -932,7 +932,7 @@ function renderOverviewTab(t){
 /* Plus oben rechts: anlegen, was zur Reise gehoert - wie das Plus-Menue in
    Kalender oder Dateien. Wer gerade nicht auf dem passenden Reiter steht, wird
    dorthin mitgenommen, damit das Neue nach dem Sichern sichtbar ist. */
-const ICON_STOPP = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg>';
+const ICON_STOPP = SYMBOL.punkt;
 function rpPlusMenu(anker){
   const auf = (tab, fn) => () => { if (activeTab !== tab) switchTab(tab); fn(); };
   menuOeffnen(anker, [
@@ -985,7 +985,7 @@ function renderPackSection(t){
   const rows = ordered.map(i => `
     <div class="todo-row${i.checked?' checked':''}">
       <button class="todo-check${i.checked?' checked':''}" onclick="togglePack('${i.id}')" aria-label="Eingepackt">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        ${SYMBOL.haken}
       </button>
       <input class="todo-text" value="${esc(i.name)}" onchange="renamePack('${i.id}', this.value)"
              onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">
@@ -1249,7 +1249,7 @@ function fotoCardHTML(p){
     <div class="foto-field">
       <label>Ausrüstung</label>
       <button class="foto-equip" onclick="openGearPicker('${p.id}')">
-        ${(p.equipment&&p.equipment.length) ? `<span class="foto-pills">${p.equipment.map(e=>`<span class="cat-pill pill-violet">${esc(e)}</span>`).join('')}</span>` : '<span class="foto-equip-empty">Ausrüstung wählen …</span>'}
+        ${(p.equipment&&p.equipment.length) ? `<span class="foto-pills">${p.equipment.map(e=>`<span class="cat-pill">${esc(e)}</span>`).join('')}</span>` : '<span class="foto-equip-empty">Ausrüstung wählen …</span>'}
         <span class="foto-equip-chevron">›</span>
       </button>
     </div>
@@ -1389,7 +1389,7 @@ function renderGearChoices(){
   const sel=p.equipment||[];
   const all=gearAll();
   _gearItems=[];
-  const check='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+  const check=SYMBOL.haken;
   let html='';
   GEAR_CATS.forEach(cat=>{
     let items=[...(gear[cat]||[])];
@@ -1428,7 +1428,7 @@ function renderTodosSection(t){
   const rows = ordered.map(i => `
     <div class="todo-row${i.checked?' checked':''}">
       <button class="todo-check${i.checked?' checked':''}" onclick="toggleTodo('${i.id}')" aria-label="Erledigt">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        ${SYMBOL.haken}
       </button>
       <input class="todo-text" value="${esc(i.name)}" onchange="renameTodo('${i.id}', this.value)"
              onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">
@@ -1694,7 +1694,7 @@ function rpHeute(){
   const laeuft = du !== null && du < 0;
   return [{ tage: laeuft ? 0 : du, titel: r.name, wann: laeuft ? 'läuft' : undefined,
     unter: [r.country && r.country !== r.name ? r.country : '', dvZeitraum(r.start, r.end)].filter(Boolean).join(' · '),
-    symbol: 'koffer', farbe: 'blau', aktion: () => zuBereich('reisen', () => openTripScreen(r.id)) }];
+    symbol: 'koffer', aktion: () => zuBereich('reisen', () => openTripScreen(r.id)) }];
 }
 function rpCloseDetail(){ screenSchliessen('detail-screen'); }
 

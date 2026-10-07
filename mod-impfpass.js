@@ -388,7 +388,7 @@ function impRenderAlert(){
 
   const zeilen = dringlich.map(x => zeile(x, true)).join('') + kommend.map(x => zeile(x, false)).join('');
   el.innerHTML = `<div class="bento-tile imp-radar">
-    ${kachelKopf('Impfstatus', 'schild', dringlich.length ? 'rot' : 'petrol')}
+    ${kachelKopf('Impfstatus', 'schild', dringlich.length ? 'rot' : '')}
     <div class="bento-primary ${dringlich.length ? 'neg' : 'ok'}">${dringlich.length || '✓'}<span class="bento-unit">${esc(titel)}</span></div>
     ${zeilen ? `<div class="bento-foot"><div class="bento-list">${zeilen}</div></div>` : ''}
   </div>`;
@@ -453,7 +453,7 @@ function impHeute(){
     .filter(x => x.st.next && daysUntil(x.st.next) <= 60)
     .map(({ e, st }) => {
       const tage = daysUntil(st.next);
-      return { tage, titel: e.name, symbol: DOCK_ICONS.impfpass, farbe: 'petrol',
+      return { tage, titel: e.name, symbol: DOCK_ICONS.impfpass,
         unter: (tage < 0 ? 'Auffrischung fällig seit ' : 'Auffrischung am ') + displayDate(st.next),
         aktion: () => zuBereich('impfpass', () => hervorheben(document.querySelector(`#imp-list .entry-wrap[data-id="${e.id}"]`))) };
     });
