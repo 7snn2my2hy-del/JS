@@ -28,7 +28,7 @@ document.getElementById('mod-fotografie').insertAdjacentHTML('beforeend', `
 
   <div id="fg-list"></div>
 
-  <div class="sub-header"><div class="sub-header-text"><h1>Astro-Kalender</h1><p>Sichtbarkeit, Mondphasen und Termine</p></div></div>
+  ${abschnittKopf('Astro-Kalender')}
   <div class="rt-list" id="fg-calendar"></div>
 </div>
 
@@ -550,11 +550,23 @@ function fgKachelZeile(label, wert){
   return `<div class="bento-list-row"><span class="bl">${esc(label)}</span><span class="bv">${esc(wert)}</span></div>`;
 }
 
+/* Kopf der Kachel: worum es geht (Milchstrasse, Mond ...), Titel: die Variante.
+   Vorher stand auf allen zehn Kacheln dasselbe Wort "Guide". */
+const FG_ART_GRUPPE = { 'ms-': 'Milchstraße', 'star-trails': 'Nachthimmel', 'meteoriten': 'Nachthimmel',
+  'mond-': 'Mond', 'sonne-': 'Sonne', 'wildtiere-': 'Wildtiere' };
+function fgArtGruppe(s){
+  const k = Object.keys(FG_ART_GRUPPE).find(x => (s.art || '').startsWith(x));
+  return k ? FG_ART_GRUPPE[k] : 'Guide';
+}
+function fgVariante(s){
+  const m = /\(([^)]+)\)\s*$/.exec(s.name || '');
+  return m ? m[1] : (s.name || '');
+}
 function fgTileHTML(s){
   const icon = FG_GUIDE_ICON[s.art] || '';
   return `<div class="bento-tile fg-tile" onclick="fgOpenDetail('${s.id}')">
-    ${kachelKopf('Guide', icon)}
-    <div class="bento-primary">${esc(s.name)}</div>
+    ${kachelKopf(fgArtGruppe(s), icon)}
+    <div class="bento-primary">${esc(fgVariante(s))}</div>
     <div class="bento-foot">
       <div class="bento-list">
         ${fgKachelZeile('ISO', s.kachelIso)}
@@ -575,22 +587,24 @@ function fgRenderList(){
 /* ---------------- Leseansicht ---------------- */
 let fgDetailId = null;
 
+/* Leseansicht wie die Einstellungen-App: je Gruppe ein Label und darunter eine
+   Liste. Kurze Werte stehen rechts, sonst (Bezeichnung + Wert ueber 30 Zeichen)
+   unter der Bezeichnung - so bricht nie die Bezeichnung mitten im Wort um. */
+function fgListe(label, zeilen){
+  if (!zeilen) return '';
+  return `<div class="section-label">${esc(label)}</div><div class="liste">${zeilen}</div>`;
+}
+function fgTextZeile(text){
+  return `<div class="zeile"><span class="zeile-text"><span class="zeile-titel">${esc(text)}</span></span></div>`;
+}
 function fgAbschnitt(label, text){
-  if (!text) return '';
-  return `<div class="karte fg-card">
-    <div class="bento-title">${esc(label)}</div>
-    <div class="fg-text">${esc(text)}</div>
-  </div>`;
+  return text ? fgListe(label, fgTextZeile(text)) : '';
 }
 
 /* Für Ausrüstung/Komposition/Bearbeitung: einfache Aufzählung statt Fließtext. */
 function fgListeAbschnitt(label, items){
   if (!items || !items.length) return '';
-  const li = items.map(t => `<li>${esc(t)}</li>`).join('');
-  return `<div class="karte fg-card">
-    <div class="bento-title">${esc(label)}</div>
-    <ul class="fg-liste">${li}</ul>
-  </div>`;
+  return fgListe(label, items.map(fgTextZeile).join(''));
 }
 
 /* Kamera-Einstellungen: mehrere Gruppen (Aufnahme, Farbe & Format, Einmalig im Menü,
@@ -598,22 +612,11 @@ function fgListeAbschnitt(label, items){
    Abschnitten. Zeilen: Label links / Wert rechts; lange Werte (ab 33 Zeichen) stehen
    linksbuendig unter der Bezeichnung (Klasse "lang", Gestaltung im Kern). */
 function fgEinstellungenHTML(gruppen){
-  const sichtbar = (gruppen || []).filter(g => g.zeilen && g.zeilen.length);
-  if (!sichtbar.length) return '';
-  const teile = sichtbar.map((g, gi) => {
-    const zeilen = g.zeilen.map((z, i) => `<div class="fg-zeile${(z.wert || '').length > 32 ? ' lang' : ''}">
-        <span class="fg-zeile-label">${esc(z.label)}</span>
-        <span class="fg-zeile-wert">${esc(z.wert)}</span>
-      </div>`).join('');
-    return `<div class="fg-gruppe">
-      <div class="fg-gruppe-titel">${esc(g.titel)}</div>
-      ${zeilen}
-    </div>`;
-  }).join('');
-  return `<div class="karte fg-card">
-    <div class="bento-title">Kamera-Einstellungen</div>
-    ${teile}
-  </div>`;
+  return (gruppen || []).filter(g => g.zeilen && g.zeilen.length).map(g => fgListe(g.titel,
+    g.zeilen.map(z => ((z.label || '').length + (z.wert || '').length) > 30
+      ? `<div class="zeile"><span class="zeile-text"><span class="zeile-titel">${esc(z.label)}</span><span class="zeile-unter">${esc(z.wert)}</span></span></div>`
+      : `<div class="zeile"><span class="zeile-text"><span class="zeile-titel">${esc(z.label)}</span></span><span class="zeile-wert">${esc(z.wert)}</span></div>`
+    ).join(''))).join('');
 }
 
 function fgOpenDetail(id){
@@ -626,11 +629,10 @@ function fgOpenDetail(id){
     fgAbschnitt('Ausrichtung', s.ausrichtung) +
     fgListeAbschnitt('Komposition', s.komposition) +
     fgListeAbschnitt('Bearbeitung', s.bearbeitung) +
-    `<div class="karte fg-card">
-      <div class="bento-title">Notizen</div>
+    `<div class="section-label">Notizen</div><div class="liste"><div class="zeile">
       <textarea id="fg-notiz-feld" rows="4" placeholder="Eigene Beobachtungen, Ergebnisse, Anpassungen …"
         class="fg-notiz" oninput="fgNotizTippen()" onblur="fgSaveNotiz()">${esc(s.notizen || '')}</textarea>
-    </div>`;
+    </div></div>`;
   const sc = $('fg-detail-screen');
   sc.classList.add('open');
   sc.scrollTop = 0;
@@ -743,7 +745,7 @@ const FG_ICONS = {
 
 function fgMarkerHTML(typ){
   const icon = FG_ICONS[typ] || FG_ICONS.vollmond;
-  return `<span class="fg-marker">
+  return `<span class="fg-marker fg-${esc(typ)}">
     <span class="fg-marker-icon">${icon}</span>
   </span>`;
 }

@@ -54,9 +54,9 @@ const IMP_KEYS = { impfungen: 'imp_impfungen_v1', kategorieMigration: 'imp_kateg
    Kein Alters-Clustering - bei einer Einzelperson nicht sinnvoll, STIKO trennt intern
    ohnehin primaer nach dieser Kategorie. */
 const IMP_KATEGORIEN = [
-  { key: 'standard',   label: 'Standardimpfungen',   unter: 'Von der STIKO für alle empfohlen' },
-  { key: 'indikation', label: 'Indikationsimpfungen', unter: 'Wegen Alter, Beruf oder Vorerkrankung' },
-  { key: 'reise',      label: 'Reiseimpfungen',       unter: 'Je nach Reiseziel' }
+  { key: 'standard',   label: 'Standardimpfungen' },
+  { key: 'indikation', label: 'Indikationsimpfungen' },
+  { key: 'reise',      label: 'Reiseimpfungen' }
 ];
 function impKategorie(e){ return e.kategorie || 'standard'; }
 
@@ -425,7 +425,7 @@ function impRenderList(){
   IMP_KATEGORIEN.forEach((kat, i) => {
     const gruppe = liste.filter(e => impKategorie(e) === kat.key);
     if (!gruppe.length) return;
-    html += `<div class="imp-gruppe"><div class="sub-header"><div class="sub-header-text"><h1>${kat.label}</h1><p>${kat.unter}</p></div></div>`;
+    html += `<div class="imp-gruppe">${abschnittKopf(kat.label)}`;
     html += `<div class="list">${gruppe.map(e => swipeWrap('impf', e.id, impEntryHTML(e))).join('')}</div></div>`;
   });
   el.innerHTML = html;

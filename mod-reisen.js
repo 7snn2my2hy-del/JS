@@ -13,7 +13,7 @@ document.getElementById('mod-reisen').insertAdjacentHTML('beforeend', `
 
   <div class="karte world-card" id="world-card"></div>
 
-  <div class="sub-header"><div class="sub-header-text"><h1>Meine Reisen</h1><p>Geplante und laufende Reisen</p></div></div>
+  ${abschnittKopf('Meine Reisen')}
   <div id="trip-tiles"></div>
   <div id="done-section"></div>
 </div>
@@ -461,7 +461,7 @@ function renderWorldCard(){
   const R = 26, C = 2*Math.PI*R;
   const dash = Math.max(0, Math.min(1, staaten/WORLD_TOTAL)) * C;
   el.innerHTML = `
-    <button class="wm-add" onclick="openPicker()" aria-label="Länder eintragen">＋</button>
+    <button class="icon-btn wm-add" onclick="openPicker()" aria-label="Länder eintragen">＋</button>
     <div class="wm-map">${worldMapSVG()}</div>
     <div class="wm-stats">
       <div class="wm-stat"><div class="wm-val">${pct}<span class="wm-pct">%</span></div><div class="wm-lab">Welt</div></div>
@@ -717,7 +717,7 @@ function tripTileHTML(t, done){
      anderen Listen. Eine Aenderung im Kern waere hier stillschweigend nicht angekommen. */
   const inner = `<div class="bento-tile trip-tile${done?' done':''}">
         ${kachelKopf(t.name, 'flugzeug')}
-        <div class="tt-country">${t.country ? esc(t.country) : (t.destination ? esc(t.destination) : '\u00A0')}</div>
+        <div class="tt-country">${esc(abweichend(t.name, t.country || t.destination)) || '\u00A0'}</div>
         ${map ? `<div class="tt-map">${map}</div>` : ''}
         <div class="tt-cd"><span class="tt-cd-val ${cls}">${typeof big==='number'?big:esc(big)}</span>${unit?`<span class="tt-cd-unit">${unit}</span>`:''}</div>
         <div class="tt-cd-label">${esc(label)}</div>
@@ -775,7 +775,7 @@ function renderTripCards(){
 
   // Abgeschlossene Reisen nur zeigen, wenn es welche gibt
   if (!done.length) { doneEl.innerHTML = ''; return; }
-  doneEl.innerHTML = `<div class="sub-header"><div class="sub-header-text"><h1>Abgeschlossen <span class="sl-count">${done.length}</span></h1><p>Bereits gereist</p></div></div>
+  doneEl.innerHTML = `${abschnittKopf(`Abgeschlossen <span class="sl-count">${done.length}</span>`)}
     <div class="bento">${done.map(t=>tripTileHTML(t,true)).join('')}</div>`;
   wireSwipe(doneEl);
 }
@@ -908,7 +908,7 @@ function renderOverviewTab(t){
   const hero = `<div class="karte ov-card">
     <div class="ov-top">
       <div class="ov-cd">
-        <div class="ov-cd-label">Countdown</div>
+        ${kachelKopf('Countdown', 'kalender')}
         <div class="ov-cd-val">${typeof big==='number'?big:esc(big)}</div>
         <div class="ov-cd-sub">${sub}</div>
       </div>
@@ -974,7 +974,7 @@ function renderOperatorSection(t){
   const hinweis = String(t.opNotes||'').trim()
     ? `<div class="dv-card karte dv-prose">${String(t.opNotes).trim().split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x).replace(/\n/g,'<br>')}</p>`).join('')}</div>`
     : '';
-  return `<div class="section-label">Veranstalter</div>${zeilen?`<div class="dv-card karte">${zeilen}</div>`:''}${hinweis}`;
+  return `${abschnittKopf('Veranstalter')}${zeilen?`<div class="dv-card karte">${zeilen}</div>`:''}${hinweis}`;
 }
 /* Packliste – gleiche Mechanik wie die Checkliste, direkt in der Übersicht */
 function renderPackSection(t){
@@ -999,7 +999,7 @@ function renderPackSection(t){
              onblur="addPackInline(true)">
     </div>`;
   const count = list.length ? ` <span class="sl-count">${done.length}/${list.length}</span>` : '';
-  return `<div class="sub-header"><div class="sub-header-text"><h1>Packliste${count}</h1><p>Was mit muss</p></div></div><div class="todo-list">${rows}${newRow}</div>`;
+  return `${abschnittKopf('Packliste' + count)}<div class="todo-list">${rows}${newRow}</div>`;
 }
 function togglePack(id){ const i=packing.find(x=>x.id===id); if(!i) return; i.checked=!i.checked; persist('pack'); renderTabContent(); }
 function renamePack(id, val){
@@ -1442,7 +1442,7 @@ function renderTodosSection(t){
              onblur="addTodoInline(true)">
     </div>`;
   const count = list.length ? ` <span class="sl-count">${done.length}/${list.length}</span>` : '';
-  return `<div class="sub-header"><div class="sub-header-text"><h1>Checkliste${count}</h1><p>Vor der Abreise erledigen</p></div></div><div class="todo-list">${rows}${newRow}</div>`;
+  return `${abschnittKopf('Checkliste' + count)}<div class="todo-list">${rows}${newRow}</div>`;
 }
 function toggleTodo(id){ const i=todos.find(x=>x.id===id); if(!i) return; i.checked=!i.checked; persist('todo'); renderTabContent(); }
 function renameTodo(id, val){

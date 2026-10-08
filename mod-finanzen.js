@@ -65,7 +65,7 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
   </div>
 
   <!-- Bento: Kennzahlen auf einen Blick -->
-  <div class="tag suche-aus" id="bento-tag" style="display:none">Auf einen Blick</div>
+  ${abschnittKopf('Auf einen Blick', { id: 'bento-tag', klasse: 'suche-aus', versteckt: true })}
   <div class="bento suche-aus" id="bento" style="display:none"></div>
 
   <!-- Detail-Ansichten: werden über die Bento-Kacheln geöffnet (alle Render-Ziele unverändert) -->
@@ -82,7 +82,7 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
           <span class="wealth-sub-row"><span class="saverate-eur" id="wealth-sub"></span><button class="info-i" aria-label="Info" onclick="showWealthInfo()">i</button></span>
         </div>
         <div class="dash-accounts first">
-          <div class="dash-sub-label">Ausgaben nach Kategorie</div>
+          ${kachelKopf('Ausgaben nach Kategorie', 'euro')}
           <div class="dash-grid">
             <div class="dash-donut">
               <svg viewBox="0 0 120 120" id="donut-svg" width="100" height="100"></svg>
@@ -95,19 +95,19 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
           </div>
         </div>
         <div class="dash-accounts" id="dash-wealth-hist" style="display:none">
-          <div class="hist-head"><span class="dash-sub-label">Gesamtvermögensverlauf</span><span class="hist-range-ctl" data-target="wealth"></span></div>
+          <div class="hist-head">${kachelKopf('Verlauf', 'kurve')}<span class="hist-range-ctl" data-target="wealth"></span></div>
           <div id="wealth-hist-chart"></div>
         </div>
         <div class="dash-accounts" id="dash-balances">
-          <div class="dash-sub-label">Kontostände</div>
+          ${kachelKopf('Kontostände', 'bank')}
           <div id="balance-bars"></div>
         </div>
         <div class="dash-accounts" id="dash-saverates" style="display:none">
-          <div class="dash-sub-label">Sparquoten</div>
+          ${kachelKopf('Sparquoten', 'einzahlung')}
           <div id="saverate-bars"></div>
         </div>
         <div class="dash-accounts" id="dash-accounts">
-          <div class="dash-sub-label">Ausgaben nach Konto</div>
+          ${kachelKopf('Ausgaben nach Konto', 'pfeile')}
           <div id="account-bars"></div>
         </div>
       </div>
@@ -132,17 +132,11 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
 
   <div class="income-divider suche-aus"></div>
 
-  <header class="sub-header" onclick="toggleSection('b')">
-    <div class="sub-header-text">
-      <h1>Konsum, Urlaub &amp; Sparen</h1>
-      <p>Sparpläne und monatliche Budgets im Blick</p>
-    </div>
-    <span class="section-chevron" id="chev-b">⌄</span>
-  </header>
+  ${abschnittKopf('Konsum, Urlaub &amp; Sparen')}
 
   <div class="section-body" id="body-b">
   <div class="filter-row suche-aus">
-    <select class="account-filter" id="filter-b" onchange="renderSection('b')"></select>
+    <select class="account-filter auswahl-kapsel" id="filter-b" onchange="renderSection('b')"></select>
   </div>
   <div class="summary karte suche-aus">
     <div class="stat"><div class="stat-label">Monatlich</div><div class="stat-value month" id="sum-month-b">0,00 €</div></div>
@@ -157,17 +151,11 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
 
   <div class="group-divider suche-aus"></div>
 
-  <header class="sub-header" onclick="toggleSection('a')">
-    <div class="sub-header-text">
-      <h1>Altersvorsorge</h1>
-      <p>Vorsorge und Rente im Blick · Renteneintrittsalter <span id="av-rente-alter">67</span></p>
-    </div>
-    <span class="section-chevron" id="chev-a">⌄</span>
-  </header>
+  ${abschnittKopf('Altersvorsorge')}
 
   <div class="section-body" id="body-a">
   <div class="filter-row suche-aus">
-    <select class="account-filter" id="filter-a" onchange="renderSection('a')"></select>
+    <select class="account-filter auswahl-kapsel" id="filter-a" onchange="renderSection('a')"></select>
   </div>
   <div class="summary karte suche-aus">
     <div class="stat"><div class="stat-label">Monatlich</div><div class="stat-value month" id="sum-month-a">0,00 €</div></div>
@@ -181,17 +169,11 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
 
   <div class="group-divider suche-aus"></div>
 
-  <header class="sub-header" onclick="toggleSection('v')">
-    <div class="sub-header-text">
-      <h1>Versicherungen &amp; Verträge</h1>
-      <p>Alle laufenden Ausgaben im Blick</p>
-    </div>
-    <span class="section-chevron" id="chev-v">⌄</span>
-  </header>
+  ${abschnittKopf('Versicherungen &amp; Verträge')}
 
   <div class="section-body" id="body-v">
   <div class="filter-row suche-aus">
-    <select class="account-filter" id="filter-v" onchange="renderSection('v')"></select>
+    <select class="account-filter auswahl-kapsel" id="filter-v" onchange="renderSection('v')"></select>
   </div>
   <div class="summary karte suche-aus">
     <div class="stat"><div class="stat-label">Monatlich</div><div class="stat-value month" id="sum-month">0,00 €</div></div>
@@ -205,13 +187,7 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
 
   <div class="group-divider suche-aus"></div>
 
-  <header class="sub-header" onclick="toggleSection('urlaub')">
-    <div class="sub-header-text">
-      <h1>Urlaube</h1>
-      <p>Geplante Reisen &amp; Jahresbudget im Blick</p>
-    </div>
-    <span class="section-chevron" id="chev-urlaub">⌄</span>
-  </header>
+  ${abschnittKopf('Urlaube')}
 
   <div class="section-body" id="body-urlaub">
   <div class="urlaub-combined karte suche-aus">
@@ -240,13 +216,7 @@ document.getElementById('mod-finanzen').insertAdjacentHTML('beforeend', `
 
   <div class="group-divider suche-aus"></div>
 
-  <header class="sub-header" onclick="toggleSection('bonus')">
-    <div class="sub-header-text">
-      <h1>Bonusprogramme</h1>
-      <p>Punkte, Meilen &amp; Verfall im Blick</p>
-    </div>
-    <span class="section-chevron" id="chev-bonus">⌄</span>
-  </header>
+  ${abschnittKopf('Bonusprogramme')}
 
   <div class="section-body" id="body-bonus">
   <div class="list" id="list-bonus"></div>
@@ -851,8 +821,9 @@ function renderSection(sec) {
     const subLinesHtml = subLines.length
       ? `<div class="entry-sub">${subLines.map(l => `<div>${l}</div>`).join('')}</div>`
       : '';
-    const nameHtml = e.provider
-      ? `${esc(e.name)}<span class="entry-name-prov"> | ${esc(e.provider)}</span>`
+    const anbieter = abweichend(e.name, e.provider);
+    const nameHtml = anbieter
+      ? `${esc(e.name)}<span class="entry-name-prov"> | ${esc(anbieter)}</span>`
       : esc(e.name);
     const div = swipeWrapEl(sec, e.id, entryCardHTML(
       `<div class="entry-name">${nameHtml}</div>
@@ -959,11 +930,13 @@ function updateIncome() {
 // Monthly total of a specific category within a section
 // Hero (Gesamtvermögen) + Bento-Kacheln – nutzt exakt dieselben Berechnungen wie das Dashboard
 function openDetail(which) {
-  const titles = { uebersicht: 'Konten', a: 'Altersvorsorge', urlaub: 'Urlaube', v: 'Verträge & Versicherungen' };
+  const titles = { uebersicht: 'Vermögen', a: 'Altersvorsorge', urlaub: 'Urlaube', v: 'Verträge & Versicherungen' };
   document.querySelectorAll('.detail-panel').forEach(p => p.classList.remove('on'));
   const panel = $('panel-' + which);
   if (panel) panel.classList.add('on');
   const t = $('detail-title'); if (t) t.textContent = titles[which] || 'Details';
+  // Farbe der Kachelkoepfe: die der Kachel, von der die Ansicht kommt (Stil im Kern)
+  $('detail-sheet').dataset.panel = which;
   screenOeffnen('detail-sheet');
 }
 function closeDetail() { screenSchliessen('detail-sheet'); }
@@ -1042,7 +1015,7 @@ function renderHeroBento() {
       const uebSumme = uebNamen.reduce((s,a) => s + uebTotals[a], 0);
       const rows = uebNamen.map(a => `<div class="bento-list-row"><span class="bl">${esc(a)}</span><span class="bv">${fmt(uebTotals[a])}</span></div>`).join('');
       tiles.push(`<div class="bento-tile" onclick="openDetail('uebersicht')">
-        ${kachelKopf('Überweisungen', 'pfeile')}
+        ${kachelKopf('Überweisungen', 'pfeile', 'blau')}
         <div class="bento-primary">${uebNamen.length}<span class="bento-unit">${uebNamen.length === 1 ? 'Überweisung' : 'Überweisungen'}</span></div>
         <div class="bento-foot"><div class="bento-list">${rows}</div></div>
       </div>`);
@@ -1075,7 +1048,7 @@ function renderHeroBento() {
       const legend = order.map(([cat,v]) => zeile(cat, v, CAT_COL[cat] || 'var(--dia-4)')).join('')
         + Object.entries(negCats).sort((a,b) => a[1] - b[1]).map(([cat,v]) => zeile(cat, v, 'var(--danger)')).join('');
       tiles.push(`<div class="bento-tile" onclick="openDetail('uebersicht')">
-        ${kachelKopf(acct, 'bank')}
+        ${kachelKopf(acct, 'bank', 'gruen')}
         <div class="bento-primary ${betragKlasse(total)}">${fmt(total)}</div>
         <div class="bento-foot bento-foot-col"><div class="bento-segbar">${bar}</div><div class="bento-break">${legend}</div></div>
       </div>`);
@@ -1112,7 +1085,7 @@ function renderHeroBento() {
         </svg><div class="bento-map-legend"><span><i class="jahr-1"></i>${String(yearNow).slice(2)}</span><span><i class="jahr-2"></i>${String(yearNext).slice(2)}</span></div></div>`;
       }
       tiles.push(`<div class="bento-tile" onclick="openDetail('urlaub')">
-        ${kachelKopf('Urlaubsbudget ' + jahr, 'flugzeug')}
+        ${kachelKopf('Urlaubsbudget ' + jahr, 'flugzeug', 'violett')}
         <div class="bento-primary ${betragKlasse(urlaubRest, 'rest')}">${fmt(urlaubRest)}</div>
         <div class="bento-foot bento-foot-col">${map}</div>
       </div>`);
@@ -1134,7 +1107,7 @@ function renderHeroBento() {
       </div>`;
     };
     tiles.push(`<div class="bento-tile" onclick="openDetail('urlaub')">
-      ${kachelKopf('Resturlaub ' + j0, 'sonne')}
+      ${kachelKopf('Resturlaub ' + j0, 'sonne', 'orange')}
       <div class="bento-primary" style="color:${ruTextFarbe(a0.rest)}">${ruZahl(a0.rest)}<span class="bento-unit">Tage</span></div>
       <div class="bento-foot bento-foot-col">${zeile(a0)}${zeile(a1)}</div>
     </div>`);
@@ -1166,7 +1139,7 @@ function renderHeroBento() {
         timeline = `<div class="bento-mini">Keine Kündigungsfristen</div>`;
       }
       tiles.push(`<div class="bento-tile" onclick="openDetail('v')">
-        ${kachelKopf('Verträge', 'dokument')}
+        ${kachelKopf('Verträge', 'dokument', 'cyan')}
         <div class="bento-primary">${fmt(monatlich)}<span class="bento-unit">mtl.</span></div>
         <div class="bento-foot">${timeline}</div>
       </div>`);
@@ -1194,7 +1167,7 @@ function renderHeroBento() {
       }
       const avRate = data.a.reduce((s,x) => s + toMonthly(Number(x.amount)||0, x.period), 0);
       tiles.push(`<div class="bento-tile" onclick="openDetail('a')">
-        ${kachelKopf('Altersvorsorge', 'kurve')}
+        ${kachelKopf('Altersvorsorge', 'kurve', 'petrol')}
         <div class="bento-primary">${fmt(avRate)}<span class="bento-unit">mtl.</span></div>
         <div class="bento-foot bento-foot-col">
           ${fortschritt}
@@ -1312,7 +1285,7 @@ function renderDashboard() {
     whWrap.style.display = '';
     const wh = histSlice(vermoegenVerlauf);
     renderHistoryChart('wealth-hist-chart', wh.map(histLabel), [
-      { points: wh.map(h => h.wealth), color: 'var(--dia-1)', label: 'Gesamtvermögen' }
+      { points: wh.map(h => h.wealth), color: 'var(--accent)', label: 'Gesamtvermögen' }
     ], { hideRange: true, daten: wh.map(h => isoToDE(histDate(h))) });
   } else {
     whWrap.style.display = 'none';
@@ -1528,7 +1501,7 @@ function dueThisMonthHTML() {
   }
   html += `<div class="due-list">`;
   due.forEach(d => {
-    html += `<div class="due-row"><span class="due-date">${String(d.day).padStart(2, '0')}.${curM}.</span><span class="due-name">${esc(d.e.name)}${d.e.provider ? `<span class="due-prov"> · ${esc(d.e.provider)}</span>` : ''}</span><span class="due-amount">${fmt(d.e.amount)}</span></div>`;
+    html += `<div class="due-row"><span class="due-date">${String(d.day).padStart(2, '0')}.${curM}.</span><span class="due-name">${esc(d.e.name)}${abweichend(d.e.name, d.e.provider) ? `<span class="due-prov"> · ${esc(d.e.provider)}</span>` : ''}</span><span class="due-amount">${fmt(d.e.amount)}</span></div>`;
   });
   html += `</div>`;
   /* Vertraege, bei denen weder Abbuchungsdatum noch Stichtag einen Monat hergeben.
@@ -1595,7 +1568,6 @@ function finHeute() {
     if (tage === null || tage < 0 || tage > 60) return;
     out.push({ tage, titel: b.name, unter: (b.points ? b.points + ' verfallen am ' : 'Verfall am ') + displayDate(b.expiry),
       symbol: 'stern', aktion: () => zuBereich('finanzen', () => {
-        if (collapsedSections.includes('bonus')) toggleSection('bonus');
         hervorheben(document.querySelector(`#list-bonus .entry-wrap[data-id="${b.id}"]`));
       }) });
   });
@@ -1633,21 +1605,17 @@ function renderVertragDash() {
     return `in ca. ${months} ${months === 1 ? 'Monat' : 'Monaten'}`;
   };
 
-  html += `<div class="vd-group">`;
-  radar.forEach(r => {
+  html += radar.map(r => {
     const urgent = r.daysLeft < 60;
-    html += `<div class="vd-card${urgent ? ' vd-urgent' : ''}">
-      <div class="vd-head"><span class="vd-name">${esc(r.e.name)}</span>${r.e.provider ? `<span class="vd-prov">${esc(r.e.provider)}</span>` : ''}</div>
-      <div class="vd-row"><span class="vd-key">Vertragsende</span><span class="vd-val">${fmtD(r.stichtag)}</span></div>
-      <div class="vd-row"><span class="vd-key">Kündbar bis</span><span class="vd-val${urgent ? ' vd-val-urgent' : ''}">${fmtD(r.deadline)}</span></div>
-      <div class="vd-row"><span class="vd-key">Restzeit</span><span class="vd-val${urgent ? ' vd-val-urgent' : ''}">${restLabel(r.daysLeft)}</span></div>
+    const anbieter = abweichend(r.e.name, r.e.provider);
+    return `<div class="detail-zeile">
+      <div class="detail-zeile-kopf"><span class="detail-zeile-name">${esc(r.e.name)}${anbieter ? `<span class="detail-zeile-zusatz"> · ${esc(anbieter)}</span>` : ''}</span><span class="detail-zeile-wert${urgent ? ' rot' : ''}">${restLabel(r.daysLeft)}</span></div>
+      <div class="detail-zeile-unter">Kündbar bis <span${urgent ? ' class="rot"' : ''}>${fmtD(r.deadline)}</span> · Vertragsende ${fmtD(r.stichtag)}</div>
     </div>`;
-  });
-  html += `</div>`;
+  }).join('');
   body.innerHTML = html;
 }
 function renderAvDash() {
-  const alter = $('av-rente-alter'); if (alter) alter.textContent = retirementAge();
   const dash = $('av-dash');
   if (!dash) return;
   const entries = data.a;
@@ -1693,27 +1661,22 @@ function renderAvDash() {
     {label:'4 %', val:'4'},
     {label:'6 %', val:'6'}
   ];
-  const gesamtCard = `<div class="av-card av-card-total">
+  const hochrechnung = `<div class="detail-abschnitt">
+    ${kachelKopf('Hochrechnung', 'kalender')}
     <div class="av-modus" id="av-modus"></div>
     <div class="av-card-total-scenario">
-      <select class="av-scenario-select" id="av-scenario-sel" onchange="updateAvScenario()">
+      <select class="auswahl-kapsel" id="av-scenario-sel" onchange="updateAvScenario()">
         ${SCENARIO_OPTS.map(o=>`<option value="${o.val}">${o.label}</option>`).join('')}
       </select>
       <span class="av-card-total-val" id="av-scenario-val">${totalBaseParts.join(' + ') || '–'}</span>
     </div>
   </div>`;
 
-  function metricCell(cls, label, amt, type) {
-    const typeLine = type ? `<span class="av-card-metric-type">${type}</span>` : '';
-    return `<div class="av-card-metric ${cls}">
-      <span class="av-card-metric-label">${label}</span>
-      <span class="av-card-metric-val">${amt}</span>
-      ${typeLine}
-    </div>`;
-  }
+  /* Kennzahl einer Position - dieselbe Zelle wie in den Summenleisten (.stat). */
+  const statZelle = (label, amt, type) => `<div class="stat"><div class="stat-label">${label}</div><div class="stat-value">${amt}</div><div class="stat-typ">${type || '&nbsp;'}</div></div>`;
 
-  // Build a single card for one position (entry)
-  function buildPositionCard(e) {
+  // Eine Zeile je Position: Name und aktueller Stand, darunter Rente und Szenarien
+  function buildPositionRow(e) {
     const cat = e.cat;
     const isPrivat = cat === 'Privat';
     const cur = e.current || 0;
@@ -1747,40 +1710,34 @@ function renderAvDash() {
       if (e.growth3) s3amt = fmtShort(e.growth3);
     }
 
-    return `<div class="av-card">
-      <div class="av-card-head">
-        <span class="av-card-cat av-card-name">${esc(e.name)}</span>
-        <span class="av-card-cur">Aktuell: ${curTxt}</span>
-      </div>
-      <div class="av-card-metrics">
-        ${metricCell('base','Rente', baseAmt, baseType)}
-        ${metricCell('s1', s1label, s1amt, s1amt !== '–' ? sType : '')}
-        ${metricCell('s2', s2label, s2amt, s2amt !== '–' ? sType : '')}
-        ${metricCell('s3', s3label, s3amt, s3amt !== '–' ? sType : '')}
+    return `<div class="detail-zeile">
+      <div class="detail-zeile-kopf"><span class="detail-zeile-name">${esc(e.name)}</span><span class="detail-zeile-wert">Aktuell ${curTxt}</span></div>
+      <div class="av-werte">
+        ${statZelle('Rente', baseAmt, baseType)}
+        ${statZelle(s1label, s1amt, s1amt !== '–' ? sType : '')}
+        ${statZelle(s2label, s2amt, s2amt !== '–' ? sType : '')}
+        ${statZelle(s3label, s3amt, s3amt !== '–' ? sType : '')}
       </div>
     </div>`;
   }
 
-  // Group cards by category with a category heading
+  // Je Kategorie ein Abschnitt mit Kachelkopf; die Summe steht rechts daneben
+  const AV_SYMBOL = { Gesetzlich: 'schild', Betrieblich: 'bank', Privat: 'euro' };
   const groups = CATS.map(cat => {
     const es = entries.filter(e => e.cat === cat);
     if (!es.length) return '';
     const catCur = es.reduce((s,e) => s + (e.current||0), 0);
-    const positionCards = es.map(buildPositionCard).join('');
-    return `<div class="av-group">
-      <div class="av-group-head">
-        <span class="av-group-cat" data-cat="${cat}">${cat}</span>
-        <span class="av-group-cur">Aktuell: ${fmtShort(catCur)}</span>
-      </div>
-      ${positionCards}
+    return `<div class="detail-abschnitt">
+      <div class="abschnitt-kopfzeile">${kachelKopf(cat, AV_SYMBOL[cat])}<span class="detail-zeile-wert">Aktuell ${fmtShort(catCur)}</span></div>
+      ${es.map(buildPositionRow).join('')}
     </div>`;
   }).join('');
 
-  const pensionHistBlock = `<div id="dash-pension-hist" class="av-hist-block">
-      <div class="hist-head"><span class="dash-sub-label">Altersvorsorgeverlauf</span><span class="hist-range-ctl" data-target="pension"></span></div>
-          <div id="pension-hist-chart"></div>
+  const pensionHistBlock = `<div id="dash-pension-hist" class="detail-abschnitt">
+      <div class="hist-head">${kachelKopf('Verlauf', 'kurve')}<span class="hist-range-ctl" data-target="pension"></span></div>
+      <div id="pension-hist-chart"></div>
     </div>`;
-  $('av-table').innerHTML = `<div class="av-cards">${pensionHistBlock}${gesamtCard}${groups}</div><div class="av-legend">(m) = monatlich · (e) = einmalig</div>`;
+  $('av-table').innerHTML = `${pensionHistBlock}${hochrechnung}${groups}<div class="av-legend">(m) = monatlich · (e) = einmalig</div>`;
   segmentRendern($('av-modus'), [['nominal','Nominal'],['real','Inflation 2 %']], avViewMode, 'setAvViewMode');
   // Init scenario display
   updateAvScenario();
@@ -1797,7 +1754,7 @@ function renderPensionHistory() {
     phWrap.style.display = '';
     const ph = histSlice(vermoegenVerlauf);
     renderHistoryChart('pension-hist-chart', ph.map(histLabel), [
-      { points: ph.map(h => h.pension), color: 'var(--dia-1)', label: 'Vorsorge gesamt' }
+      { points: ph.map(h => h.pension), color: 'var(--accent)', label: 'Vorsorge gesamt' }
     ], { daten: ph.map(h => isoToDE(histDate(h))) });
   } else {
     phWrap.style.display = 'none';
@@ -1848,24 +1805,8 @@ function setAvViewMode(mode) {
   renderAvDash();
 }
 
-const COLLAPSE_KEY = 'fin_collapsed_sections_v1';
-let collapsedSections = safeParse(store.get(COLLAPSE_KEY), []);
-function applyCollapsedStates() {
-  ['v','b','a','bonus','urlaub'].forEach(s => {
-    const body = $('body-' + s);
-    const head = body ? body.previousElementSibling : null;
-    const collapsed = collapsedSections.includes(s);
-    if (body) body.classList.toggle('collapsed', collapsed);
-    if (head && head.classList.contains('sub-header')) head.classList.toggle('collapsed', collapsed);
-  });
-}
-function toggleSection(s) {
-  const i = collapsedSections.indexOf(s);
-  if (i >= 0) collapsedSections.splice(i, 1);
-  else collapsedSections.push(s);
-  store.set(COLLAPSE_KEY, JSON.stringify(collapsedSections));
-  applyCollapsedStates();
-}
+/* Abschnitte sind nicht mehr einklappbar (wie in allen anderen Bereichen). Der
+   frueher gespeicherte Zustand wird beim Start einmal entfernt. */
 
 function renderBonus() {
   const list = $('list-bonus');
@@ -2376,7 +2317,7 @@ function renderUrlaubeDash() {
   });
 
   if (yearlyBudget > 0 && numYears.length) {
-    html += `<div class="uy-section-label">Budget</div>`;
+    html += `<div class="uy-section-label">${kachelKopf('Budget', 'flugzeug')}</div>`;
     numYears.forEach(y => {
       const items = urlaubItems(groups[String(y)] || []);
       const geplant = expByYear[y] || 0;
@@ -2424,7 +2365,7 @@ function renderUrlaubeDash() {
   // (Sparrate, Ausgleichs-Einzahlungen) und was abgeht (Anzahlungen, Reisekosten).
   const verlauf = urlaubKontoVerlauf(konto);
   if (verlauf.length) {
-    html += `<div class="uy-section-label">Kontostand</div>`;
+    html += `<div class="uy-section-label">${kachelKopf('Kontoverlauf', 'kalender')}</div>`;
     let letztesJahr = null;
     verlauf.forEach((z, i) => {
       const jahrLabel = z.jahr !== letztesJahr ? `<div class="kv-year">${z.jahr}</div>` : '';
@@ -3410,7 +3351,7 @@ const FIN_KEYS = {
   urlaubAnspruch:'fin_urlaub_anspruch_v1',
   /* Reine Ansichtszustaende - reisen mit, damit sich die App nach einem Wiederherstellen
      genauso zeigt wie vorher. */
-  collapsedSections:'fin_collapsed_sections_v1', avViewMode:'fin_av_view_mode_v1',
+  avViewMode:'fin_av_view_mode_v1',
   histRange:'fin_hist_range_v1', person:'fin_person_v1', konten:'fin_konten_v1'
 };
 
@@ -3432,9 +3373,7 @@ function finBuildBackupPayload() {
     urlaubAnspruch: urlaubAnspruchOverride,
     history: vermoegenVerlauf,
     /* Standen in FIN_KEYS und loesten damit eine Sicherung aus, fehlten aber in der
-       Sicherung selbst - eingeklappte Abschnitte und der gewaehlte Zeitraum waren
-       nach dem Wiederherstellen weg. */
-    collapsedSections: collapsedSections,
+       Sicherung selbst - der gewaehlte Zeitraum war nach dem Wiederherstellen weg. */
     avViewMode: avViewMode,
     histRange: histRange,
     person: person,
@@ -3499,10 +3438,6 @@ function finApplyBackup(rawText) {
     vermoegenVerlauf = parsed.history;
     store.set(HISTORY_KEY, JSON.stringify(vermoegenVerlauf));
   }
-  if (Array.isArray(parsed.collapsedSections)) {
-    collapsedSections = parsed.collapsedSections;
-    store.set(COLLAPSE_KEY, JSON.stringify(collapsedSections));
-  }
   if (parsed.avViewMode === 'nominal' || parsed.avViewMode === 'real') {
     avViewMode = parsed.avViewMode;
     store.set('fin_av_view_mode_v1', avViewMode);
@@ -3552,7 +3487,7 @@ function finInit(){
   populateFilters();
   applyAutoGrow();
   renderAll();
-  applyCollapsedStates();
+  store.remove('fin_collapsed_sections_v1');
   renderHistRangeCtls();
   ['deposit-amount','urlaub-cost'].forEach(id => bindMoneyInput($(id)));
 }
