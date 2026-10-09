@@ -1044,7 +1044,7 @@ function renderHeroBento() {
       const bar = posTotal > 0
         ? order.map(([cat,v]) => `<span class="bento-seg" style="flex:${(v/posTotal).toFixed(4)};background:${CAT_COL[cat]||'var(--dia-4)'}"></span>`).join('')
         : `<span class="bento-seg bento-seg-leer"></span>`;
-      const zeile = (cat, v, farbe) => `<div class="bento-break-row"><span class="bl"><span class="bento-leg-dot" style="background:${farbe}"></span>${esc(cat)}</span><span class="bv ${betragKlasse(v)}">${fmt(v)}</span></div>`;
+      const zeile = (cat, v, farbe) => `<div class="bento-break-row"><span class="bl"><span class="bento-leg-dot" style="background:${farbe}"></span>${esc(cat)}</span><span class="bv ${betragKlasse(v, 'neben')}">${fmt(v)}</span></div>`;
       const legend = order.map(([cat,v]) => zeile(cat, v, CAT_COL[cat] || 'var(--dia-4)')).join('')
         + Object.entries(negCats).sort((a,b) => a[1] - b[1]).map(([cat,v]) => zeile(cat, v, 'var(--danger)')).join('');
       tiles.push(`<div class="bento-tile" onclick="openDetail('uebersicht')">
@@ -3496,45 +3496,6 @@ function finInit(){
 
 
 
-/* Kachel-Grafik: Verlauf des Gesamtvermoegens.
-   Statt einer nackten Linie: die Flaeche zwischen Kurve und Startwert wird eingefaerbt
-   (ueber dem Startwert gruen, darunter rot), dazu ein hervorgehobener Endpunkt.
-   Ohne Beschriftung/Legende – die Kachel soll nur den Trend auf einen Blick zeigen. */
-function finTileArt() {
-  const pts = (vermoegenVerlauf || []).map(h => h.wealth).filter(v => typeof v === 'number' && isFinite(v));
-  if (pts.length < 2) return '';
-  const W = 120, H = 66, padT = 9, padB = 2;
-  const min = Math.min(...pts), max = Math.max(...pts);
-  const span = (max - min) || Math.abs(max) * 0.01 || 1;
-  const lo = min - span * 0.22, hi = max + span * 0.18;
-  const range = hi - lo;
-  const xAt = i => (i / (pts.length - 1)) * W;
-  const yAt = v => padT + (1 - (v - lo) / range) * (H - padT - padB);
-
-  const first = pts[0], last = pts[pts.length - 1];
-  const farbe = last >= first ? 'var(--green)' : 'var(--danger)';
-  const linie = pts.map((v, i) => `${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`).join(' ');
-  // Flaeche laeuft von der Kurve bis zum unteren Rand aus – einfarbig nach Gesamttrend.
-  const flaeche = `0,${H} ${linie} ${W},${H}`;
-  const ex = xAt(pts.length - 1), ey = yAt(last);
-  const uid = 'fintile';
-
-  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
-    <defs>
-      <linearGradient id="${uid}-f" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="${farbe}" stop-opacity="0.40"/>
-        <stop offset="100%" stop-color="${farbe}" stop-opacity="0"/>
-      </linearGradient>
-    </defs>
-    <polygon points="${flaeche}" fill="url(#${uid}-f)"/>
-    <polyline points="${linie}" fill="none" stroke="${farbe}" stroke-width="2"
-              stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
-    <circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="6" fill="${farbe}" opacity="0.26"/>
-    <circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="2.8" fill="${farbe}"/>
-    <circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="1.2" fill="#fff" opacity="0.9"/>
-  </svg>`;
-}
-
 registerModule({
   id: 'finanzen', name: 'Finanzen', tagline: 'Versicherungen, Budgets & Vorsorge', order: 1,
   keys: FIN_KEYS,
@@ -3550,20 +3511,18 @@ registerModule({
   kalender: () => finFristen().filter(f => f.tage >= 0).map(finFristTermin),
   summary: () => {
     try {
-      const art = finTileArt();
       // Gesamtvermoegen nach derselben Formel wie im Hero der Finanzen-Startseite.
       const konten  = (data.b||[]).reduce((s,e) => s + (isGiro(e) ? 0 : (e.balance || 0)), 0);
       const vorsorge = (data.a||[]).reduce((s,e) => s + (e.cat === 'Privat' ? (e.current || 0) : 0), 0);
       const vermoegen = konten + vorsorge;
       if (vermoegen > 0) {
-        // Ohne Nachkommastellen und ohne Waehrungszeichen – das Euro-Zeichen steht
-        // als kleine Einheit daneben, wie "Tage" oder "Hinweise" auf den anderen Kacheln.
-        const zahl = Math.round(vermoegen).toLocaleString('de-DE', { maximumFractionDigits: 0 });
-        return { sub: 'Verträge & Budgets', art, value: zahl, unit: '€', note: 'Gesamtvermögen' };
+        // Kurzform ("62,5k", "1,2M") - auf der Kachel zaehlt die Groessenordnung; das
+        // Euro-Zeichen steht als kleine Einheit daneben.
+        return { value: zahlKurz(vermoegen), unit: '€' };
       }
       const n = (data.v||[]).length + (data.b||[]).length + (data.a||[]).length;
-      return { sub: 'Verträge & Budgets', art, value: n, unit: n === 1 ? 'Eintrag' : 'Einträge', note: 'erfasst' };
-    } catch(e) { return { sub: 'Versicherungen, Budgets & Vorsorge' }; }
+      return { value: n, unit: n === 1 ? 'Eintrag' : 'Einträge' };
+    } catch(e) { return {}; }
   }
 });
 

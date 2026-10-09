@@ -937,15 +937,14 @@ registerModule({
   onOpen: () => { try { fgRender(); } catch(e){} },
   summary: () => {
     try {
-      const art = kachelMotiv('fotografie');
       const heute = heuteBerlin();
-      if (heute.getTime() > FG_KALENDER_ENDE.getTime())
-        return { sub: 'Guides & Kalender', value: szenarien.length, unit: szenarien.length === 1 ? 'Guide' : 'Guides', note: 'angelegt', art };
+      const guides = { value: szenarien.length, unit: szenarien.length === 1 ? 'Guide' : 'Guides' };
+      if (heute.getTime() > FG_KALENDER_ENDE.getTime()) return guides;
       const events = fgBaueKalender(heute, fgAnzeigeEnde(heute));
-      if (!events.length) return { sub: 'Guides & Kalender', value: szenarien.length, unit: szenarien.length === 1 ? 'Guide' : 'Guides', note: 'angelegt', art };
-      const naechstes = events[0];
-      const tage = Math.round((naechstes.datum - heute) / 86400000);
-      return { sub: 'Guides & Kalender', value: tage, unit: tage === 1 ? 'Tag' : 'Tage', note: naechstes.titel, art };
-    } catch(e) { return { sub: 'Guides & Kalender' }; }
+      if (!events.length) return guides;
+      // Tage bis zum naechsten Ereignis im Astro-Kalender
+      const tage = Math.round((events[0].datum - heute) / 86400000);
+      return tage === 0 ? { value: 'Heute', unit: '' } : { value: tage, unit: tage === 1 ? 'Tag' : 'Tage' };
+    } catch(e) { return {}; }
   }
 });

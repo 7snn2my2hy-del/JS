@@ -595,12 +595,11 @@ registerModule({
   kalender: () => impfungen.map(impTermin).filter(Boolean),
   summary: () => {
     try {
-      const art = kachelMotiv('impfpass');
       const offen = impfungen.filter(impNeedsAction).length;
-      if (offen) return { sub: 'Impfungen', value: offen, unit: offen === 1 ? 'Hinweis' : 'Hinweise', note: 'Handlungsbedarf', art };
+      if (offen) return { value: offen, unit: offen === 1 ? 'Hinweis' : 'Hinweise' };
       const bald = impfungen.filter(e => impStatus(e).key === 'soon').length;
-      if (bald) return { sub: 'Impfungen', value: bald, unit: bald === 1 ? 'Impfung' : 'Impfungen', note: 'bald fällig', art };
-      return { sub: 'Impfungen', value: impfungen.length, unit: impfungen.length === 1 ? 'Impfung' : 'Impfungen', note: 'alle gültig', art };
-    } catch(e) { return { sub: 'Impfungen' }; }
+      if (bald) return { value: bald, unit: 'bald fällig' };
+      return { value: impfungen.length, unit: impfungen.length === 1 ? 'Impfung' : 'Impfungen' };
+    } catch(e) { return {}; }
   }
 });

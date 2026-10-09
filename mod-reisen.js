@@ -892,6 +892,9 @@ function renderTabContent(){
   const map = { overview:renderOverviewTab, route:renderRouteTab, photos:renderPhotosTab };
   el.innerHTML = map[activeTab](t);
   wireEntrySwipe();
+  // Check- und Packliste: nur Loeschen per Wischen (Bearbeiten passiert direkt in der Zeile)
+  el.querySelectorAll('.abhak-wrap').forEach(w => attachSwipeGeneric(w,
+    () => (w.dataset.art === 'todo' ? removeTodo : removePack)(w.dataset.id), null, null));
 }
 
 function renderOverviewTab(t){
@@ -977,30 +980,7 @@ function renderOperatorSection(t){
   return `${abschnittKopf('Veranstalter')}${zeilen?`<div class="dv-card karte">${zeilen}</div>`:''}${hinweis}`;
 }
 /* Packliste – gleiche Mechanik wie die Checkliste, direkt in der Übersicht */
-function renderPackSection(t){
-  const list = packing.filter(s=>s.tripId===t.id);
-  const open = list.filter(i=>!i.checked);
-  const done = list.filter(i=>i.checked);
-  const ordered = [...open, ...done];
-  const rows = ordered.map(i => `
-    <div class="todo-row${i.checked?' checked':''}">
-      <button class="todo-check${i.checked?' checked':''}" onclick="togglePack('${i.id}')" aria-label="Eingepackt">
-        ${SYMBOL.haken}
-      </button>
-      <input class="todo-text" value="${esc(i.name)}" onchange="renamePack('${i.id}', this.value)"
-             onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">
-      <button class="todo-del" onclick="removePack('${i.id}')" aria-label="Löschen">✕</button>
-    </div>`).join('');
-  const newRow = `
-    <div class="todo-row">
-      <span class="todo-check ghost"></span>
-      <input class="todo-text" id="pack-new" placeholder="Neuer Gegenstand …"
-             onkeydown="if(event.key==='Enter'){event.preventDefault();addPackInline();}"
-             onblur="addPackInline(true)">
-    </div>`;
-  const count = list.length ? ` <span class="sl-count">${done.length}/${list.length}</span>` : '';
-  return `${abschnittKopf('Packliste' + count)}<div class="todo-list">${rows}${newRow}</div>`;
-}
+function renderPackSection(t){ return rpAbhakListe(t, 'pack'); }
 function togglePack(id){ const i=packing.find(x=>x.id===id); if(!i) return; i.checked=!i.checked; persist('pack'); renderTabContent(); }
 function renamePack(id, val){
   const i=packing.find(x=>x.id===id); if(!i) return;
@@ -1420,29 +1400,37 @@ function toggleGearForPlace(idx){
 
 /* Checkliste im Apple-Notizen-Stil: rahmenlos, direkt eintippbar,
    erledigte werden durchgestrichen und ans Ende geschoben. */
-function renderTodosSection(t){
-  const list = todos.filter(s=>s.tripId===t.id);
-  const open = list.filter(i=>!i.checked);
-  const done = list.filter(i=>i.checked);
-  const ordered = [...open, ...done];
-  const rows = ordered.map(i => `
-    <div class="todo-row${i.checked?' checked':''}">
-      <button class="todo-check${i.checked?' checked':''}" onclick="toggleTodo('${i.id}')" aria-label="Erledigt">
-        ${SYMBOL.haken}
-      </button>
-      <input class="todo-text" value="${esc(i.name)}" onchange="renameTodo('${i.id}', this.value)"
+function renderTodosSection(t){ return rpAbhakListe(t, 'todo'); }
+
+/* Check- und Packliste wie eine Liste in Erinnerungen: offene Eintraege, darueber
+   "2 erledigt · Einblenden", geloescht wird per Wischen nach links. Gestaltung im Kern. */
+const RP_ABHAK = {
+  todo: { titel: 'Checkliste', neu: 'Neue Aufgabe …', neuId: 'todo-new', neuFn: 'addTodoInline', toggle: 'toggleTodo', rename: 'renameTodo', label: 'Erledigt' },
+  pack: { titel: 'Packliste', neu: 'Neuer Gegenstand …', neuId: 'pack-new', neuFn: 'addPackInline', toggle: 'togglePack', rename: 'renamePack', label: 'Eingepackt' }
+};
+const _rpErledigteZeigen = { todo: false, pack: false };
+function rpErledigteUmschalten(art){ _rpErledigteZeigen[art] = !_rpErledigteZeigen[art]; renderTabContent(); }
+function rpAbhakListe(t, art){
+  const c = RP_ABHAK[art];
+  const list = (art === 'todo' ? todos : packing).filter(s => s.tripId === t.id);
+  const done = list.filter(i => i.checked);
+  const zeigen = _rpErledigteZeigen[art];
+  const sichtbar = [...list.filter(i => !i.checked), ...(zeigen ? done : [])];
+  const rows = sichtbar.map(i => `<div class="tile-wrap abhak-wrap" data-art="${art}" data-id="${i.id}">${swipeInnerHTML(`
+    <div class="todo-row${i.checked ? ' checked' : ''}">
+      <button class="todo-check${i.checked ? ' checked' : ''}" onclick="${c.toggle}('${i.id}')" aria-label="${c.label}">${SYMBOL.haken}</button>
+      <input class="todo-text" value="${esc(i.name)}" onchange="${c.rename}('${i.id}', this.value)"
              onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}">
-      <button class="todo-del" onclick="removeTodo('${i.id}')" aria-label="Löschen">✕</button>
-    </div>`).join('');
+    </div>`, true)}</div>`).join('');
   const newRow = `
     <div class="todo-row">
       <span class="todo-check ghost"></span>
-      <input class="todo-text" id="todo-new" placeholder="Neue Aufgabe …"
-             onkeydown="if(event.key==='Enter'){event.preventDefault();addTodoInline();}"
-             onblur="addTodoInline(true)">
+      <input class="todo-text" id="${c.neuId}" placeholder="${c.neu}"
+             onkeydown="if(event.key==='Enter'){event.preventDefault();${c.neuFn}();}"
+             onblur="${c.neuFn}(true)">
     </div>`;
   const count = list.length ? ` <span class="sl-count">${done.length}/${list.length}</span>` : '';
-  return `${abschnittKopf('Checkliste' + count)}<div class="todo-list">${rows}${newRow}</div>`;
+  return `${abschnittKopf(c.titel + count)}${erledigtZeile(done.length, zeigen, `rpErledigteUmschalten('${art}')`)}<div class="todo-list">${rows}${newRow}</div>`;
 }
 function toggleTodo(id){ const i=todos.find(x=>x.id===id); if(!i) return; i.checked=!i.checked; persist('todo'); renderTabContent(); }
 function renameTodo(id, val){
@@ -1936,14 +1924,11 @@ registerModule({
         .filter(x => !isNaN(x.d) && x.d >= heute).sort((a,b) => a.d - b.d)[0];
       if (kommend) {
         const tage = Math.round((kommend.d - heute) / 86400000);
-        const ziel = kommend.t.name || '';
-        if (tage === 0) return { sub: ziel, value: 'Heute', unit: '', note: 'Abreise',
-                 art: (kommend.t.country ? tripMapSVG(kommend.t.country) : '') };
-        return { sub: ziel, value: tage, unit: tage === 1 ? 'Tag' : 'Tage', note: 'bis zur Abreise',
-                 art: (kommend.t.country ? tripMapSVG(kommend.t.country) : '') };
+        // Tage bis zur naechsten Abreise
+        if (tage === 0) return { value: 'Heute', unit: '' };
+        return { value: tage, unit: tage === 1 ? 'Tag' : 'Tage' };
       }
-      return { sub: trips.length ? 'Keine kommende Reise' : 'Noch keine Reise',
-               value: trips.length, unit: trips.length === 1 ? 'Reise' : 'Reisen', note: 'gespeichert' };
-    } catch(e) { return { sub: 'Planung & Fotografie' }; }
+      return { value: trips.length, unit: trips.length === 1 ? 'Reise' : 'Reisen' };
+    } catch(e) { return {}; }
   }
 });
